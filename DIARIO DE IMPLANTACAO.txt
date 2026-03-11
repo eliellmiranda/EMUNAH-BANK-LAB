@@ -1,0 +1,40 @@
+DIA 10/03
+
+-Validei Java, git, python, zowe CLI, vsCode na máquina do trabalho
+-Criei as pastas locais
+-OBS: deu um problema no powershell de "Execução de scripts desabilitada neste sistema" (Execution scripts is disabled on this system error). resolvi com o comando: Set-ExecutionPolicy RemoteSigned
+
+
+DIA 11/03
+
+-validei a máquina de casa, java, git, zowe CLI, VSCODE
+-Criação de DATASETS:
+
+2 CENÁRIOS: A) ARQUIVOS FONTE (LIBRARY)
+B) ARQUIVOS DE CARGA (LOAD)
+
+para criação de datasets fui na opção: allocate like.
+
+os atributos para arquivos de fonte são os seguintes:
+
+Data Set Name:	Z77948.EMUNAH.DEV.COBOL
+Block Size:	32720
+Catalog Name:	CATALOG.ZOSP
+Create Date:	2026/03/11
+Device Type:	3390
+Data Set Type:	LIBRARY
+Data Set Organization:	PO-E
+Expiration Date:	***None***
+Extensions:	1
+Logical Record Length:	80
+Migration:	NO
+Multivolume:	N
+Space overflow:	NO
+Reference Date:	2026/03/11
+Record Format:	FB
+Size:	6
+Space Unit:	TRACKS
+Used Space:	6
+Volumes:	ZXPL01
+
+
