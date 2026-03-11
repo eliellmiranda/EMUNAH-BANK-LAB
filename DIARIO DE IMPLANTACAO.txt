@@ -38,3 +38,71 @@ Used Space:	6
 Volumes:	ZXPL01
 
 
+os datasets vsam foram criados por linha de comando no zowe CLI. Com o seguinte comando: "zowe zos-files create data-set-vsam NOME.DODATASET.KSDS
+
+Os atributos: 
+
+Data Set Name:	Z77948.EMUNAH.ARQ.CONTA.KSDS
+Catalog Name:	CATALOG.ZOSP
+Data Set Organization:	VS
+Migration:	NO
+Multivolume:	N
+Volumes:	*VSAM
+
+
+
+Para a criação dos datasets GDG:
+
+Primeiro: A BASE
+
+Criei o JCL "DEFGDG" com este conteúdo, e submeti:
+
+//DEFGDG   JOB CLASS=A,MSGCLASS=X,NOTIFY=&SYSUID
+//STEP1    EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DEFINE GENERATIONDATAGROUP -
+    (NAME(Z77948.EMUNAH.ARQ.EXTRATO.GDG) -
+     LIMIT(30) -
+     NOEMPTY -
+     SCRATCH)
+/*
+
+ele criou: Z77948.EMUNAH.ARQ.EXTRATO.GDG, Isso segue o uso padrão do comando DEFINE GENERATIONDATAGROUP da IBM
+
+Segundo: A primeira geração
+
+criei o JCL: "CRTGEN" com este conteúdo, e submeti: 
+
+//CRTGEN   JOB CLASS=A,MSGCLASS=X,NOTIFY=&SYSUID
+//STEP1    EXEC PGM=IEFBR14
+//EXTRATO  DD DSN=Z77948.EMUNAH.ARQ.EXTRATO.GDG(+1),
+//            DISP=(NEW,CATLG,DELETE),
+//            SPACE=(TRK,(3,1)),
+//            DCB=(DSORG=PS,RECFM=FB,LRECL=200,BLKSIZE=6000)
+
+
+Criei também um JCL "DELGDG" que apaga as gerações e em seguida a base, com o conteúdo:
+
+//DELG001  JOB CLASS=A,MSGCLASS=X,NOTIFY=&SYSUID
+//STEP1    EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE Z77948.EMUNAH.ARQ.EXTRATO.GDG.G0001V00
+  DELETE Z77948.EMUNAH.ARQ.EXTRATO.GDG.G0002V00
+  DELETE Z77948.EMUNAH.ARQ.EXTRATO.GDG.G0003V00
+  DELETE Z77948.EMUNAH.ARQ.EXTRATO.GDG
+
+
+CONFIGUREI O TN3270 (TOM BRENNAN SOFTWARE) para visualizar os datasets pelo terminal
+
+LICENSA: Username: Marist College Student License
+Password:K43E9D5EDH
+
+CONEXÃO: IP: 204.90.115.200, PORTA: 623
+
+E entrei com minhas credenciais.
+
+
+
+
