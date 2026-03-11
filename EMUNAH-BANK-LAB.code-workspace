@@ -4,5 +4,19 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"zowe.ds.templates": [
+			{
+				"ATRIBUTOS-DS-SEQUENCIAIS-EMUNAH": {
+					"alcunit": "TRK",
+					"blksize": 6200,
+					"dsorg": "PS",
+					"primary": 5,
+					"recfm": "FB",
+					"lrecl": 100,
+					"secondary": 2
+				}
+			}
+		]
+	}
 }
