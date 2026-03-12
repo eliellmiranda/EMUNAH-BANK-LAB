@@ -114,3 +114,84 @@ e o READEME.md
 
 
 
+CRIEI OS ARQUIVOS LOCAIS: 
+
+New-Item -ItemType Directory -Force -Path "copybooks\layouts"; New-Item -ItemType File -Force -Path "copybooks\layouts\CPCLI001.cpy","copybooks\layouts\CPCNT001.cpy","copybooks\layouts\CPLCT001.cpy","copybooks\layouts\CPSLD001.cpy","copybooks\layouts\CPAUD001.cpy"
+
+
+copybooks\layouts\ CPCLI001.cpy CPCNT001.cpy CPLCT001.cpy CPSLD001.cpy CPAUD001.cpy
+
+
+
+New-Item -ItemType Directory -Force -Path "jcl\compile"; New-Item -ItemType File -Force -Path "jcl\compile\EBCOMP.jcl","jcl\compile\EBLINK.jcl","jcl\compile\EBBUILD.jcl"
+cobol\batch\
+
+  EBCLLOAD.cbl
+  EBVALI01.cbl
+  EBPOST01.cbl
+  EBSALD01.cbl
+  EBEXTR01.cbl
+  EBCONC01.cbl
+
+
+New-Item -ItemType Directory -Force -Path "jcl\compile"; New-Item -ItemType File -Force -Path "jcl\compile\EBCOMP.jcl","jcl\compile\EBLINK.jcl","jcl\compile\EBBUILD.jcl"
+
+jcl\compile\
+  EBCOMP.jcl
+  EBLINK.jcl
+  EBBUILD.jcl
+
+
+New-Item -ItemType Directory -Force -Path "jcl\batch"; New-Item -ItemType File -Force -Path "jcl\batch\EBJLOAD.jcl","jcl\batch\EBJVALD.jcl","jcl\batch\EBJPOST.jcl"
+
+jcl\batch\
+  EBJLOAD.jcl
+  EBJVALD.jcl
+  EBJPOST.jcl
+
+
+
+
+
+data\entrada\
+  lancamentos_d0.txt
+
+
+
+subi os copybooks. comando: 
+
+zowe zos-files upload file-to-data-set .\copybooks\layouts\CPCLI001.cpy "Z77948.EMUNAH.DEV.COPY(CPCLI001)"
+zowe zos-files upload file-to-data-set .\copybooks\layouts\CPCNT001.cpy "Z77948.EMUNAH.DEV.COPY(CPCNT001)"
+zowe zos-files upload file-to-data-set .\copybooks\layouts\CPLCT001.cpy "Z77948.EMUNAH.DEV.COPY(CPLCT001)"
+zowe zos-files upload file-to-data-set .\copybooks\layouts\CPSLD001.cpy "Z77948.EMUNAH.DEV.COPY(CPSLD001)"
+zowe zos-files upload file-to-data-set .\copybooks\layouts\CPAUD001.cpy "Z77948.EMUNAH.DEV.COPY(CPAUD001)"
+
+
+subi os programas cobol batch. comando:
+
+zowe zos-files upload dir-to-pds .\cobol\batch "Z77948.EMUNAH.DEV.COBOL"
+
+
+subi os jcls de compile. comando: 
+
+zowe zos-files upload file-to-data-set .\jcl\compile\EBCOMP.jcl  "Z77948.EMUNAH.DEV.JCL(EBCOMP)"
+zowe zos-files upload file-to-data-set .\jcl\compile\EBLINK.jcl  "Z77948.EMUNAH.DEV.JCL(EBLINK)"
+zowe zos-files upload file-to-data-set .\jcl\compile\EBBUILD.jcl "Z77948.EMUNAH.DEV.JCL(EBBUILD)"
+
+
+
+subi os jcls de batch. comando:
+
+
+
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJLOAD.jcl "Z77948.EMUNAH.DEV.JCL(EBJLOAD)"
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJVALD.jcl "Z77948.EMUNAH.DEV.JCL(EBJVALD)"
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJPOST.jcl "Z77948.EMUNAH.DEV.JCL(EBJPOST)"
+
+
+subi o arquivo de entrada.comando:
+
+zowe zos-files upload file-to-data-set .\data\entrada\lancamentos_d0.txt "Z77948.EMUNAH.ARQ.ENTRADA.SEQ"
+
+
+
