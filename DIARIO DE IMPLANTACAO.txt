@@ -194,4 +194,268 @@ subi o arquivo de entrada.comando:
 zowe zos-files upload file-to-data-set .\data\entrada\lancamentos_d0.txt "Z77948.EMUNAH.ARQ.ENTRADA.SEQ"
 
 
+DIA 12/03 - QUINTA
+
+Preenchi os documentos:
+
+preencher 01-visao-geral.md
+Conteúdo mínimo:
+# Visão Geral
+
+Nome: Emunah Bank Lab
+
+Objetivo:
+Simular um ambiente bancário mainframe com foco em desenvolvimento COBOL, JCL, processamento batch, investigação de falhas e uso de Zowe + TN3270.
+Passo 3.3 — preencher 02-arquitetura.md
+Você vai definir:
+•	local = seu PC
+•	ambiente mainframe remoto = onde estão datasets/jobs
+•	Zowe = ponte de publicação/execução
+•	TN3270 = operação e troubleshooting
+Passo 3.4 — preencher 03-modulos.md
+Liste:
+•	cliente
+•	conta
+•	lançamentos
+•	saldo
+•	extrato
+•	conciliação
+•	fechamento
+•	rejeito
+•	reprocessamento
+Passo 3.5 — preencher 04-mapa-datasets.md
+Defina oficialmente estes nomes:
+Bibliotecas DEV
+•	EMUNAH.DEV.COBOL
+•	EMUNAH.DEV.COPY
+•	EMUNAH.DEV.JCL
+•	EMUNAH.DEV.REXX
+•	EMUNAH.DEV.LOAD
+Bibliotecas HML
+•	EMUNAH.HML.COBOL
+•	EMUNAH.HML.JCL
+•	EMUNAH.HML.LOAD
+Bibliotecas PRD simuladas
+•	EMUNAH.PRD.JCL
+•	EMUNAH.PRD.LOAD
+•	EMUNAH.PRD.PARMLIB
+Arquivos de negócio
+•	EMUNAH.ARQ.CLIENTE.KSDS
+•	EMUNAH.ARQ.CONTA.KSDS
+•	EMUNAH.ARQ.LANCTO.ESDS
+•	EMUNAH.ARQ.SALDO.KSDS
+•	EMUNAH.ARQ.ENTRADA.SEQ
+•	EMUNAH.ARQ.REJEITO.SEQ
+•	EMUNAH.ARQ.AUDIT.SEQ
+•	EMUNAH.ARQ.EXTRATO.GDG
+Passo 3.6 — preencher 09-padroes-publicacao.md
+Aqui você fecha o contrato local → remoto:
+
+copybooks/layouts/  -> EMUNAH.DEV.COPY
+cobol/batch/        -> EMUNAH.DEV.COBOL
+jcl/compile/        -> EMUNAH.DEV.JCL
+jcl/batch/          -> EMUNAH.DEV.JCL
+rexx/util/          -> EMUNAH.DEV.REXX
+
+
+preencher grade-batch.md:
+
+Objetivo
+
+Este documento tem como objetivo registrar a cadeia batch principal do laboratório, descrevendo a ordem de execução dos jobs, suas dependências, os arquivos de entrada e saída, além dos critérios de continuidade ou bloqueio do processamento.
+
+Visão geral
+
+A cadeia batch do laboratório simula o processamento diário de um ambiente bancário. Esse processamento inclui a recepção do arquivo de entrada, a validação de layout e de regras de negócio, a aplicação dos lançamentos, a consolidação dos saldos, a geração de extratos, a conciliação dos resultados, o fechamento diário e o reprocessamento de rejeitos quando necessário.
+
+Janela batch simulada
+
+O processamento diário do laboratório segue uma janela operacional simulada. Às 06:00 ocorre a pré-checagem do ambiente. Às 06:15 ocorre o backup do estado anterior. Às 06:30 é executado o job EBJLOAD, responsável pela preparação do arquivo do dia. Às 07:00 roda o job EBJVALD, responsável pela validação. Às 07:30 executa-se o job EBJPOST, que aplica os lançamentos. Às 08:00 roda o job EBJSALD, responsável pela consolidação dos saldos. Às 09:00 executa-se o job EBJEXTR, que gera os extratos. Às 09:30 roda o job EBJCONC, que faz a conciliação. Às 10:00 é executado o job EBJEOD, responsável pelo fechamento do dia. O job EBJREPR não faz parte da cadeia normal e deve ser executado sob demanda, apenas quando houver necessidade de reprocessar rejeitos corrigidos.
+
+Descrição dos jobs
+
+O job PRECHECK tem como finalidade verificar se o ambiente está pronto para execução. Ele confere a existência das bibliotecas principais, a existência do arquivo de entrada e a integridade mínima do ambiente. Sua saída é um log de pré-checagem. O processamento só deve continuar se todas as verificações essenciais forem aprovadas.
+
+O job EBBACKUP tem a função de registrar o estado do ambiente antes do processamento do dia. Ele é executado após a pré-checagem e sua finalidade é permitir recuperação ou análise posterior, caso ocorra uma falha durante a execução da cadeia batch. O processamento só deve continuar se o backup terminar com retorno aceitável.
+
+O job EBJLOAD prepara o arquivo de entrada do dia para a etapa seguinte. Sua principal entrada é o dataset Z77948.EMUNAH.ARQ.ENTRADA.SEQ. Como saída, ele disponibiliza o arquivo pronto para validação e gera um log de carga. O processamento só pode seguir se o arquivo existir e estiver acessível.
+
+O job EBJVALD executa o programa EBVALI01. Sua função é validar o layout do arquivo de entrada e também regras de negócio básicas, como conta válida, tipo de lançamento, valor positivo e campos obrigatórios. Sua entrada principal é o dataset Z77948.EMUNAH.ARQ.ENTRADA.SEQ. Como saída, ele produz registros válidos, registros rejeitados no dataset Z77948.EMUNAH.ARQ.REJEITO.SEQ e um relatório de validação. A cadeia só deve continuar se o lote válido for considerado aceitável.
+
+O job EBJPOST executa o programa EBPOST01. Ele aplica os lançamentos válidos, atualiza as contas e grava os movimentos do dia. Suas entradas incluem os registros validados, o arquivo de contas Z77948.EMUNAH.ARQ.CONTA.KSDS e o arquivo de clientes Z77948.EMUNAH.ARQ.CLIENTE.KSDS. Como saída, ele atualiza contas, grava movimentos em Z77948.EMUNAH.ARQ.LANCTO.ESDS e gera log de aplicação. A cadeia só segue se o processamento for concluído sem inconsistências críticas.
+
+O job EBJSALD executa o programa EBSALD01. Sua finalidade é consolidar o saldo diário por conta com base no resultado da aplicação dos lançamentos. Como saída, ele atualiza o dataset Z77948.EMUNAH.ARQ.SALDO.KSDS e produz relatório de saldo. A execução seguinte depende da conclusão correta desta etapa.
+
+O job EBJEXTR executa o programa EBEXTR01. Sua função é gerar o extrato diário com base nos lançamentos e no saldo consolidado. A saída principal desta etapa é uma nova geração de Z77948.EMUNAH.ARQ.EXTRATO.GDG.
+
+O job EBJCONC executa o programa EBCONC01. Ele compara os totais de entrada, os valores aplicados e os saldos finais. Seu objetivo é confirmar que os resultados do dia estão corretos. Ele produz um relatório de conciliação e o fechamento só deve ocorrer se esta etapa indicar consistência.
+
+O job EBJEOD realiza o fechamento diário. Sua função é encerrar o dia operacional, atualizar controles e registrar o fechamento. Ele só deve ser executado se a conciliação estiver aprovada.
+
+O job EBJREPR executa o programa EBREPR01. Sua finalidade é reaplicar registros corrigidos que foram rejeitados em execuções anteriores. Ele não pertence à cadeia principal do dia e deve ser acionado apenas sob demanda.
+
+Dependências
+
+O backup depende do sucesso da pré-checagem. O carregamento do arquivo depende da execução do backup. A validação depende da carga. A aplicação dos lançamentos depende da validação. A consolidação de saldo depende da aplicação. A geração do extrato depende da consolidação. A conciliação depende da geração do extrato. O fechamento do dia depende da conciliação. O reprocessamento é independente da cadeia principal e deve ser executado sob demanda.
+
+Regras de bloqueio
+
+A cadeia deve ser interrompida se o arquivo de entrada estiver ausente, se houver erro crítico de validação, se a aplicação falhar de forma inconsistente ou se a conciliação não fechar corretamente. O job de reprocessamento não substitui a cadeia normal; ele apenas complementa o tratamento de rejeitos.
+
+Datasets principais
+
+Os datasets principais utilizados na cadeia são Z77948.EMUNAH.ARQ.ENTRADA.SEQ, Z77948.EMUNAH.ARQ.REJEITO.SEQ, Z77948.EMUNAH.ARQ.AUDIT.SEQ, Z77948.EMUNAH.ARQ.CLIENTE.KSDS, Z77948.EMUNAH.ARQ.CONTA.KSDS, Z77948.EMUNAH.ARQ.LANCTO.ESDS, Z77948.EMUNAH.ARQ.SALDO.KSDS e Z77948.EMUNAH.ARQ.EXTRATO.GDG.
+
+Critérios de sucesso do dia
+
+O processamento diário é considerado bem-sucedido quando o arquivo de entrada é recebido corretamente, os registros válidos são processados, os rejeitos são gravados de forma consistente, os saldos são consolidados, o extrato é gerado, a conciliação fecha corretamente e o fechamento diário é concluído.
+
+
+preenchi o run-books:
+
+Título: Runbooks Operacionais — Emunah Bank Lab
+
+Objetivo
+
+Este documento tem como finalidade registrar os procedimentos de diagnóstico, correção e reprocessamento para os principais incidentes do laboratório. Ele serve como manual operacional para consulta rápida sempre que ocorrer um erro.
+
+Estrutura de uso
+
+Cada incidente deve ser analisado de acordo com os seguintes pontos: sintoma apresentado, causa provável, forma de diagnóstico, ação corretiva, necessidade ou não de reprocessamento e evidências que devem ser guardadas.
+
+Incidente: arquivo de entrada ausente
+
+O sintoma típico é a falha do job EBJLOAD, com a cadeia principal impedida de prosseguir. A causa provável pode ser ausência do dataset de entrada, nome incorreto, problema de upload ou erro de catálogo. O diagnóstico deve começar pela verificação da existência do dataset Z77948.EMUNAH.ARQ.ENTRADA.SEQ, seguida da conferência do nome e do conteúdo do arquivo. A ação corretiva consiste em reenviar o arquivo de entrada, corrigir o nome ou o destino do dataset e repetir a checagem de existência. Depois da correção, o job EBJLOAD deve ser reexecutado. Como evidência, devem ser guardados o spool do job, a evidência da lista de datasets e o horário do reenvio do arquivo.
+
+Incidente: layout inválido no arquivo de entrada
+
+O sintoma típico é a geração de muitos rejeitos pelo job EBJVALD ou um retorno elevado na validação. As causas prováveis incluem tamanho incorreto do registro, tipo inválido, valor incorreto, data fora do padrão ou conta inexistente. O diagnóstico deve ser feito por meio do relatório de validação, da análise do dataset Z77948.EMUNAH.ARQ.REJEITO.SEQ e da comparação entre o layout do arquivo e o copybook esperado. A ação corretiva consiste em corrigir o arquivo de entrada, revisar a geração da massa ou ajustar o layout se o erro estiver na definição. Após a correção, o job EBJVALD deve ser reexecutado. Como evidência, devem ser guardados os registros rejeitados, o motivo de rejeição e a versão do layout utilizado.
+
+Incidente: conta inexistente ou inválida
+
+O sintoma mais comum é a rejeição de lançamentos na validação ou na aplicação. A causa provável é ausência da conta em Z77948.EMUNAH.ARQ.CONTA.KSDS, carga inicial incompleta ou chave de conta incorreta. O diagnóstico exige consulta ao arquivo de contas, verificação da carga inicial e conferência da chave de agência e conta. A ação corretiva pode ser corrigir a massa de entrada, recarregar o cadastro da conta ou ajustar o conteúdo da chave. O reprocessamento deve ser feito por meio do job adequado, geralmente EBJREPR, ou pela repetição da etapa correspondente da cadeia. Como evidência, devem ser guardados o spool da validação ou da aplicação, a prova da ausência da conta e a massa corrigida.
+
+Incidente: falha na aplicação de lançamentos
+
+O sintoma típico é a falha do job EBJPOST. As causas prováveis são erro de lógica do programa, conta bloqueada, saldo insuficiente ou falha na gravação de arquivo. O diagnóstico deve incluir análise do spool do job, verificação do arquivo de contas, análise dos lançamentos válidos recebidos e conferência do comportamento do programa. A ação corretiva consiste em corrigir o programa ou a massa de dados, recompilar o programa e reenviar a versão corrigida para o ambiente remoto. O reprocessamento deve ocorrer apenas após a confirmação de que o estado do ambiente está consistente; em alguns casos pode ser necessário restaurar a baseline antes de reaplicar. Como evidência, devem ser guardados o spool, o RC, os registros afetados e a indicação se a falha provocou impacto parcial ou total.
+
+Incidente: falha de conciliação
+
+O sintoma típico é a falha do job EBJCONC, impedindo o fechamento do dia. A causa provável pode estar em divergência entre os totais de entrada e saída, erro no saldo consolidado, falha de reprocessamento ou geração incorreta do extrato. O diagnóstico deve comparar totais de entrada e saída, quantidade de registros válidos e rejeitados, cálculo do saldo e conteúdo do extrato. A ação corretiva consiste em localizar a divergência, corrigir a causa de origem e reexecutar a etapa necessária. O fechamento nunca deve ser executado enquanto a conciliação estiver inconsistente. As evidências devem incluir relatório de conciliação, totais esperados e obtidos e logs dos jobs envolvidos.
+
+Incidente: job em hold ou não executado
+
+O sintoma é o job permanecer parado ou não iniciar. As causas prováveis são status HOLD, dependência anterior não atendida ou falha em job predecessor. O diagnóstico deve ser feito no Zowe Explorer e no SDSF, além da conferência da ordem de execução definida na grade batch. A ação corretiva pode envolver liberar o job, reenviá-lo ou corrigir a dependência anterior. O reprocessamento deve começar no job afetado, desde que o estado anterior do ambiente esteja consistente. As evidências necessárias são status do job, tela do SDSF e horários de parada e liberação.
+
+Incidente: reprocessamento de rejeitos
+
+O sintoma é a existência de registros corrigidos que ainda não foram reaplicados. A causa típica é um erro anterior já identificado e corrigido. O diagnóstico deve verificar a consistência do arquivo corrigido, a causa original do rejeito e a segurança da reaplicação. A ação corretiva consiste em preparar o arquivo corrigido, executar o job EBJREPR e validar o impacto em saldo e extrato. Como evidência, devem ser guardados os rejeitos originais, a versão corrigida e o spool do job de reprocessamento.
+
+Regra geral de evidências
+
+Sempre que ocorrer uma falha, devem ser guardados o nome do job, horário, RC, spool principal, datasets afetados, ação executada e a decisão sobre reprocessamento.
+
+
+
+
+preenchi: cenários de incidente:
+
+
+Título: Cenários de Incidente — Emunah Bank Lab
+
+Objetivo
+
+Este documento descreve cenários controlados de erro e seus resultados esperados, para apoiar testes operacionais, troubleshooting e reprocessamento no laboratório.
+
+Cenário normal-day
+
+Este cenário representa a execução normal do dia, sem falhas. A baseline deve estar restaurada, a massa válida deve estar carregada e o arquivo de entrada precisa estar presente. Os jobs executados são EBJLOAD, EBJVALD, EBJPOST, EBJSALD, EBJEXTR, EBJCONC e EBJEOD. O resultado esperado é retorno aceitável em toda a cadeia, ausência de falhas críticas, conciliação correta e fechamento concluído.
+
+Cenário missing-input
+
+Este cenário representa a ausência do arquivo de entrada no início do processamento. A baseline deve estar restaurada, mas o arquivo de entrada não deve ser enviado. O job principal afetado é EBJLOAD. O resultado esperado é falha no início da cadeia, acionamento do runbook de arquivo ausente e bloqueio do processamento.
+
+Cenário invalid-layout
+
+Este cenário representa um arquivo de entrada com layout incorreto. A baseline deve estar restaurada e um arquivo inválido deve ser enviado. O job principal afetado é EBJVALD. O resultado esperado é geração de rejeitos, retorno elevado ou processamento parcial, além de necessidade de correção e possível reprocessamento.
+
+Cenário duplicate-key
+
+Este cenário representa tentativa de gravação duplicada em arquivo chaveado. A massa deve conter duplicidade controlada. O job afetado será aquele que realizar gravação em KSDS, como a carga inicial ou outro fluxo específico. O resultado esperado é erro de gravação controlado, rejeição do registro e produção de log de inconsistência.
+
+Cenário wrong-disp
+
+Este cenário representa um JCL com parâmetro inadequado de alocação ou uso de dataset. O setup consiste em alterar propositalmente o JCL. O resultado esperado é erro de alocação, interrupção do job e spool com mensagens correspondentes.
+
+Cenário hold-job
+
+Este cenário representa um job submetido, mas não liberado. O setup pode ser simular hold ou bloquear dependência anterior. O resultado esperado é job parado, análise no Zowe Explorer e no SDSF e acionamento do runbook de job em hold.
+
+Cenário saldo-inconsistente
+
+Este cenário representa divergência entre os totais aplicados e o saldo consolidado. O setup pode ser massa preparada com erro ou alteração proposital no cálculo. Os jobs afetados são EBJSALD e EBJCONC. O resultado esperado é falha de conciliação e bloqueio do fechamento.
+
+Cenário late-file
+
+Este cenário representa atraso na chegada do arquivo do dia. O setup deve simular ausência inicial e posterior chegada tardia. O resultado esperado é atraso operacional, decisão de aguardar, cancelar ou seguir com contingência e registro desse comportamento.
+
+Cenário reprocess-required
+
+Este cenário representa a necessidade de reaplicar registros antes rejeitados e depois corrigidos. O setup deve gerar rejeitos controlados e preparar um arquivo corrigido. O job principal afetado é EBJREPR. O resultado esperado é reaplicação correta, ajuste de totais e registro de evidência antes e depois.
+
+Cenário validation-rc08
+
+Este cenário representa uma falha de validação relevante, mas não necessariamente técnica. O setup deve usar massa com erros de negócio significativos. O job principal afetado é EBJVALD. O resultado esperado é retorno elevado, necessidade de decisão operacional e possível bloqueio da cadeia.
+
+Padrão dos cenários
+
+Cada cenário do laboratório deve registrar nome, descrição, setup, jobs afetados, resultado esperado e runbook relacionado.
+
+
+
+
+preenchi o fluxo-zowe:
+
+Título: Fluxo Zowe — Emunah Bank Lab
+
+Objetivo
+
+Este documento tem como objetivo explicar como o laboratório usa Zowe CLI e Zowe Explorer para integrar o projeto local ao ambiente mainframe remoto.
+
+Princípio geral
+
+O laboratório é organizado em três camadas. A camada local contém os arquivos-fonte, a documentação, os scripts e as automações. A camada remota contém os datasets, membros, jobs, spool e arquivos de negócio. A camada 3270 representa a operação e investigação clássica. O Zowe é a ponte entre o ambiente local e o ambiente mainframe remoto.
+
+Papel de cada camada
+
+O ambiente local é usado para editar COBOL, JCL e copybooks, manter documentação, controlar versão com Git e preparar automações e cenários. O ambiente remoto é usado para armazenar membros e datasets reais, compilar, executar jobs, gerar spool e manter os arquivos do laboratório. O TN3270 é usado para ISPF, SDSF, TSO, troubleshooting e operação tradicional. O Zowe é usado para publicar arquivos locais no mainframe, abrir datasets e membros remotos no VS Code, submeter jobs, consultar jobs e outputs e automatizar tarefas por CLI.
+
+Fluxo de trabalho padrão
+
+O fluxo de trabalho do laboratório segue a seguinte lógica: primeiro os arquivos são editados localmente no VS Code. Depois são salvos na estrutura local do projeto. Em seguida são publicados no ambiente remoto por meio do Zowe CLI ou do Zowe Explorer. Após a publicação, os membros e datasets são conferidos no ambiente remoto. O próximo passo é submeter o JCL correspondente. Em seguida, acompanha-se o status do job e consultam-se os outputs e spools. Se necessário, a investigação é aprofundada no 3270. Havendo necessidade de correção, a alteração deve preferencialmente ser feita no ambiente local, e então o ciclo é repetido.
+
+Fluxo de publicação
+
+Os copybooks da pasta local copybooks/layouts são publicados no dataset remoto Z77948.EMUNAH.DEV.COPY. Os programas COBOL batch da pasta cobol/batch são publicados em Z77948.EMUNAH.DEV.COBOL. Os JCLs das pastas jcl/compile e jcl/batch são publicados em Z77948.EMUNAH.DEV.JCL. Os arquivos de entrada da pasta data/entrada são publicados em Z77948.EMUNAH.ARQ.ENTRADA.SEQ.
+
+Fluxo de execução
+
+O build do sistema envolve o envio de programas e copybooks e a submissão de EBCOMP, EBLINK e EBBUILD. A execução batch envolve o envio do arquivo de entrada, a submissão da cadeia batch e o acompanhamento de RC e spool. A operação diária pode ser feita pela visão rápida do Zowe Explorer, mas a investigação clássica deve ser realizada pelo TN3270 e pelo SDSF quando necessário.
+
+Regras do laboratório
+
+O projeto local é a fonte principal do código e da documentação. O ambiente remoto é a área de build e execução. O 3270 é a ferramenta principal de operação e diagnóstico. Alterações permanentes devem ser feitas preferencialmente no local e publicadas no remoto. A edição remota deve ser usada quando fizer sentido operacional, e não como padrão principal de desenvolvimento.
+
+Critério de uso correto do Zowe
+
+O fluxo com Zowe está correto quando os arquivos locais são publicados no remoto de forma controlada, os membros aparecem no Explorer, os jobs podem ser submetidos sem depender de edição manual no 3270 e os resultados podem ser consultados tanto no Explorer quanto no SDSF.
+
+Exemplo de ciclo completo
+
+O desenvolvedor edita o arquivo EBPOST01.cbl localmente, publica esse arquivo para Z77948.EMUNAH.DEV.COBOL(EBPOST01), publica também o copybook relacionado, submete o job de build, depois submete o job batch, verifica RC e output, investiga eventuais erros e, se necessário, corrige novamente no ambiente local antes de republicar e reexecutar.
+
+
+
+
+
 
