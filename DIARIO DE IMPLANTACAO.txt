@@ -94,7 +94,7 @@ Criei também um JCL "DELGDG" que apaga as gerações e em seguida a base, com o
   DELETE Z77948.EMUNAH.ARQ.EXTRATO.GDG
 
 
-CONFIGUREI O TN3270 (TOM BRENNAN SOFTWARE) para visualizar os datasets pelo terminal
+CONFIGUREI O TN3270 (TOM BRENNAN SOFTWARE) para visualizar os datasets pelo terminal (QUE LINDO!)
 
 LICENSA: Username: Marist College Student License
 Password:K43E9D5EDH
@@ -103,6 +103,14 @@ CONEXÃO: IP: 204.90.115.200, PORTA: 623
 
 E entrei com minhas credenciais.
 
+criei o .gitignore com o conteúdo: reports/
+tests/actual/
+data/saida/
+data/rejeito/
+.zowe/*.yaml
+.zowe/*.log
+
+e o READEME.md
 
 
 
