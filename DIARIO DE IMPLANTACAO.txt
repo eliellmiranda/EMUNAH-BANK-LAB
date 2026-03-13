@@ -965,6 +965,107 @@ Usei este conteúdo em jcl\compile\EBBUILD.jcl:
 //*
 
 
+CRIEI O jcl\batch\EBJCLLD.JCL:
+
+//EBJCLLD  JOB ,'EMUNAH CARGA',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//STEP1    EXEC PGM=EBCLLOAD
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ,DISP=SHR
+//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ,DISP=SHR
+//CLIENTE  DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
+//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//SYSOUT   DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+
+esse JCL usa dois datasets seed no host:
+
+•	Z77948.EMUNAH.SEED.CLIENTES.SEQ
+•	Z77948.EMUNAH.SEED.CONTAS.SEQ
+
+então, criei esses datasets, assim:
+
+TENTEI ESSE COMANDO:
+
+zowe zos-files list data-set "Z77948.EMUNAH.SEED.CLIENTES.SEQ" --attributes
+
+E O CLI ME DEVOLVEU: Unable to perform this operation due to the following problem.
+For a FB file, the BLKSIZE must be an integer multiple of the LRECL.
+
+
+ENTÃO, O CHATGPT DISSE:
+
+Achei o problema: o dataset está sendo criado com um BLKSIZE automático que não ficou compatível com FB. Vou te passar os comandos corrigidos com --bs explícito.
+
+Pensou por 13s
+
+Esse erro aconteceu porque, para RECFM=FB, o BLKSIZE precisa ser múltiplo inteiro do LRECL. A IBM documenta exatamente essa regra para datasets fixos bloqueados.
+
+Então, em vez de deixar o bloco implícito, crie assim:
+
+zowe zos-files create data-set-sequential "Z77948.EMUNAH.SEED.CLIENTES.SEQ" --rf FB --rl 63 --bs 630
+
+O ZOWE CLI DEVOLVEU: Unable to perform this operation due to the following problem.
+Dynamic allocation Error - SMS or ACS services returned an error.  Ensure any specified storclas, dataclas, or mgmtclas values are defined.
+
+O CHAT:
+
+sse erro já indica outro ponto: o host rejeitou a alocação por causa de SMS/ACS, não por causa do nome do dataset em si. No Zowe, o comando de criação aceita --data-class, --management-class e --storage-class; se algum desses estiver sendo enviado com valor inválido, ou se a rotina ACS do ambiente atribuir uma classe inexistente/sem storage group válido, a alocação falha.
+
+O primeiro teste que eu faria é criar sem informar nenhuma classe SMS, só com os atributos do arquivo:
+
+
+zowe zos-files create data-set-sequential "Z77948.EMUNAH.SEED.CLIENTES.SEQ" --rf FB --rl 63 --bs 630
+zowe zos-files create data-set-sequential "Z77948.EMUNAH.SEED.CONTAS.SEQ"   --rf FB --rl 41 --bs 410
+
+ZOWE: 
+
+Unable to perform this operation due to the following problem.
+Dynamic allocation Error - SMS or ACS services returned an error.  Ensure any specified storclas, dataclas
+, or mgmtclas values are defined.
+
+
+TENTEI:
+
+zowe zos-files create data-set "Z77948.EMUNAH.SEED.CLIENTES.SEQ" --like "Z77948.ALGUM.DATASET.QUE.JA.EXISTE" --rf FB --rl 63 --bs 630
+zowe zos-files create data-set "Z77948.EMUNAH.SEED.CONTAS.SEQ"   --like "Z77948.ALGUM.DATASET.QUE.JA.EXISTE" --rf FB --rl 41 --bs 410
+
+O ZOWE CLI: Unable to perform this operation due to the following problem.
+Dynamic allocation Error
+
+FUNCIONOU COM ESSE:
+
+zowe zos-files create data-set "Z77948.EMUNAH.SEED.CLIENTES.SEQ" --like "Z77948.EMUNAH.ARQ.REJEITO.SEQ" --rf FB --rl 63 --bs 630
+
+E COM ESSE:
+
+zowe zos-files create data-set "Z77948.EMUNAH.SEED.CONTAS.SEQ" --like "Z77948.EMUNAH.ARQ.REJEITO.SEQ" --rf FB --rl 41 --bs 410
+
+
+subI os arquivos locais:
+•	data\seed\clientes.txt para Z77948.EMUNAH.SEED.CLIENTES.SEQ
+•	data\seed\contas.txt para Z77948.EMUNAH.SEED.CONTAS.SEQ
+
+COMANDOS:
+
+zowe zos-files upload file-to-data-set .\data\seed\clientes.txt "Z77948.EMUNAH.SEED.CLIENTES.SEQ"
+
+(ELE PEDE AS CREDENCIAIS)
+
+E:
+
+zowe zos-files upload file-to-data-set .\data\seed\contas.txt   "Z77948.EMUNAH.SEED.CONTAS.SEQ"
+
+
+
+
+
+
+
+
+
+
+
 
 
 
