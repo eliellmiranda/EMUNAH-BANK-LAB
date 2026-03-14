@@ -954,6 +954,11 @@ IDENTIFICATION DIVISION.
            CLOSE AUDIT-OUT.
 
 
+
+SUBI :zowe zos-files upload file-to-data-set .\cobol\batch\EBCLLOAD.cbl "Z77948.EMUNAH.DEV.COBOL(EBCLLOAD)"
+
+
+
 Usei este conteúdo em jcl\compile\EBBUILD.jcl:
 
 //EBBUILD  JOB ,'EMUNAH BUILD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
@@ -1055,6 +1060,75 @@ zowe zos-files upload file-to-data-set .\data\seed\clientes.txt "Z77948.EMUNAH.S
 E:
 
 zowe zos-files upload file-to-data-set .\data\seed\contas.txt   "Z77948.EMUNAH.SEED.CONTAS.SEQ"
+
+
+
+
+CPCLI001.cpy = layout do cadastro de cliente
+
+       01  CLIENTE-REG.
+           05 CLI-ID-CLIENTE         PIC 9(5).
+           05 CLI-NOME               PIC X(30).
+           05 CLI-CPF                PIC 9(11).
+           05 CLI-DATA-NASC          PIC 9(8).
+           05 CLI-STATUS             PIC X(1).
+           05 CLI-DATA-CAD           PIC 9(8).
+           05 CLI-FILLER             PIC X(17).
+
+
+
+
+
+CPCNT001.cpy = layout do cadastro de conta
+
+
+       01  CONTA-REG.
+           05 CNT-KEY.
+              10 CNT-AGENCIA         PIC 9(4).
+              10 CNT-NUM-CONTA       PIC 9(8).
+           05 CNT-ID-CLIENTE         PIC 9(5).
+           05 CNT-TIPO-CONTA         PIC X(2).
+           05 CNT-STATUS             PIC X(1).
+           05 CNT-SALDO-ATUAL        PIC 9(13).
+           05 CNT-DATA-ABERTURA      PIC 9(8).
+           05 CNT-FILLER             PIC X(59).
+
+
+submeti: 
+•	Z77948.EMUNAH.DEV.JCL(EBBUILD)
+
+RC:0000
+
+EBCLLOAD apareceu em z77948.EMUNAH.DEV.LOADLIB
+
+
+Subir EBJCLLD.jcl para:
+•	Z77948.EMUNAH.DEV.JCL(EBJCLLD)
+
+
+
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJCLLD.jcl "Z77948.EMUNAH.DEV.JCL(EBJCLLD)"
+
+
+
+
+No membro EBJCLLD, troque estas duas linhas:
+
+de:
+
+//CLIENTE DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
+
+//CONTA DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+
+para:
+
+//CLIENTE DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=OLD
+
+//CONTA DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=OLD
+
+
+
+
 
 
 
