@@ -1,4 +1,4 @@
-IDENTIFICATION DIVISION.
+       IDENTIFICATION DIVISION.
        PROGRAM-ID. EBCLLOAD.
 
        ENVIRONMENT DIVISION.
@@ -33,20 +33,20 @@ IDENTIFICATION DIVISION.
                ASSIGN TO CONTA
                ORGANIZATION IS INDEXED
                ACCESS MODE IS DYNAMIC
-               RECORD KEY IS WS-CONTA-KEY
+               RECORD KEY IS CNT-KEY
                FILE STATUS IS WS-FS-CONTA.
 
        DATA DIVISION.
        FILE SECTION.
 
        FD  CLIENTES-IN
-           RECORD CONTAINS 63 CHARACTERS
+           RECORD CONTAINS 80 CHARACTERS
            RECORDING MODE IS F.
        01  CLIENTES-IN-REG.
            COPY CPCLI001.
 
        FD  CONTAS-IN
-           RECORD CONTAINS 41 CHARACTERS
+           RECORD CONTAINS 100 CHARACTERS
            RECORDING MODE IS F.
        01  CONTAS-IN-REG.
            COPY CPCNT001.
@@ -85,12 +85,6 @@ IDENTIFICATION DIVISION.
            05 WS-CNT-GRAVADOS         PIC 9(5) VALUE ZERO.
            05 WS-CNT-REJEITADOS       PIC 9(5) VALUE ZERO.
 
-       01  WS-CONTA-KEY.
-           05 WS-KEY-AGENCIA          PIC 9(4).
-           05 WS-KEY-CONTA            PIC 9(8).
-
-       01  WS-MENSAGEM                PIC X(120).
-
        PROCEDURE DIVISION.
        0000-PRINCIPAL.
            PERFORM 1000-ABRIR-ARQUIVOS
@@ -122,6 +116,7 @@ IDENTIFICATION DIVISION.
               AND CLI-STATUS NOT = 'I'
               AND CLI-STATUS NOT = 'B'
                ADD 1 TO WS-CLI-REJEITADOS
+               MOVE SPACES TO AUDIT-REG
                STRING 'CLIENTE REJEITADO - STATUS INVALIDO - ID '
                       CLI-ID-CLIENTE
                       DELIMITED BY SIZE
@@ -133,6 +128,7 @@ IDENTIFICATION DIVISION.
                WRITE CLIENTE-KSDS-REG
                    INVALID KEY
                        ADD 1 TO WS-CLI-REJEITADOS
+                       MOVE SPACES TO AUDIT-REG
                        STRING 'CLIENTE REJEITADO - DUPLICADO - ID '
                               CLI-ID-CLIENTE
                               DELIMITED BY SIZE
@@ -160,6 +156,7 @@ IDENTIFICATION DIVISION.
               AND CNT-STATUS NOT = 'I'
               AND CNT-STATUS NOT = 'B'
                ADD 1 TO WS-CNT-REJEITADOS
+               MOVE SPACES TO AUDIT-REG
                STRING 'CONTA REJEITADA - STATUS INVALIDO - AG '
                       CNT-AGENCIA ' CTA ' CNT-NUM-CONTA
                       DELIMITED BY SIZE
@@ -167,12 +164,11 @@ IDENTIFICATION DIVISION.
                END-STRING
                WRITE AUDIT-REG
            ELSE
-               MOVE CNT-AGENCIA   TO WS-KEY-AGENCIA
-               MOVE CNT-NUM-CONTA TO WS-KEY-CONTA
                MOVE CONTAS-IN-REG TO CONTA-KSDS-REG
                WRITE CONTA-KSDS-REG
                    INVALID KEY
                        ADD 1 TO WS-CNT-REJEITADOS
+                       MOVE SPACES TO AUDIT-REG
                        STRING 'CONTA REJEITADA - DUPLICADA - AG '
                               CNT-AGENCIA ' CTA ' CNT-NUM-CONTA
                               DELIMITED BY SIZE
