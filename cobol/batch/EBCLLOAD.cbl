@@ -26,14 +26,14 @@
                ASSIGN TO CLIENTE
                ORGANIZATION IS INDEXED
                ACCESS MODE IS DYNAMIC
-               RECORD KEY IS CLI-ID-CLIENTE
+               RECORD KEY IS CLI-ID-CLIENTE OF CLIENTE-KSDS-REG
                FILE STATUS IS WS-FS-CLIENTE.
 
            SELECT CONTA-KSDS
                ASSIGN TO CONTA
                ORGANIZATION IS INDEXED
                ACCESS MODE IS DYNAMIC
-               RECORD KEY IS CNT-KEY
+               RECORD KEY IS CNT-CHAVE OF CONTA-KSDS-REG
                FILE STATUS IS WS-FS-CONTA.
 
        DATA DIVISION.
@@ -112,13 +112,13 @@
            END-PERFORM.
 
        2100-VALIDAR-CLIENTE.
-           IF CLI-STATUS NOT = 'A'
-              AND CLI-STATUS NOT = 'I'
-              AND CLI-STATUS NOT = 'B'
+           IF CLI-STATUS OF CLIENTES-IN-REG NOT = 'A'
+              AND CLI-STATUS OF CLIENTES-IN-REG NOT = 'I'
+              AND CLI-STATUS OF CLIENTES-IN-REG NOT = 'B'
                ADD 1 TO WS-CLI-REJEITADOS
                MOVE SPACES TO AUDIT-REG
                STRING 'CLIENTE REJEITADO - STATUS INVALIDO - ID '
-                      CLI-ID-CLIENTE
+                      CLI-ID-CLIENTE OF CLIENTES-IN-REG
                       DELIMITED BY SIZE
                       INTO AUDIT-REG
                END-STRING
@@ -130,7 +130,7 @@
                        ADD 1 TO WS-CLI-REJEITADOS
                        MOVE SPACES TO AUDIT-REG
                        STRING 'CLIENTE REJEITADO - DUPLICADO - ID '
-                              CLI-ID-CLIENTE
+                              CLI-ID-CLIENTE OF CLIENTES-IN-REG
                               DELIMITED BY SIZE
                               INTO AUDIT-REG
                        END-STRING
@@ -152,13 +152,15 @@
            END-PERFORM.
 
        3100-VALIDAR-CONTA.
-           IF CNT-STATUS NOT = 'A'
-              AND CNT-STATUS NOT = 'I'
-              AND CNT-STATUS NOT = 'B'
+           IF CNT-STATUS OF CONTAS-IN-REG NOT = 'A'
+              AND CNT-STATUS OF CONTAS-IN-REG NOT = 'I'
+              AND CNT-STATUS OF CONTAS-IN-REG NOT = 'B'
                ADD 1 TO WS-CNT-REJEITADOS
                MOVE SPACES TO AUDIT-REG
                STRING 'CONTA REJEITADA - STATUS INVALIDO - AG '
-                      CNT-AGENCIA ' CTA ' CNT-NUM-CONTA
+                      CNT-AGENCIA OF CONTAS-IN-REG
+                      ' CTA '
+                      CNT-NUM-CONTA OF CONTAS-IN-REG
                       DELIMITED BY SIZE
                       INTO AUDIT-REG
                END-STRING
@@ -170,7 +172,9 @@
                        ADD 1 TO WS-CNT-REJEITADOS
                        MOVE SPACES TO AUDIT-REG
                        STRING 'CONTA REJEITADA - DUPLICADA - AG '
-                              CNT-AGENCIA ' CTA ' CNT-NUM-CONTA
+                              CNT-AGENCIA OF CONTAS-IN-REG
+                              ' CTA '
+                              CNT-NUM-CONTA OF CONTAS-IN-REG
                               DELIMITED BY SIZE
                               INTO AUDIT-REG
                        END-STRING
