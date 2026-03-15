@@ -53,3 +53,35 @@ REFEITO PELO CHATGPT:
 | `Z77948.EMUNAH.SAIDA.EXTRATO`   | PS        | Sequencial              | Relatório/arquivo de extrato gerado a partir dos lançamentos                | `EBEXTR01`                                   | Conferência, testes e saída operacional                   |
 | `Z77948.EMUNAH.SAIDA.CONCIL`    | PS        | Sequencial              | Resultado da conciliação dos lançamentos                                    | `EBCONC01`                                   | Conferência operacional                                   |
 | `Z77948.EMUNAH.SAIDA.SALDOS`    | PS        | Sequencial              | Resultado das consultas de saldo                                            | `EBSALD01`                                   | Conferência operacional                                   |
+
+
+
+
+Observações de uso
+1. Bibliotecas de desenvolvimento
+
+DEV.COBOL, DEV.JCL e DEV.COPY são bibliotecas de trabalho do projeto.
+
+LOAD é a biblioteca de executáveis gerados no build.
+
+2. Entrada e seed
+
+SEED.CLIENTES e SEED.CONTAS servem para a carga inicial.
+
+ENTRADA.LCTD0 representa os movimentos do lote/dia.
+
+ENTRADA.SALDOIN existe para não deixar a rotina de saldo sem entrada definida.
+
+3. Arquivos operacionais
+
+KSDS.CLIENTE e KSDS.CONTA são os arquivos master do ambiente.
+
+Eles devem ser alocados antes da execução dos jobs que os usam.
+
+4. Saídas
+
+SAIDA.AUDIT concentra logs e mensagens.
+
+SAIDA.VALDOK e SAIDA.REJEIT separam os lançamentos válidos dos inválidos.
+
+SAIDA.EXTRATO, SAIDA.CONCIL e SAIDA.SALDOS são arquivos de resultado.
