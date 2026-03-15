@@ -3136,6 +3136,886 @@ SAIDA.VALDOK e SAIDA.REJEIT separam os lançamentos válidos dos inválidos.
 SAIDA.EXTRATO, SAIDA.CONCIL e SAIDA.SALDOS são arquivos de resultado.
 
 
+DIA 15/06 (DOMINGO)
+
+
+RESOLVI TAMBÉM REESCREVAR OS JCLS COM COMENTÁRIOS PARA FACILITAR O ENTENDIMENTO
+
+PRIMEIRO:
+
+\jcl\batch\EBJCLLD.jcl:
+
+//* ------------------------------------------------------------
+//* JOB: EBJCLLD
+//* FINALIDADE:
+//* Executar o programa EBCLLOAD para fazer a carga inicial
+//* dos arquivos do laboratorio EMUNAH.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler o arquivo sequencial de clientes.
+//* 2. Ler o arquivo sequencial de contas.
+//* 3. Gravar os clientes no VSAM de clientes.
+//* 4. Gravar as contas no VSAM de contas.
+//* 5. Registrar eventos e ocorrencias no arquivo de auditoria.
+//* ------------------------------------------------------------
+//EBJCLLD  JOB ,'EMUNAH CARGA',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* Define o JOB que sera submetido ao JES.
+//* EBJCLLD:
+//*   Nome do job.
+//* 'EMUNAH CARGA':
+//*   Descricao do job para identificacao no spool.
+//* CLASS=A:
+//*   Classe de execucao do job, conforme regras do ambiente.
+//* MSGCLASS=X:
+//*   Classe onde a saida do job sera direcionada.
+//* MSGLEVEL=(1,1):
+//*   Pede exibicao das instrucoes JCL e das mensagens geradas
+//*   durante a execucao do job e do step.
+//STEP1    EXEC PGM=EBCLLOAD
+//* Executa o programa chamado EBCLLOAD.
+//* Este e o step principal do job.
+//* Todo o processamento desta carga ocorre neste step.
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//* Informa a biblioteca de carga onde o sistema deve procurar
+//* o modulo executavel EBCLLOAD.
+//* DSN:
+//*   Nome da LOADLIB do laboratorio.
+//* DISP=SHR:
+//*   Abre o dataset em modo compartilhado.
+//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ,DISP=SHR
+//* Arquivo de entrada sequencial contendo os registros de
+//* clientes que serao carregados no ambiente.
+//* CLIENTIN:
+//*   DDNAME logico esperado pelo programa.
+//* DISP=SHR:
+//*   Abertura compartilhada, normalmente para leitura.
+//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ,DISP=SHR
+//* Arquivo de entrada sequencial contendo os registros de
+//* contas que serao carregados no ambiente.
+//* CONTAIN:
+//*   DDNAME logico esperado pelo programa.
+//* DISP=SHR:
+//*   Abertura compartilhada, normalmente para leitura.
+//CLIENTE  DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
+//* Arquivo VSAM KSDS de clientes.
+//* O programa deve gravar aqui os registros lidos do arquivo
+//* CLIENTIN.
+//* KSDS:
+//*   Key Sequenced Data Set, isto e, arquivo indexado por
+//*   chave.
+//* DISP=SHR:
+//*   Acesso compartilhado ao dataset.
+//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//* Arquivo VSAM KSDS de contas.
+//* O programa deve gravar aqui os registros lidos do arquivo
+//* CONTAIN.
+//* DISP=SHR:
+//*   Acesso compartilhado ao dataset.
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//* Arquivo sequencial de auditoria do processamento.
+//* Pode receber mensagens de controle, quantidades lidas,
+//* quantidades gravadas e possiveis ocorrencias.
+//* DISP=MOD:
+//*   Se o dataset existir, grava no final sem apagar o que
+//*   ja estava registrado anteriormente.
+//SYSOUT   DD SYSOUT=*
+//* Direciona a saida geral do step para o spool.
+//* Usado para mensagens operacionais e saidas de sistema.
+//SYSPRINT DD SYSOUT=*
+//* Direciona para o spool a saida detalhada de impressao do
+//* programa.
+//* Normalmente contem relatorios, estatisticas e mensagens de
+//* diagnostico do processamento.
+
+
+
+jcl\batch\EBJCONC.jcl:
+
+//* ------------------------------------------------------------
+//* JOB: EBJCONC
+//* FINALIDADE:
+//* Job previsto para rotina de conciliacao do laboratorio
+//* EMUNAH.
+//*
+//* STATUS:
+//* Estrutura inicial criada. Ajustar programa, DDs e datasets
+//* quando a rotina for implementada.
+//* ------------------------------------------------------------
+//EBJCONC  JOB ,'EMUNAH CONC',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//STEP1    EXEC PGM=IEFBR14
+
+
+O que isso faz
+
+cria um job válido
+
+executa o programa IEFBR14
+
+o IEFBR14 é um programa “vazio”, muito usado para testes e alocação
+
+esse job vai submeter normalmente, mas não processa negócio nenhum
+
+Isso é útil quando você quer:
+
+validar nomenclatura
+
+validar submissão
+
+validar spool
+
+deixar a estrutura do membro pronta
+
+4) Comandos para subir para o host
+
+Se o arquivo local estiver em:
+
+jcl\batch\EBJCONC.jcl
+
+o comando para subir é:
+
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJCONC.jcl "Z77948.EMUNAH.DEV.JCL(EBJCONC)"
+
+Depois, para submeter:
+
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJCONC)"
+
+Para ver status:
+
+zowe zos-jobs view job-status-by-jobid JOB12345
+
+Para ver o spool completo:
+
+zowe zos-jobs view all-spool-content JOB12345
+
+
+5) O que eu acho que esse JCL deve virar depois
+
+Pelo nome EBJCONC, a interpretação mais provável é:
+
+CONC = conciliação
+
+e ele deve executar algum programa como:
+
+EBCONC01
+
+Mas isso ainda é inferência pelo nome.
+Como o membro está vazio, eu ainda não consigo afirmar:
+
+qual programa ele vai chamar
+
+quais DDNAMEs ele vai usar
+
+quais datasets entrarão e sairão
+
+se ele será batch de reconciliação, conferência ou fechamento
+
+6) Minha recomendação prática
+
+Para o seu lab, eu faria assim:
+
+se ainda não implementou a rotina: use o placeholder comentado
+
+se quer testar submissão: use o esqueleto com IEFBR14
+
+se já souber o programa que ele vai executar: me manda que eu monto o
+JCL real comentado no padrão de 80 colunas
+
+
+
+Esqueleto mínimo válido
+
+Se você quiser deixar um JCL já submetível:
+
+//* ------------------------------------------------------------
+//* JOB: EBJEOD
+//* FINALIDADE:
+//* Job previsto para o processamento de fechamento diario do
+//* laboratorio EMUNAH.
+//*
+//* STATUS:
+//* Estrutura inicial criada. Ajustar programa, DDs e datasets
+//* quando a rotina real for implementada.
+//* ------------------------------------------------------------
+//EBJEOD   JOB ,'EMUNAH EOD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//STEP1    EXEC PGM=IEFBR14
+//* Step temporario apenas para validar submissao do job.
+//* IEFBR14 e um programa simples, usado para testes e rotinas
+//* basicas de JCL.
+
+Comando para subir para o host
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJEOD.jcl "Z77948.EMUNAH.DEV.JCL(EBJEOD)"
+Comando para submeter
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJEOD)"
+Ver status
+zowe zos-jobs view job-status-by-jobid JOB12345
+Ver spool completo
+zowe zos-jobs view all-spool-content JOB12345
+
+
+
+
+Esqueleto mínimo válido
+//* ------------------------------------------------------------
+//* JOB: EBJEXTR
+//* FINALIDADE:
+//* Job previsto para a rotina de extrato do laboratorio
+//* EMUNAH.
+//*
+//* STATUS:
+//* Estrutura inicial criada. Ajustar programa, DDs e datasets
+//* quando a rotina real for implementada.
+//* ------------------------------------------------------------
+//EBJEXTR  JOB ,'EMUNAH EXTR',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//STEP1    EXEC PGM=IEFBR14
+//* Step temporario apenas para validar submissao do job.
+//* IEFBR14 e um programa simples, usado para testes basicos
+//* de JCL e validacao de spool.
+
+O que esse job provavelmente vai virar depois
+
+Muito possivelmente ele chamará algo como:
+
+EBEXTR01
+
+E poderá usar DDs do tipo:
+
+entrada de contas
+
+entrada de movimentos ou saldos
+
+saída de relatório
+
+saída de extrato
+
+auditoria
+
+Mas isso ainda é só inferência pelo nome.
+
+Comando para subir para o host
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJEXTR.jcl "Z77948.EMUNAH.DEV.JCL(EBJEXTR)"
+Comando para submeter
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJEXTR)"
+Ver status
+zowe zos-jobs view job-status-by-jobid JOB12345
+
+
+
+
+
+Esqueleto provável de JCL real
+
+Se a ideia do EBJLOAD for realmente executar a carga inicial, ele pode ficar
+assim:
+
+//* ------------------------------------------------------------
+//* JOB: EBJLOAD
+//* FINALIDADE:
+//* Executar o programa EBCLLOAD para realizar a carga inicial
+//* dos arquivos do laboratorio EMUNAH.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler o arquivo sequencial de clientes.
+//* 2. Ler o arquivo sequencial de contas.
+//* 3. Gravar os clientes no VSAM de clientes.
+//* 4. Gravar as contas no VSAM de contas.
+//* 5. Registrar eventos no arquivo de auditoria.
+//* ------------------------------------------------------------
+//EBJLOAD  JOB ,'EMUNAH LOAD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* Define o job de carga inicial do laboratorio.
+//STEP1    EXEC PGM=EBCLLOAD
+//* Executa o programa responsavel pela carga.
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//* Biblioteca onde esta o modulo executavel EBCLLOAD.
+//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ,DISP=SHR
+//* Arquivo sequencial de entrada com os registros de clientes.
+//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ,DISP=SHR
+//* Arquivo sequencial de entrada com os registros de contas.
+//CLIENTE  DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
+//* Arquivo VSAM KSDS de clientes.
+//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//* Arquivo VSAM KSDS de contas.
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//* Arquivo de auditoria do processamento.
+//SYSOUT   DD SYSOUT=*
+//* Saida geral do step para o spool.
+//SYSPRINT DD SYSOUT=*
+//* Saida detalhada e mensagens do programa.
+Observação importante
+
+Esse modelo acima fica muito parecido com o EBJCLLD que você me mandou.
+
+Então vale você decidir se:
+
+EBJCLLD e EBJLOAD são a mesma coisa com nomes diferentes, ou
+
+EBJLOAD será o nome oficial e EBJCLLD foi um nome provisório
+
+Se os dois coexistirem no lab, isso pode gerar confusão.
+
+Comando para subir para o host
+
+Se o arquivo local estiver em:
+
+.\jcl\batch\EBJLOAD.jcl
+
+use:
+
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJLOAD.jcl "Z77948.EMUNAH.DEV.JCL(EBJLOAD)"
+Comando para submeter
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJLOAD)"
+Ver status
+zowe zos-jobs view job-status-by-jobid JOB12345
+Ver spool completo
+zowe zos-jobs view all-spool-content JOB12345
+
+
+
+
+Para o EBJPOST, como você só mandou o nome do membro e não o conteúdo,
+eu ainda não consigo comentar linha por linha do JCL real.
+
+Mas, pelo padrão do seu lab, a interpretação mais provável é:
+
+POST = postagem / processamento de lançamentos
+
+e ele deve executar o programa EBPOST01
+
+lendo movimentos de entrada e atualizando contas, saldos e auditoria
+
+Leitura provável da finalidade
+
+No contexto do seu laboratório, esse job deve ser a rotina que:
+
+lê os lançamentos do dia
+
+valida ou consome a entrada de movimentos
+
+atualiza dados de conta
+
+registra trilha de auditoria
+
+prepara o ambiente para saldo, extrato ou conciliação
+
+Placeholder comentado
+//* ------------------------------------------------------------
+//* JOB: EBJPOST
+//* FINALIDADE:
+//* Membro reservado para o job de postagem de lancamentos do
+//* laboratorio EMUNAH.
+//*
+//* INTERPRETACAO PROVAVEL:
+//* POST indica rotina de processamento e contabilizacao dos
+//* movimentos de entrada.
+//*
+//* STATUS:
+//* JCL ainda nao implementado.
+//* Este membro existe apenas como placeholder.
+//* ------------------------------------------------------------
+Esqueleto provável de JCL real
+
+Com base no nome do programa que você já tem no projeto
+(EBPOST01.cbl), um modelo coerente seria:
+
+//* ------------------------------------------------------------
+//* JOB: EBJPOST
+//* FINALIDADE:
+//* Executar o programa EBPOST01 para processar os lancamentos
+//* de entrada do laboratorio EMUNAH.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler os movimentos de entrada do dia.
+//* 2. Localizar a conta correspondente.
+//* 3. Aplicar credito ou debito.
+//* 4. Registrar as ocorrencias em auditoria.
+//* 5. Gerar mensagens e relatorio de processamento.
+//* ------------------------------------------------------------
+//EBJPOST  JOB ,'EMUNAH POST',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* Define o job de processamento dos lancamentos.
+//STEP1    EXEC PGM=EBPOST01
+//* Executa o programa responsavel pela postagem.
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//* Biblioteca onde esta o modulo executavel EBPOST01.
+//MOVTIN   DD DSN=Z77948.EMUNAH.ENTRADA.LANC.D0.SEQ,DISP=SHR
+//* Arquivo sequencial de entrada com os lancamentos do dia.
+//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//* Arquivo VSAM KSDS de contas a ser consultado e atualizado.
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//* Arquivo sequencial de auditoria do processamento.
+//SYSOUT   DD SYSOUT=*
+//* Saida geral do step para o spool.
+//SYSPRINT DD SYSOUT=*
+//* Saida detalhada, relatorio e mensagens do programa.
+Ponto importante
+
+O DD de entrada acima, MOVTIN, é uma hipótese bem forte, porque antes
+você mesmo mencionou DDNAME esperado como:
+
+MOVTIN
+
+Então, para o EBJPOST, esse DD faz bastante sentido.
+
+Mas o nome exato do dataset pode variar conforme a sua convenção. Por exemplo:
+
+Z77948.EMUNAH.ENTRADA.LANC.D0.SEQ
+
+Z77948.EMUNAH.MOVIMENTO.D0.SEQ
+
+Z77948.EMUNAH.ARQ.MOVIMENTO.SEQ
+
+O DDNAME costuma ser mais importante para bater com o COBOL do que o nome
+físico do dataset.
+
+Comando para subir para o host
+
+Se o arquivo local estiver em:
+
+.\jcl\batch\EBJPOST.jcl
+
+use:
+
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJPOST.jcl "Z77948.EMUNAH.DEV.JCL(EBJPOST)"
+Comando para submeter
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJPOST)"
+Ver status
+zowe zos-jobs view job-status-by-jobid JOB12345
+Ver spool completo
+zowe zos-jobs view all-spool-content JOB12345
+Minha leitura mais provável do fluxo
+
+No encadeamento do seu lab, o EBJPOST deve ser um dos jobs centrais, porque:
+
+LOAD carrega massa inicial
+
+POST movimenta contas
+
+SALD recalcula ou consolida saldo
+
+EXTR gera extrato
+
+CONC concilia
+
+EOD fecha o dia
+
+
+
+
+
+
+Para o EBJSALD, como você mandou só o nome do membro e não o conteúdo,
+eu ainda não consigo comentar linha por linha do JCL real.
+
+Mas, pelo padrão do seu lab, a leitura mais provável é:
+
+SALD = saldo
+
+esse job deve executar o programa EBSALD01
+
+e sua função deve ser atualizar, recalcular, consolidar ou consultar
+saldos das contas após os lançamentos
+
+Finalidade provável do EBJSALD
+
+No contexto do seu laboratório, esse job tende a fazer algo como:
+
+ler contas
+
+ler movimentos já processados ou posições atualizadas
+
+recalcular saldo disponível / saldo atual
+
+registrar auditoria
+
+gerar saída de controle no spool
+
+Dependendo da lógica do seu projeto, ele pode:
+
+atualizar o KSDS de contas, ou
+
+gerar um arquivo/relatório de saldos
+
+Placeholder comentado
+
+Se o membro ainda estiver vazio, você pode deixar assim:
+
+//* ------------------------------------------------------------
+//* JOB: EBJSALD
+//* FINALIDADE:
+//* Membro reservado para o job de atualizacao e consolidacao
+//* de saldos do laboratorio EMUNAH.
+//*
+//* INTERPRETACAO PROVAVEL:
+//* SALD indica rotina relacionada a saldo.
+//* Este job devera executar o processamento responsavel por
+//* calcular, atualizar ou consultar os saldos das contas.
+//*
+//* STATUS:
+//* JCL ainda nao implementado.
+//* Este membro existe apenas como placeholder.
+//* ------------------------------------------------------------
+Esqueleto provável de JCL real
+
+Com base no nome do programa EBSALD01, um modelo coerente seria:
+
+//* ------------------------------------------------------------
+//* JOB: EBJSALD
+//* FINALIDADE:
+//* Executar o programa EBSALD01 para processar a rotina de
+//* saldo do laboratorio EMUNAH.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler o arquivo mestre de contas.
+//* 2. Consultar os dados necessarios para composicao do saldo.
+//* 3. Atualizar ou consolidar o saldo das contas.
+//* 4. Registrar eventos no arquivo de auditoria.
+//* 5. Gerar mensagens e relatorio de processamento.
+//* ------------------------------------------------------------
+//EBJSALD  JOB ,'EMUNAH SALDO',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* Define o job de processamento de saldo.
+//STEP1    EXEC PGM=EBSALD01
+//* Executa o programa responsavel pela rotina de saldo.
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//* Biblioteca onde esta o modulo executavel EBSALD01.
+//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//* Arquivo VSAM KSDS de contas usado na rotina de saldo.
+//SALDIN   DD DSN=Z77948.EMUNAH.ARQ.SALDO.SEQ,DISP=SHR
+//* Arquivo de entrada ou apoio para processamento de saldo.
+//* Ajustar conforme a regra real implementada no programa.
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//* Arquivo sequencial de auditoria do processamento.
+//SYSOUT   DD SYSOUT=*
+//* Saida geral do step para o spool.
+//SYSPRINT DD SYSOUT=*
+//* Saida detalhada, relatorio e mensagens do programa.
+Ponto importante sobre SALDIN
+
+Antes você citou como possível DDNAME esperado:
+
+SALDIN
+
+Então, para o EBJSALD, esse nome faz bastante sentido.
+
+Mas aqui tem um detalhe importante:
+
+SALDIN pode ser entrada real, se o programa lê um arquivo auxiliar
+
+ou pode nem existir, se o programa calcula saldo apenas a partir do
+arquivo CONTA
+
+Então eu colocaria esse DD apenas como hipótese provável, até você me
+mostrar o COBOL ou o JCL real.
+
+Comando para subir para o host
+
+Se o arquivo local estiver em:
+
+.\jcl\batch\EBJSALD.jcl
+
+use:
+
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJSALD.jcl "Z77948.EMUNAH.DEV.JCL(EBJSALD)"
+Comando para submeter
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJSALD)"
+Ver status
+zowe zos-jobs view job-status-by-jobid JOB12345
+Ver spool completo
+zowe zos-jobs view all-spool-content JOB12345
+Leitura provável dentro da cadeia batch
+
+No fluxo do seu lab, o papel mais lógico seria:
+
+EBJLOAD → carga inicial
+
+EBJPOST → processa lançamentos
+
+EBJSALD → atualiza/consolida saldo
+
+EBJEXTR → gera extrato
+
+EBJCONC → conciliação
+
+EBJEOD → fechamento do dia
+
+
+
+
+JCL/COMPILE
+
+
+
+erfeito. Esse EBBUILD é o job de build do programa EBCLLOAD, ou
+seja, ele faz a compilação e a linkedição usando a procedure IGYWCL.
+
+Abaixo está o JCL comentado no padrão que combinamos:
+
+comentários mais completos
+
+linhas quebradas para não passar de 80 colunas
+
+//* ------------------------------------------------------------
+//* JOB: EBBUILD
+//* FINALIDADE:
+//* Executar o build do programa COBOL EBCLLOAD.
+//*
+//* BUILD, neste contexto, significa:
+//* 1. Compilar o fonte COBOL.
+//* 2. Gerar o modulo objeto.
+//* 3. Executar a link-edicao.
+//* 4. Gravar o modulo executavel na LOADLIB.
+//*
+//* OBSERVACAO:
+//* Este job usa a procedure padrao IGYWCL, que normalmente
+//* ja executa as etapas de compilacao e link-edicao.
+//* ------------------------------------------------------------
+//EBBUILD  JOB ,'EMUNAH BUILD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* Define o job que sera submetido ao JES.
+//* EBBUILD:
+//*   Nome do job.
+//* 'EMUNAH BUILD':
+//*   Descricao do job para identificacao no spool.
+//* CLASS=A:
+//*   Classe de execucao do job.
+//* MSGCLASS=X:
+//*   Classe para onde ira a saida do spool.
+//* MSGLEVEL=(1,1):
+//*   Solicita exibicao das instrucoes JCL e das mensagens do
+//*   processamento no spool.
+
+//CL       EXEC IGYWCL
+//* Executa a procedure/cataloged procedure IGYWCL.
+//* Essa procedure e uma rotina padrao de compilacao COBOL,
+//* geralmente responsavel por:
+//* - chamar o compilador COBOL
+//* - gerar o objeto
+//* - chamar o binder/link-editor
+//* - produzir o modulo de carga final
+//*
+//* CL:
+//*   Nome do step.
+//* IGYWCL:
+//*   Procedure padrao usada para compilar e linkar programas
+//*   COBOL no ambiente mainframe.
+
+//COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCLLOAD),DISP=SHR
+//* Informa o fonte COBOL que sera compilado.
+//* COBOL.SYSIN:
+//*   DD sobrescrevendo a entrada esperada pela etapa COBOL da
+//*   procedure IGYWCL.
+//* DSN=Z77948.EMUNAH.DEV.COBOL(EBCLLOAD):
+//*   Membro EBCLLOAD dentro da biblioteca de fontes COBOL.
+//* DISP=SHR:
+//*   Abre o dataset em modo compartilhado para leitura.
+
+//COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
+//* Informa a biblioteca de copybooks usada na compilacao.
+//* COBOL.SYSLIB:
+//*   DD sobrescrevendo a biblioteca pesquisada pelo compilador
+//*   para resolver instrucoes COPY.
+//* DSN=Z77948.EMUNAH.DEV.COPY:
+//*   Biblioteca que contem os copybooks do laboratorio.
+//* DISP=SHR:
+//*   Abre a biblioteca em modo compartilhado para leitura.
+
+//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBCLLOAD),DISP=SHR
+//* Define onde o modulo executavel sera gravado apos a
+//* link-edicao.
+//* LKED.SYSLMOD:
+//*   DD sobrescrevendo a saida esperada pela etapa de binder
+//*   ou link-editor da procedure.
+//* DSN=Z77948.EMUNAH.DEV.LOADLIB(EBCLLOAD):
+//*   O modulo final sera gravado como membro EBCLLOAD dentro
+//*   da LOADLIB do laboratorio.
+//* DISP=SHR:
+//*   Indica acesso compartilhado ao dataset.
+//*   Na pratica, este membro sera criado ou substituido pelo
+//*   processo de link-edicao, conforme o ambiente permita.
+
+//LKED.SYSPRINT DD SYSOUT=*
+//* Direciona para o spool a saida detalhada da etapa de
+//* link-edicao.
+//* Aqui costumam aparecer mensagens do binder, mapa do modulo,
+//* simbolos resolvidos e eventuais erros de link.
+
+//*
+//* Fim do job.
+//* Esta linha comentada final pode ser mantida apenas como
+//* separador visual.
+O que esse JCL faz na prática
+
+Esse job pega o fonte:
+
+Z77948.EMUNAH.DEV.COBOL(EBCLLOAD)
+
+usa os copybooks em:
+
+Z77948.EMUNAH.DEV.COPY
+
+e gera o executável:
+
+Z77948.EMUNAH.DEV.LOADLIB(EBCLLOAD)
+
+Ou seja: depois que esse job roda com sucesso, o programa EBCLLOAD fica
+pronto para ser chamado por um JCL batch como o seu EBJCLLD ou EBJLOAD.
+
+Explicando a lógica do nome qualificado dos DDs
+
+Aqui aparece algo importante:
+
+COBOL.SYSIN
+
+COBOL.SYSLIB
+
+LKED.SYSLMOD
+
+LKED.SYSPRINT
+
+Isso acontece porque IGYWCL é uma procedure com passos internos.
+
+Então você está sobrescrevendo DDs de passos internos da procedure:
+
+COBOL = step de compilação
+
+LKED = step de link-edição
+
+Ou seja:
+
+COBOL.SYSIN = entrada do step COBOL
+
+COBOL.SYSLIB = biblioteca de copybooks do step COBOL
+
+LKED.SYSLMOD = saída do módulo executável no step de link
+
+LKED.SYSPRINT = relatório do link-editor
+
+Comandos para subir para o host
+
+Se o arquivo local estiver em:
+
+.\jcl\compile\EBBUILD.jcl
+
+use:
+
+zowe zos-files upload file-to-data-set .\jcl\compile\EBBUILD.jcl "Z77948.EMUNAH.DEV.JCL(EBBUILD)"
+Comando para submeter
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBBUILD)"
+Ver status
+zowe zos-jobs view job-status-by-jobid JOB12345
+Ver spool completo
+zowe zos-jobs view all-spool-content JOB12345
+Ponto de atenção
+
+Esse job está montado para buildar apenas o EBCLLOAD.
+
+Se você quiser buildar outro programa, normalmente muda estas duas partes:
+
+Z77948.EMUNAH.DEV.COBOL(EBCLLOAD)
+
+Z77948.EMUNAH.DEV.LOADLIB(EBCLLOAD)
+
+Por exemplo, para EBPOST01, ficaria o mesmo modelo, trocando o nome do
+membro.
+
+
+Se você quis dizer o membro EBCOMP, mas ainda não colou o conteúdo,
+eu não consigo comentar linha por linha o JCL real.
+
+Mas, pelo nome, a finalidade mais provável é esta:
+
+EBCOMP = compilação
+
+ele deve cuidar só da etapa de compile
+
+diferente do EBBUILD, que normalmente faz compile + link
+
+Diferença provável entre os três
+
+No seu lab, o mais lógico é:
+
+EBCOMP → compila o fonte COBOL
+
+EBLINK → faz a link-edição
+
+EBBUILD → executa as duas etapas de uma vez
+
+Placeholder comentado
+
+Se ele ainda estiver vazio, você pode deixar assim:
+
+//* ------------------------------------------------------------
+//* JOB: EBCOMP
+//* FINALIDADE:
+//* Membro reservado para a etapa de compilacao de programas
+//* COBOL do laboratorio EMUNAH.
+//*
+//* INTERPRETACAO PROVAVEL:
+//* Este job devera executar apenas a compilacao do fonte,
+//* gerando o modulo objeto para posterior link-edicao.
+//*
+//* STATUS:
+//* JCL ainda nao implementado.
+//* Este membro existe apenas como placeholder.
+//* ------------------------------------------------------------
+Esqueleto provável de JCL real
+
+Um modelo coerente seria este:
+
+//* ------------------------------------------------------------
+//* JOB: EBCOMP
+//* FINALIDADE:
+//* Executar a compilacao do programa COBOL EBCLLOAD.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler o fonte COBOL.
+//* 2. Resolver os copybooks.
+//* 3. Gerar o modulo objeto.
+//* 4. Emitir listagem e mensagens de compilacao.
+//* ------------------------------------------------------------
+//EBCOMP   JOB ,'EMUNAH COMP',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//STEP1    EXEC PGM=IGYCRCTL
+//* Executa o compilador COBOL.
+//SYSIN    DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCLLOAD),DISP=SHR
+//* Fonte COBOL a ser compilado.
+//SYSLIB   DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
+//* Biblioteca de copybooks.
+//SYSLIN   DD DSN=&&OBJSET,DISP=(,PASS),UNIT=SYSDA,
+//             SPACE=(TRK,(1,1)),DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
+//* Dataset temporario que recebera o modulo objeto gerado na
+//* compilacao para ser usado depois na link-edicao.
+//SYSPRINT DD SYSOUT=*
+//* Relatorio detalhado da compilacao.
+//SYSOUT   DD SYSOUT=*
+//* Saida geral do compilador.
+O que esse JCL faria
+
+Esse modelo:
+
+pega o fonte EBCLLOAD
+
+usa os copybooks da sua biblioteca COPY
+
+compila o programa
+
+grava o objeto em um dataset temporário &&OBJSET
+
+deixa esse objeto pronto para o EBLINK
+
+Comando para subir para o host
+
+Se o arquivo local estiver em:
+
+.\jcl\compile\EBCOMP.jcl
+
+use:
+
+zowe zos-files upload file-to-data-set .\jcl\compile\EBCOMP.jcl "Z77948.EMUNAH.DEV.JCL(EBCOMP)"
+Comando para submeter
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBCOMP)"
+Ver status
+zowe zos-jobs view job-status-by-jobid JOB12345
+Ver spool completo
+
+
+
+
 
 
 
