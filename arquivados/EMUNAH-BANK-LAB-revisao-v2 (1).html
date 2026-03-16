@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMUNAH-BANK-LAB — Revisão Técnica v2</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #080c10;
+  --bg2:     #0d1320;
+  --bg3:     #111a2c;
+  --surf:    #172030;
+  --surf2:   #1e2d42;
+  --brd:     #243550;
+  --brd2:    #2e4266;
+  --green:   #00ff9d;
+  --green2:  #00cc7a;
+  --green3:  #009960;
+  --amber:   #ffb627;
+  --amber2:  #cc8c00;
+  --blue:    #4a9eff;
+  --blue2:   #2270cc;
+  --red:     #ff4f4f;
+  --red2:    #cc2222;
+  --purple:  #c084ff;
+  --cyan:    #00d8ff;
+  --teal:    #00e8cc;
+  --text:    #c8d8f0;
+  --text2:   #8898b8;
+  --text3:   #4a5a78;
+  --mono:    'IBM Plex Mono', monospace;
+  --sans:    'IBM Plex Sans', sans-serif;
+  --r:       6px;
+  --r2:      10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; line-height: 1.7; }
+
+/* ── LAYOUT ── */
+.shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: var(--bg2);
+  border-right: 1px solid var(--brd);
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+.sb-logo { padding: 22px 18px 16px; border-bottom: 1px solid var(--brd); }
+.sb-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--surf); border: 1px solid var(--green3);
+  border-radius: 4px; padding: 5px 10px; margin-bottom: 10px;
+}
+.sb-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; box-shadow: 0 0 6px var(--green); animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.sb-name { font-family: var(--mono); font-size: 10px; color: var(--green); letter-spacing: 1.5px; font-weight: 600; }
+.sb-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.sb-sub { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-top: 2px; }
+
+.sb-nav { padding: 12px 0; flex: 1; }
+.nav-grp { padding: 10px 18px 4px; font-size: 9px; font-family: var(--mono); color: var(--text3); letter-spacing: 2px; text-transform: uppercase; }
+.nav-a {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 18px; color: var(--text2); font-size: 12px;
+  cursor: pointer; border-left: 2px solid transparent; transition: all .14s;
+  text-decoration: none;
+}
+.nav-a:hover { background: var(--surf); color: var(--text); border-left-color: var(--brd2); }
+.nav-a.on { background: rgba(0,255,157,.05); color: var(--green); border-left-color: var(--green); }
+.nav-n { font-family: var(--mono); font-size: 9px; color: var(--text3); min-width: 18px; }
+.nav-badge {
+  margin-left: auto; font-family: var(--mono); font-size: 9px;
+  padding: 1px 6px; border-radius: 3px; font-weight: 600;
+}
+.nb-bug  { background: rgba(255,79,79,.15); color: var(--red); border: 1px solid rgba(255,79,79,.3); }
+.nb-new  { background: rgba(0,255,157,.1); color: var(--green); border: 1px solid rgba(0,255,157,.25); }
+.nb-warn { background: rgba(255,182,39,.1); color: var(--amber); border: 1px solid rgba(255,182,39,.25); }
+
+.sb-foot { padding: 12px 18px; border-top: 1px solid var(--brd); font-size: 10px; color: var(--text3); font-family: var(--mono); }
+
+/* ── MAIN ── */
+.main { overflow-y: auto; }
+
+/* ── PAGE HEADER ── */
+.ph {
+  background: var(--bg2); border-bottom: 1px solid var(--brd);
+  padding: 44px 52px 36px; position: relative; overflow: hidden;
+}
+.ph::before { content:''; position:absolute; top:-80px; right:-80px; width:320px; height:320px; background:radial-gradient(circle,rgba(0,255,157,.05) 0%,transparent 70%); border-radius:50%; }
+.ph-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(0,255,157,.07); border: 1px solid rgba(0,255,157,.18);
+  color: var(--green); padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-family: var(--mono); letter-spacing: 1.5px; margin-bottom: 18px;
+}
+.ph h1 { font-family: var(--mono); font-size: 30px; font-weight: 600; color: #fff; letter-spacing: -.5px; margin-bottom: 8px; }
+.ph h1 span { color: var(--green); }
+.ph-desc { color: var(--text2); font-size: 13px; max-width: 660px; }
+.ph-stats { display: flex; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
+.ph-stat {
+  background: var(--surf); border: 1px solid var(--brd); border-radius: var(--r);
+  padding: 8px 14px; font-size: 11px; display: flex; align-items: center; gap: 8px;
+}
+.ph-stat strong { color: var(--text); font-weight: 600; }
+.ph-stat span { color: var(--text3); }
+
+/* ── BREADCRUMB ── */
+.bc { background: var(--bg2); border-bottom: 1px solid var(--brd); padding: 8px 52px; font-size: 11px; font-family: var(--mono); color: var(--text3); }
+.bc span { color: var(--text2); }
+
+/* ── CONTENT ── */
+.content { padding: 0 52px 80px; }
+
+/* ── SECTIONS ── */
+.sec { display: none; animation: fadeIn .25s ease; }
+.sec.on { display: block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+.sec-hdr { padding: 36px 0 24px; border-bottom: 1px solid var(--brd); margin-bottom: 30px; }
+.sec-num { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+.sec-hdr h2 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.sec-hdr p { color: var(--text2); font-size: 13px; }
+
+/* ── BUG CARDS ── */
+.bug-card {
+  background: var(--surf); border: 1px solid var(--brd);
+  border-left: 3px solid var(--red); border-radius: var(--r);
+  margin-bottom: 12px; overflow: hidden;
+}
+.bug-card.warn { border-left-color: var(--amber); }
+.bug-card.info { border-left-color: var(--blue); }
+.bug-card.ok   { border-left-color: var(--green3); }
+
+.bug-hdr { display: flex; align-items: center; gap: 12px; padding: 13px 18px; cursor: pointer; transition: background .13s; }
+.bug-hdr:hover { background: var(--surf2); }
+.bug-num {
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  padding: 2px 8px; border-radius: 3px;
+}
+.bn-red    { background: rgba(255,79,79,.12); color: var(--red); border: 1px solid rgba(255,79,79,.3); }
+.bn-amber  { background: rgba(255,182,39,.12); color: var(--amber); border: 1px solid rgba(255,182,39,.3); }
+.bn-blue   { background: rgba(74,158,255,.12); color: var(--blue); border: 1px solid rgba(74,158,255,.3); }
+.bn-green  { background: rgba(0,255,157,.1); color: var(--green); border: 1px solid rgba(0,255,157,.25); }
+.bug-ttl { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); }
+.bug-where { font-family: var(--mono); font-size: 11px; color: var(--text3); }
+.bug-tog { font-family: var(--mono); font-size: 12px; color: var(--text3); transition: transform .2s; }
+.bug-tog.open { transform: rotate(180deg); }
+.bug-body { display: none; padding: 0 18px 18px; border-top: 1px solid var(--brd); }
+.bug-body.open { display: block; }
+
+/* ── CODE ── */
+.cb { background: var(--bg); border: 1px solid var(--brd); border-radius: var(--r); margin: 12px 0; overflow: hidden; }
+.cb-hdr { display: flex; align-items: center; justify-content: space-between; padding: 6px 14px; background: var(--bg2); border-bottom: 1px solid var(--brd); }
+.cb-lang { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+.cb-copy { font-family: var(--mono); font-size: 10px; color: var(--text3); background: none; border: none; cursor: pointer; padding: 2px 6px; transition: color .13s; }
+.cb-copy:hover { color: var(--green); }
+pre { padding: 14px; overflow-x: auto; font-family: var(--mono); font-size: 12px; line-height: 1.65; color: var(--text); }
+.kw  { color: var(--blue); }
+.str { color: var(--green2); }
+.cmt { color: var(--text3); font-style: italic; }
+.num { color: var(--amber); }
+.fn  { color: var(--cyan); }
+.op  { color: var(--purple); }
+.err { color: var(--red); text-decoration: underline wavy var(--red); }
+.fix { color: var(--green); }
+.jk  { color: var(--amber); }
+.jp  { color: var(--cyan); }
+.jc  { color: var(--text3); font-style: italic; }
+
+/* ── INLINE BADGES ── */
+.tag {
+  display: inline-block; padding: 1px 7px; border-radius: 3px;
+  font-size: 10px; font-family: var(--mono); font-weight: 600; letter-spacing: .5px;
+  vertical-align: middle; margin: 0 3px;
+}
+.t-red    { background: rgba(255,79,79,.12); color: var(--red); border: 1px solid rgba(255,79,79,.25); }
+.t-green  { background: rgba(0,255,157,.1); color: var(--green); border: 1px solid rgba(0,255,157,.22); }
+.t-amber  { background: rgba(255,182,39,.1); color: var(--amber); border: 1px solid rgba(255,182,39,.22); }
+.t-blue   { background: rgba(74,158,255,.1); color: var(--blue); border: 1px solid rgba(74,158,255,.22); }
+.t-purple { background: rgba(192,132,255,.1); color: var(--purple); border: 1px solid rgba(192,132,255,.22); }
+.t-cyan   { background: rgba(0,216,255,.1); color: var(--cyan); border: 1px solid rgba(0,216,255,.22); }
+
+/* ── INFO BOXES ── */
+.ib { border-radius: var(--r); padding: 12px 16px; margin: 12px 0; display: flex; gap: 10px; font-size: 12px; line-height: 1.6; }
+.ib.tip    { background: rgba(0,255,157,.04); border: 1px solid rgba(0,255,157,.18); color: #9ff5d0; }
+.ib.warn   { background: rgba(255,182,39,.04); border: 1px solid rgba(255,182,39,.18); color: #ffd680; }
+.ib.danger { background: rgba(255,79,79,.04); border: 1px solid rgba(255,79,79,.18); color: #ffaaaa; }
+.ib.info   { background: rgba(74,158,255,.04); border: 1px solid rgba(74,158,255,.18); color: #aad4ff; }
+.ib-i { font-size: 14px; flex-shrink: 0; }
+
+/* ── TABLE ── */
+.tbl { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 12px; }
+.tbl th { background: var(--surf2); color: var(--text2); font-weight: 600; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; padding: 8px 14px; text-align: left; border-bottom: 1px solid var(--brd2); }
+.tbl td { padding: 9px 14px; border-bottom: 1px solid var(--brd); color: var(--text); vertical-align: top; }
+.tbl tr:hover td { background: rgba(255,255,255,.015); }
+.tbl td.mono { font-family: var(--mono); font-size: 11px; color: var(--cyan); }
+.tbl td.red  { font-family: var(--mono); font-size: 11px; color: var(--red); }
+.tbl td.grn  { font-family: var(--mono); font-size: 11px; color: var(--green); }
+
+/* ── MODULE CARDS ── */
+.mod-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 16px 0; }
+.mod-card { background: var(--surf); border: 1px solid var(--brd); border-radius: var(--r2); padding: 16px; transition: border-color .15s; }
+.mod-card:hover { border-color: var(--brd2); }
+.mod-icon { font-size: 20px; margin-bottom: 8px; }
+.mod-card h4 { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+.mod-card p { font-size: 11px; color: var(--text3); line-height: 1.5; }
+.mod-tag { display: inline-block; margin-top: 8px; padding: 2px 8px; border-radius: 3px; font-size: 9px; font-family: var(--mono); font-weight: 700; }
+
+/* ── DIFF ── */
+.diff { background: var(--bg); border: 1px solid var(--brd); border-radius: var(--r); margin: 12px 0; overflow-x: auto; }
+.diff pre { padding: 12px 14px; font-size: 11.5px; }
+.diff .del { color: var(--red); background: rgba(255,79,79,.06); display: block; }
+.diff .add { color: var(--green); background: rgba(0,255,157,.04); display: block; }
+.diff .ctx { color: var(--text3); display: block; }
+
+/* ── FLOW DIAGRAM ── */
+.flow { background: var(--bg2); border: 1px solid var(--brd); border-radius: var(--r2); padding: 20px; margin: 14px 0; font-family: var(--mono); font-size: 11px; overflow-x: auto; color: var(--text2); }
+
+/* ── TOOL SECTION ── */
+.tool-header { display: flex; align-items: center; gap: 14px; margin: 24px 0 16px; }
+.tool-logo { width: 44px; height: 44px; background: var(--surf); border: 1px solid var(--brd); border-radius: var(--r); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.tool-name { font-size: 16px; font-weight: 700; color: #fff; }
+.tool-sub  { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 2px; }
+
+/* ── STEP CARD ── */
+.step { background: var(--surf); border: 1px solid var(--brd); border-radius: var(--r2); margin-bottom: 10px; overflow: hidden; }
+.step-hdr { display: flex; align-items: center; gap: 13px; padding: 14px 18px; cursor: pointer; transition: background .13s; }
+.step-hdr:hover { background: var(--surf2); }
+.step-n { width: 28px; height: 28px; background: rgba(0,255,157,.08); border: 1px solid rgba(0,255,157,.25); border-radius: var(--r); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11px; color: var(--green); font-weight: 600; flex-shrink: 0; }
+.step-n.blue   { background: rgba(74,158,255,.08); border-color: rgba(74,158,255,.25); color: var(--blue); }
+.step-n.amber  { background: rgba(255,182,39,.08); border-color: rgba(255,182,39,.25); color: var(--amber); }
+.step-n.purple { background: rgba(192,132,255,.08); border-color: rgba(192,132,255,.25); color: var(--purple); }
+.step-n.red    { background: rgba(255,79,79,.08); border-color: rgba(255,79,79,.25); color: var(--red); }
+.step-ttl { flex: 1; }
+.step-ttl h3 { font-size: 13px; font-weight: 600; color: var(--text); }
+.step-ttl p  { font-size: 11px; color: var(--text3); margin-top: 1px; }
+.step-tog { font-family: var(--mono); font-size: 12px; color: var(--text3); transition: transform .2s; }
+.step-tog.open { transform: rotate(180deg); }
+.step-body { display: none; padding: 0 18px 18px; border-top: 1px solid var(--brd); }
+.step-body.open { display: block; }
+
+/* ── TIMELINE ── */
+.tl { position: relative; padding-left: 34px; margin: 16px 0; }
+.tl::before { content:''; position:absolute; left:9px; top:8px; bottom:8px; width:1px; background: var(--brd2); }
+.tl-item { position: relative; margin-bottom: 22px; }
+.tl-dot { position: absolute; left: -28px; top: 4px; width: 9px; height: 9px; border-radius: 50%; background: var(--green); border: 2px solid var(--bg); box-shadow: 0 0 0 2px var(--green3); }
+.tl-dot.a { background: var(--amber); box-shadow: 0 0 0 2px var(--amber2); }
+.tl-dot.b { background: var(--blue); box-shadow: 0 0 0 2px var(--blue2); }
+.tl-dot.p { background: var(--purple); box-shadow: 0 0 0 2px #8040cc; }
+.tl-week { font-family: var(--mono); font-size: 9px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+.tl-ttl  { font-weight: 600; color: var(--text); font-size: 13px; margin-bottom: 3px; }
+.tl-desc { color: var(--text3); font-size: 11px; line-height: 1.5; }
+
+/* ── SECTION PHASE BADGE ── */
+.ph-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-family: var(--mono); font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+.pb-red    { background: rgba(255,79,79,.1); color: var(--red); border: 1px solid rgba(255,79,79,.22); }
+.pb-amber  { background: rgba(255,182,39,.1); color: var(--amber); border: 1px solid rgba(255,182,39,.22); }
+.pb-green  { background: rgba(0,255,157,.1); color: var(--green); border: 1px solid rgba(0,255,157,.22); }
+.pb-blue   { background: rgba(74,158,255,.1); color: var(--blue); border: 1px solid rgba(74,158,255,.22); }
+.pb-purple { background: rgba(192,132,255,.1); color: var(--purple); border: 1px solid rgba(192,132,255,.22); }
+.pb-cyan   { background: rgba(0,216,255,.1); color: var(--cyan); border: 1px solid rgba(0,216,255,.22); }
+
+h3 { color: var(--text); font-size: 14px; font-weight: 600; margin: 18px 0 8px; }
+p  { color: var(--text2); font-size: 13px; margin: 6px 0; }
+ul, ol { padding-left: 20px; color: var(--text2); font-size: 13px; line-height: 1.8; }
+hr { border: none; border-top: 1px solid var(--brd); margin: 20px 0; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--brd2); border-radius: 3px; }
+
+/* ── RESOLVED STATE ── */
+.resolved-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10px; font-weight: 600;
+  padding: 3px 10px; border-radius: 4px; cursor: pointer;
+  border: 1px solid var(--brd2); background: var(--surf2);
+  color: var(--text3); transition: all .18s; white-space: nowrap;
+  flex-shrink: 0; user-select: none;
+}
+.resolved-btn:hover {
+  border-color: var(--green3); color: var(--green); background: rgba(0,255,157,.07);
+}
+.resolved-btn.done {
+  border-color: var(--green3); color: var(--green);
+  background: rgba(0,255,157,.1);
+}
+/* Card no estado resolvido */
+.bug-card.resolved,
+.step.resolved {
+  border-left-color: var(--green3) !important;
+  opacity: .72;
+  transition: opacity .25s;
+}
+.bug-card.resolved .bug-ttl,
+.step.resolved .step-ttl h3 {
+  text-decoration: line-through;
+  color: var(--text3);
+}
+.bug-card.resolved .bug-hdr,
+.step.resolved .step-hdr {
+  background: rgba(0,255,157,.03);
+}
+.resolved-stamp {
+  font-family: var(--mono); font-size: 9px;
+  color: var(--green3); letter-spacing: .5px;
+  margin-left: 4px; opacity: 0; transition: opacity .2s;
+}
+.bug-card.resolved .resolved-stamp,
+.step.resolved .resolved-stamp { opacity: 1; }
+
+/* Barra de progresso no topo de cada seção */
+.progress-bar-wrap {
+  background: var(--surf); border: 1px solid var(--brd);
+  border-radius: var(--r); padding: 10px 14px;
+  margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+}
+.progress-bar-track {
+  flex: 1; height: 6px; background: var(--bg3);
+  border-radius: 3px; overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%; background: var(--green3);
+  border-radius: 3px; transition: width .4s ease;
+  width: 0%;
+}
+.progress-label {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--text3); white-space: nowrap;
+}
+.progress-label span { color: var(--green); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ════════════════════ SIDEBAR ════════════════════ -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-pill"><div class="sb-dot"></div><span class="sb-name">REVISÃO ATIVA</span></div>
+    <div class="sb-title">EMUNAH-BANK-LAB</div>
+    <div class="sb-sub">Revisão Técnica v2 · 15/03/2026</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-grp">Revisão</div>
+    <a class="nav-a on" onclick="show('bugs')"><span class="nav-n">A</span>Bugs Críticos<span class="nav-badge nb-bug">9</span></a>
+    <a class="nav-a" onclick="show('incons')"><span class="nav-n">B</span>Inconsistências<span class="nav-badge nb-warn">5</span></a>
+    <a class="nav-a" onclick="show('melhoria')"><span class="nav-n">C</span>Melhorias<span class="nav-badge nb-new">7</span></a>
+
+    <div class="nav-grp" style="margin-top:8px;">Ferramentas</div>
+    <a class="nav-a" onclick="show('ctm')"><span class="nav-n">D1</span>Control-M</a>
+    <a class="nav-a" onclick="show('endevor')"><span class="nav-n">D2</span>Endevor/ChangeMan</a>
+    <a class="nav-a" onclick="show('filemgr')"><span class="nav-n">D3</span>File Manager</a>
+    <a class="nav-a" onclick="show('fault')"><span class="nav-n">D4</span>Fault Analyzer</a>
+    <a class="nav-a" onclick="show('hex')"><span class="nav-n">D5</span>HexaVision</a>
+
+    <div class="nav-grp" style="margin-top:8px;">Incrementos</div>
+    <a class="nav-a" onclick="show('novos')"><span class="nav-n">E</span>Novos Módulos</a>
+    <a class="nav-a" onclick="show('roadmap2')"><span class="nav-n">F</span>Roadmap Revisado</a>
+  </nav>
+  <div class="sb-foot">EMUNAH-BANK-LAB · Dev Mainframe<br>z/OS via IBM Z Xplore · Marist</div>
+</aside>
+
+<!-- ════════════════════ MAIN ════════════════════ -->
+<main class="main">
+<div class="bc">EMUNAH-BANK-LAB <span>/ Revisão Técnica v2 / Desenvolvedor Mainframe</span></div>
+
+<div class="ph">
+  <div class="ph-tag"><div class="sb-dot"></div>CODE REVIEW — EMUNAH BANK LAB</div>
+  <h1>Revisão Técnica <span>v2</span></h1>
+  <p class="ph-desc">Análise completa do laboratório construído entre 10–15/03. Bugs identificados, inconsistências corrigidas, melhorias propostas e simulação das ferramentas de mercado: Control-M, Endevor/ChangeMan, File Manager, Fault Analyzer e HexaVision.</p>
+  <div class="ph-stats">
+    <div class="ph-stat"><span>🐛</span><div><strong>9 bugs</strong><br><span>críticos encontrados</span></div></div>
+    <div class="ph-stat"><span>⚠️</span><div><strong>5 inconsistências</strong><br><span>para corrigir</span></div></div>
+    <div class="ph-stat"><span>✅</span><div><strong>Base sólida</strong><br><span>estrutura muito boa</span></div></div>
+    <div class="ph-stat"><span>🔧</span><div><strong>5 ferramentas</strong><br><span>simuladas</span></div></div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ════ A — BUGS ════ -->
+<section class="sec on" id="bugs">
+  <div class="sec-hdr">
+    <div class="sec-num">A // BUGS CRÍTICOS</div>
+    <h2>9 Problemas que vão fazer o lab quebrar</h2>
+    <p>Esses bugs impedem a execução correta da cadeia batch. Devem ser corrigidos antes de qualquer incremento.</p>
+  </div>
+
+  <div class="ph-badge pb-red">● Bloqueadores — corrigir imediatamente</div>
+
+  <!-- BUG 1 -->
+  <div class="bug-card" style="margin-top:16px;">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-red">BUG-01</span>
+      <span class="bug-ttl">EBBUILD = EBCOMP = EBLINK — os três JCLs são idênticos</span>
+      <span class="bug-where">jcl/compile/</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <div class="ib danger"><span class="ib-i">🔴</span><div>Os três membros executam <code>EXEC IGYWCL</code> com os mesmos parâmetros. A IGYWCL já faz compile + link em uma só chamada. Ter três membros idênticos gera confusão operacional e não agrega nada ao aprendizado.</div></div>
+      <h3>O que cada um deveria ser:</h3>
+      <table class="tbl">
+        <thead><tr><th>Membro</th><th>Deve fazer</th><th>Programa</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">EBBUILD</td><td>Compile + Link (all-in-one) — CORRETO</td><td class="grn">IGYWCL</td></tr>
+          <tr><td class="mono">EBCOMP</td><td>Só compilação, gera objeto em temp dataset</td><td class="mono">IGYCRCTL</td></tr>
+          <tr><td class="mono">EBLINK</td><td>Só link-edição, lê objeto gerado pelo EBCOMP</td><td class="mono">IEWBLINK</td></tr>
+        </tbody>
+      </table>
+      <h3>Correção — EBCOMP (só compile):</h3>
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">JCL — EBCOMP corrigido</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="jc">//* EBCOMP — Apenas compilacao do fonte COBOL</span>
+<span class="jk">//EBCOMP</span>   <span class="jp">JOB</span> ,<span class="str">'EMUNAH COMP'</span>,CLASS=A,MSGCLASS=X,MSGLEVEL=(<span class="num">1</span>,<span class="num">1</span>)
+<span class="jk">//COMPILE</span>  <span class="jp">EXEC</span> PGM=IGYCRCTL,PARM=<span class="str">'OBJECT,LIST,MAP,APOST,RENT'</span>
+<span class="jk">//SYSPRINT</span> <span class="jp">DD</span>  SYSOUT=*
+<span class="jk">//SYSLIB</span>   <span class="jp">DD</span>  DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
+<span class="jk">//SYSIN</span>    <span class="jp">DD</span>  DSN=Z77948.EMUNAH.DEV.COBOL(&amp;PGMNAME),DISP=SHR
+<span class="jk">//SYSLIN</span>   <span class="jp">DD</span>  DSN=&amp;&amp;OBJ,DISP=(,PASS),UNIT=SYSDA,
+<span class="jk">//</span>             SPACE=(TRK,(<span class="num">1</span>,<span class="num">1</span>)),DCB=(RECFM=FB,LRECL=<span class="num">80</span>,BLKSIZE=<span class="num">3200</span>)
+<span class="jk">//SYSUT1</span>   <span class="jp">DD</span>  UNIT=SYSDA,SPACE=(CYL,(<span class="num">1</span>,<span class="num">1</span>))
+<span class="jk">//SYSUT2</span>   <span class="jp">DD</span>  UNIT=SYSDA,SPACE=(CYL,(<span class="num">1</span>,<span class="num">1</span>))
+<span class="jk">//SYSUT3</span>   <span class="jp">DD</span>  UNIT=SYSDA,SPACE=(CYL,(<span class="num">1</span>,<span class="num">1</span>))
+<span class="jk">//SYSUT4</span>   <span class="jp">DD</span>  UNIT=SYSDA,SPACE=(CYL,(<span class="num">1</span>,<span class="num">1</span>))
+<span class="jk">//SYSUT5</span>   <span class="jp">DD</span>  UNIT=SYSDA,SPACE=(CYL,(<span class="num">1</span>,<span class="num">1</span>))
+<span class="jk">//SYSOUT</span>   <span class="jp">DD</span>  SYSOUT=*</pre>
+      </div>
+      <div class="ib tip"><span class="ib-i">💡</span><div>O EBBUILD com IGYWCL é o mais usado no dia a dia. EBCOMP e EBLINK separados servem para treinar o processo de compilação em dois estágios, útil quando você precisar especificar opções de link avançadas.</div></div>
+    </div>
+  </div>
+
+  <!-- BUG 2 -->
+  <div class="bug-card">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-red">BUG-02</span>
+      <span class="bug-ttl">EBJLOAD executa LISTCAT — não carrega nada</span>
+      <span class="bug-where">jcl/batch/EBJLOAD.jcl</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <div class="ib danger"><span class="ib-i">🔴</span><div>O <code>EBJLOAD</code> atual executa <code>PGM=IDCAMS</code> com <code>LISTCAT</code>. Isso só lista o dataset no spool — não carrega nem valida nada. O job da grade batch que deveria preparar o arquivo do dia está fazendo nada de útil.</div></div>
+      <div class="diff">
+        <pre><span class="del">- //EBJLOAD  JOB ,'EMUNAH LOAD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)</span>
+<span class="del">- //STEP1    EXEC PGM=IDCAMS</span>
+<span class="del">- //SYSPRINT DD SYSOUT=*</span>
+<span class="del">- //SYSIN    DD *</span>
+<span class="del">-   LISTCAT ENT('Z77948.EMUNAH.ARQ.ENTRADA.SEQ')</span>
+<span class="del">- /*</span>
+<span class="add">+ //* EBJLOAD — Verifica e prepara arquivo de entrada do dia</span>
+<span class="add">+ //EBJLOAD  JOB ,'EMUNAH LOAD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)</span>
+<span class="add">+ //PRECHECK EXEC PGM=IDCAMS</span>
+<span class="add">+ //SYSPRINT DD SYSOUT=*</span>
+<span class="add">+ //SYSIN    DD *</span>
+<span class="add">+   LISTCAT ENT('Z77948.EMUNAH.ARQ.ENTRADA.SEQ') ALL</span>
+<span class="add">+   IF LASTCC &gt; 0 THEN -</span>
+<span class="add">+     SET MAXCC = 12</span>
+<span class="add">+ /*</span>
+<span class="add">+ //* RC 0 = arquivo existe, cadeia pode continuar</span>
+<span class="add">+ //* RC 12+ = arquivo ausente, cadeia PARA aqui</span></span></pre>
+      </div>
+      <div class="ib info"><span class="ib-i">ℹ️</span><div>Renomeie o antigo <strong>EBJCLLD</strong> para <strong>EBJLOAD</strong> — ele é o job real de carga. O EBJLOAD da grade batch deve ser o responsável por verificar a existência do arquivo de entrada e retornar RC=0 se OK, RC>4 para bloquear a cadeia.</div></div>
+    </div>
+  </div>
+
+  <!-- BUG 3 -->
+  <div class="bug-card">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-red">BUG-03</span>
+      <span class="bug-ttl">EBJVALD sem DD VALIDOS — registros válidos vão para o limbo</span>
+      <span class="bug-where">jcl/batch/EBJVALD.jcl</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <div class="ib danger"><span class="ib-i">🔴</span><div>O programa <code>EBVALI01</code> grava registros válidos em <code>VALIDOS</code> (ASSIGN TO VALIDOS) e rejeitados em <code>REJEITOS</code>. O JCL tem <code>//REJEITO</code> mas não tem <code>//VALIDOS</code>. O job vai terminar com OPEN error no arquivo de saída de válidos.</div></div>
+      <div class="diff">
+        <pre><span class="ctx">  //EBJVALD  JOB ,'EMUNAH VALD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)</span>
+<span class="ctx">  //STEP1    EXEC PGM=EBVALI01</span>
+<span class="ctx">  //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR</span>
+<span class="ctx">  //ENTRADA  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.SEQ,DISP=SHR</span>
+<span class="del">- //REJEITO  DD DSN=Z77948.EMUNAH.ARQ.REJEITO.SEQ,DISP=SHR</span>
+<span class="add">+ //VALIDOS  DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR</span>
+<span class="add">+ //REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITO.SEQ,DISP=MOD</span>
+<span class="ctx">  //SYSOUT   DD SYSOUT=*</span>
+<span class="ctx">  //SYSPRINT DD SYSOUT=*</span></pre>
+      </div>
+      <div class="ib warn"><span class="ib-i">⚠️</span><div>Atenção: o DDNAME no JCL deve ser <strong>exatamente igual</strong> ao nome após ASSIGN TO no COBOL. <code>REJEITO</code> no JCL não bate com <code>ASSIGN TO REJEITOS</code> no COBOL — faltava o S. Corrigido acima.</div></div>
+    </div>
+  </div>
+
+  <!-- BUG 4 -->
+  <div class="bug-card">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-red">BUG-04</span>
+      <span class="bug-ttl">EBJPOST usa DD ENTRADA mas EBPOST01 espera MOVTIN</span>
+      <span class="bug-where">jcl/batch/EBJPOST.jcl × cobol/batch/EBPOST01.cbl</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <div class="ib danger"><span class="ib-i">🔴</span><div>O programa <code>EBPOST01</code> declara <code>SELECT MOVTO-IN ASSIGN TO MOVTIN</code>. O JCL <code>EBJPOST</code> define <code>//ENTRADA DD</code>. Não existe nenhum <code>//MOVTIN DD</code> no JCL — o programa vai falhar com OPEN error no arquivo de movimentos.</div></div>
+      <div class="diff">
+        <pre><span class="ctx">  //EBJPOST  JOB ,'EMUNAH POST',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)</span>
+<span class="ctx">  //STEP1    EXEC PGM=EBPOST01</span>
+<span class="ctx">  //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR</span>
+<span class="del">- //ENTRADA  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.SEQ,DISP=SHR</span>
+<span class="add">+ //MOVTIN   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR</span>
+<span class="ctx">  //CLIENTE  DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR</span>
+<span class="ctx">  //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR</span>
+<span class="ctx">  //LANCTO   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR</span>
+<span class="ctx">  //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD</span></pre>
+      </div>
+      <div class="ib info"><span class="ib-i">ℹ️</span><div>O EBJPOST deve ler os <strong>lançamentos válidos</strong> gerados pelo EBJVALD (gravados em LANCTO.ESDS), não o arquivo bruto de entrada. O fluxo correto é: ENTRADA.SEQ → EBJVALD → LANCTO.ESDS → EBJPOST.</div></div>
+    </div>
+  </div>
+
+  <!-- BUG 5 -->
+  <div class="bug-card">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-red">BUG-05</span>
+      <span class="bug-ttl">EBJCONC sem DD MOVTIN e sem DD CONCOUT</span>
+      <span class="bug-where">jcl/batch/EBJCONC.jcl × cobol/batch/EBCONC01.cbl</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <div class="ib danger"><span class="ib-i">🔴</span><div><code>EBCONC01</code> declara <code>SELECT MOVTO-IN ASSIGN TO MOVTIN</code> e <code>SELECT CONCIL-OUT ASSIGN TO CONCOUT</code>. O JCL define <code>//ENTRADA</code>, <code>//LANCTO</code> e <code>//SALDO</code> — nenhum <code>MOVTIN</code> nem <code>CONCOUT</code>. O job vai ABEND na abertura.</div></div>
+      <div class="diff">
+        <pre><span class="ctx">  //EBJCONC  JOB ,'EMUNAH CONC',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)</span>
+<span class="ctx">  //STEP1    EXEC PGM=EBCONC01</span>
+<span class="ctx">  //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR</span>
+<span class="del">- //ENTRADA  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.SEQ,DISP=SHR</span>
+<span class="del">- //LANCTO   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR</span>
+<span class="del">- //SALDO    DD DSN=Z77948.EMUNAH.ARQ.SALDO.KSDS,DISP=SHR</span>
+<span class="add">+ //MOVTIN   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR</span>
+<span class="add">+ //CONCOUT  DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,</span>
+<span class="add">+ //            DISP=(MOD,CATLG,DELETE),</span>
+<span class="add">+ //            SPACE=(TRK,(5,2)),</span>
+<span class="add">+ //            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)</span>
+<span class="ctx">  //SYSOUT   DD SYSOUT=*</span>
+<span class="ctx">  //SYSPRINT DD SYSOUT=*</span></pre>
+      </div>
+      <p>Adicione também <code>EMUNAH.ARQ.CONCIL.SEQ</code> ao mapa de datasets.</p>
+    </div>
+  </div>
+
+  <!-- BUG 6 -->
+  <div class="bug-card">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-red">BUG-06</span>
+      <span class="bug-ttl">EBJSALD sem DD SALDIN — programa vai ABEND</span>
+      <span class="bug-where">jcl/batch/EBJSALD.jcl × cobol/batch/EBSALD01.cbl</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <div class="ib danger"><span class="ib-i">🔴</span><div><code>EBSALD01</code> declara <code>SELECT SALDO-IN ASSIGN TO SALDIN</code> e <code>SELECT SALDO-OUT ASSIGN TO SALDOUT</code>. O JCL atual tem <code>//CONTA</code>, <code>//LANCTO</code> e <code>//SALDO</code> — mas nenhum <code>SALDIN</code> nem <code>SALDOUT</code>.</div></div>
+      <div class="diff">
+        <pre><span class="ctx">  //EBJSALD  JOB ,'EMUNAH SALD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)</span>
+<span class="ctx">  //STEP1    EXEC PGM=EBSALD01</span>
+<span class="ctx">  //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR</span>
+<span class="ctx">  //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR</span>
+<span class="del">- //LANCTO   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR</span>
+<span class="del">- //SALDO    DD DSN=Z77948.EMUNAH.ARQ.SALDO.KSDS,DISP=SHR</span>
+<span class="add">+ //SALDIN   DD DSN=Z77948.EMUNAH.ARQ.SALDO.KSDS,DISP=SHR</span>
+<span class="add">+ //SALDOUT  DD DSN=Z77948.EMUNAH.ARQ.SALDO.REL.SEQ,</span>
+<span class="add">+ //            DISP=(MOD,CATLG,DELETE),</span>
+<span class="add">+ //            SPACE=(TRK,(3,1)),</span>
+<span class="add">+ //            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)</span>
+<span class="ctx">  //SYSOUT   DD SYSOUT=*</span>
+<span class="ctx">  //SYSPRINT DD SYSOUT=*</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUG 7 -->
+  <div class="bug-card">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-red">BUG-07</span>
+      <span class="bug-ttl">Inconsistência de tamanho em seed contas.txt × CPCNT001</span>
+      <span class="bug-where">data/seed/contas.txt × copybooks/CPCNT001.cpy</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <div class="ib danger"><span class="ib-i">🔴</span><div>O arquivo <code>contas.txt</code> tem registros de <strong>41 bytes</strong> com <code>CNT-TIPO-CONTA = 2 bytes ("CC")</code>. O copybook <code>CPCNT001</code> define <code>CNT-TIPO PIC X(1)</code> (1 byte) e tamanho total de 100 bytes. Isso causa leitura desalinhada.</div></div>
+      <table class="tbl">
+        <thead><tr><th>Campo</th><th>contas.txt (seed)</th><th>CPCNT001 (copybook)</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>AGENCIA</td><td class="mono">4</td><td class="mono">4</td><td class="grn">OK</td></tr>
+          <tr><td>NUM-CONTA</td><td class="mono">8</td><td class="mono">8</td><td class="grn">OK</td></tr>
+          <tr><td>ID-CLIENTE</td><td class="mono">5</td><td class="mono">5</td><td class="grn">OK</td></tr>
+          <tr><td>TIPO-CONTA</td><td class="red">2 ("CC")</td><td class="red">1 (X(1))</td><td class="t-red">CONFLITO</td></tr>
+          <tr><td>STATUS</td><td class="mono">1</td><td class="mono">1</td><td class="grn">OK</td></tr>
+          <tr><td>SALDO-ATUAL</td><td class="mono">13</td><td class="mono">13</td><td class="grn">OK</td></tr>
+          <tr><td>DATA-ABERTURA</td><td class="mono">8</td><td class="mono">8</td><td class="grn">OK</td></tr>
+          <tr><td>FILLER</td><td class="red">0</td><td class="red">60 bytes</td><td class="t-red">CONFLITO</td></tr>
+          <tr><td><strong>TOTAL</strong></td><td class="red">41</td><td class="red">100</td><td class="t-red">DIVERGENTE</td></tr>
+        </tbody>
+      </table>
+      <h3>Solução: alinhe o seed com o copybook ou crie um copybook de seed separado</h3>
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">contas.txt — formato corrigido para 100 bytes</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="jc"># AGENCIA(4) + CONTA(8) + CLIENTE(5) + TIPO(1) + STATUS(1)</span>
+<span class="jc"># + DATA(8) + SALDO(13) + LIMITE(11) + FILLER(49) = 100 bytes</span>
+0001000000010000<span class="fn">1</span>CA00000002600020260312000000005000<span class="str">                 ...</span>
+<span class="jc"># TIPO: C=Corrente P=Poupanca S=Salario (1 char, não 2)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUG 8 -->
+  <div class="bug-card">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-red">BUG-08</span>
+      <span class="bug-ttl">EBCLLOAD abre CLIENTE-KSDS com I-O mas deveria abrir com OUTPUT na primeira carga</span>
+      <span class="bug-where">cobol/batch/EBCLLOAD.cbl</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <div class="ib danger"><span class="ib-i">🔴</span><div>Com <code>OPEN I-O</code> num VSAM KSDS vazio, se o arquivo não foi inicializado corretamente, você pode receber um <strong>VSAM RC=120 RSN=10</strong>. Para a carga inicial, use <code>OPEN OUTPUT</code>. Para recarga (com I-O), certifique-se que o VSAM já foi alocado e tem componentes válidos.</div></div>
+      <div class="diff">
+        <pre><span class="del">-      OPEN I-O   CLIENTE-KSDS</span>
+<span class="del">-      OPEN I-O   CONTA-KSDS</span>
+<span class="add">+      OPEN OUTPUT CLIENTE-KSDS</span>
+<span class="add">+      OPEN OUTPUT CONTA-KSDS</span>
+<span class="jc">*      Para reprocessamento (dados já existem), volte para I-O</span>
+<span class="jc">*      e adicione INVALID KEY tratamento na gravação</span></pre>
+      </div>
+      <div class="ib warn"><span class="ib-i">⚠️</span><div>Com <code>OPEN OUTPUT</code>, o VSAM é iniciado do zero. Use isso na carga inicial. Nas recargas subsequentes, use <code>I-O</code> com tratamento de <code>INVALID KEY</code> para duplicidade.</div></div>
+    </div>
+  </div>
+
+  <!-- BUG 9 -->
+  <div class="bug-card">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-red">BUG-09</span>
+      <span class="bug-ttl">Typo no mapa de datasets: EMUNHA.ARQ.LANCTO.ESDS</span>
+      <span class="bug-where">docs/04-mapa-datasets.md</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <div class="ib danger"><span class="ib-i">🔴</span><div>O mapa lista <code>EMUNHA.ARQ.LANCTO.ESDS</code> (EMUNHA com H antes do A) em vez de <code>EMUNAH.ARQ.LANCTO.ESDS</code>. Se alguém criar o dataset pelo mapa errado, nenhum programa vai achar o arquivo.</div></div>
+      <div class="diff">
+        <pre><span class="del">- EMUNHA.ARQ.LANCTO.ESDS  ← typo: H e A invertidos</span>
+<span class="add">+ EMUNAH.ARQ.LANCTO.ESDS  ← correto</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ B — INCONSISTÊNCIAS ════ -->
+<section class="sec" id="incons">
+  <div class="sec-hdr">
+    <div class="sec-num">B // INCONSISTÊNCIAS</div>
+    <h2>5 Pontos que criam confusão mas não quebram tudo</h2>
+    <p>Problemas de nomenclatura, design e documentação que vão gerar dúvida na operação.</p>
+  </div>
+
+  <div class="bug-card warn">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-amber">INC-01</span>
+      <span class="bug-ttl">EBJCLLD e EBJLOAD fazem a mesma coisa — um precisa ir</span>
+      <span class="bug-where">jcl/batch/</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <p><strong>EBJCLLD</strong> (carga inicial de clientes/contas do seed) e <strong>EBJLOAD</strong> (preparação do arquivo do dia) são dois jobs diferentes que acabaram colidindo no nome. A distinção certa é:</p>
+      <table class="tbl">
+        <thead><tr><th>Job</th><th>Finalidade correta</th><th>Quando rodar</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">EBJCLLD</td><td>Carga inicial (seed → KSDS). Roda 1x na vida do lab.</td><td>Setup inicial</td></tr>
+          <tr><td class="mono">EBJLOAD</td><td>Verificação/preparação do arquivo de entrada do dia.</td><td>Todo dia na cadeia</td></tr>
+        </tbody>
+      </table>
+      <div class="ib tip"><span class="ib-i">💡</span><div>Renomeie EBJCLLD para <strong>EBSETUP</strong> ou <strong>EBSEED</strong> para deixar claro que é one-time setup. Isso elimina a ambiguidade.</div></div>
+    </div>
+  </div>
+
+  <div class="bug-card warn">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-amber">INC-02</span>
+      <span class="bug-ttl">EBPOST01 lê direto da ENTRADA.SEQ, deveria ler da LANCTO.ESDS</span>
+      <span class="bug-where">Fluxo batch</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <p>O fluxo correto num ambiente bancário real é:</p>
+      <div class="flow">
+<pre>ENTRADA.SEQ (bruto)
+    │
+    ▼
+EBJVALD → EBVALI01
+    │
+    ├──► LANCTO.ESDS  (registros VÁLIDOS — entrada para EBJPOST)
+    └──► REJEITO.SEQ  (registros inválidos — diagnóstico)
+         │
+         ▼
+    EBJPOST → EBPOST01
+         │ lê de LANCTO.ESDS (não da ENTRADA.SEQ bruta!)
+         ▼
+    CONTA.KSDS atualizado</pre>
+      </div>
+      <p>O EBPOST01 atual lê <code>MOVTIN</code> que aponta para... nada de útil no JCL (BUG-04). Corrija o JCL para apontar para <code>LANCTO.ESDS</code> como entrada do EBPOST01.</p>
+    </div>
+  </div>
+
+  <div class="bug-card warn">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-amber">INC-03</span>
+      <span class="bug-ttl">EBJEOD ainda é IEFBR14 placeholder — não faz nada real</span>
+      <span class="bug-where">jcl/batch/EBJEOD.jcl</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <p>O fechamento diário (EOD) deve, minimamente:</p>
+      <ul>
+        <li>Atualizar um dataset de controle com a data/hora do fechamento</li>
+        <li>Registrar no arquivo de auditoria que o dia foi encerrado com sucesso</li>
+        <li>Gerar um backup do estado final dos arquivos VSAM (via IDCAMS REPRO)</li>
+      </ul>
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">JCL — EBJEOD com implementação real</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="jc">//* EBJEOD — Fechamento Diario EMUNAH Bank</span>
+<span class="jk">//EBJEOD</span>   <span class="jp">JOB</span> ,<span class="str">'EMUNAH EOD'</span>,CLASS=A,MSGCLASS=X,MSGLEVEL=(<span class="num">1</span>,<span class="num">1</span>)
+<span class="jk">//*</span>
+<span class="jk">//*</span> STEP1 — Backup do KSDS de contas (snapshot do dia)
+<span class="jk">//BAKCONTS</span> <span class="jp">EXEC</span> PGM=IDCAMS
+<span class="jk">//SYSPRINT</span> <span class="jp">DD</span>  SYSOUT=*
+<span class="jk">//INVSAM</span>   <span class="jp">DD</span>  DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+<span class="jk">//OUTBAK</span>   <span class="jp">DD</span>  DSN=Z77948.EMUNAH.BAK.CONTA.SEQ,
+<span class="jk">//</span>             DISP=(MOD,CATLG,DELETE),
+<span class="jk">//</span>             SPACE=(CYL,(<span class="num">1</span>,<span class="num">1</span>)),
+<span class="jk">//</span>             DCB=(RECFM=VB,LRECL=<span class="num">32756</span>,BLKSIZE=<span class="num">32760</span>)
+<span class="jk">//SYSIN</span>    <span class="jp">DD</span> *
+  REPRO INFILE(INVSAM) OUTFILE(OUTBAK)
+<span class="jk">/*</span>
+<span class="jk">//*</span>
+<span class="jk">//*</span> STEP2 — Registra fechamento na auditoria
+<span class="jk">//REGFECH</span>  <span class="jp">EXEC</span> PGM=IEBGENER,COND=(<span class="num">4</span>,LT,BAKCONTS)
+<span class="jk">//SYSPRINT</span> <span class="jp">DD</span>  SYSOUT=*
+<span class="jk">//SYSUT2</span>   <span class="jp">DD</span>  DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+<span class="jk">//SYSIN</span>    <span class="jp">DD</span>  DUMMY
+<span class="jk">//SYSUT1</span>   <span class="jp">DD</span> *
+EOD-OK  EBJEOD  FECHAMENTO DIARIO CONCLUIDO COM SUCESSO
+<span class="jk">/*</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="bug-card warn">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-amber">INC-04</span>
+      <span class="bug-ttl">Nenhum JCL usa COND= para dependência — cadeia não para em caso de erro</span>
+      <span class="bug-where">Todos os JCLs batch</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <p>Em produção real, jobs dependentes verificam o RC do predecessor. Sem <code>COND=</code>, mesmo que o EBJVALD termine com RC=8, o EBJPOST vai rodar. Isso gera dados inconsistentes.</p>
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">JCL — adicionando COND= correto</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="jk">//EBJPOST</span>  <span class="jp">JOB</span> ,<span class="str">'EMUNAH POST'</span>,CLASS=A,MSGCLASS=X,MSGLEVEL=(<span class="num">1</span>,<span class="num">1</span>)
+<span class="jk">//STEP1</span>    <span class="jp">EXEC</span> PGM=EBPOST01,COND=(<span class="num">4</span>,LT)
+<span class="jc">//* COND=(4,LT) significa: se RC anterior < 4, execute</span>
+<span class="jc">//* Se o EBJVALD retornar RC=8 (erro), o EBJPOST para</span>
+<span class="jc">//* RC=0 = perfeito, RC=4 = aviso (continua), RC=8+ = erro</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="bug-card warn">
+    <div class="bug-hdr" onclick="toggleBug(this)">
+      <span class="bug-num bn-amber">INC-05</span>
+      <span class="bug-ttl">EBBUILD hardcoded para EBCLLOAD — cada programa precisa de seu build</span>
+      <span class="bug-where">jcl/compile/EBBUILD.jcl</span>
+      <span class="bug-tog">▼</span>
+    </div>
+    <div class="bug-body">
+      <p>Você tem 6+ programas COBOL. Criar um EBBUILD separado para cada é trabalhoso. A solução de mercado é um <strong>job genérico com PARM</strong> ou um script Zowe que parameteriza o build.</p>
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">SCRIPT — build_programa.ps1 (PowerShell local)</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="cmt"># build_programa.ps1 — Compila qualquer programa do lab</span>
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$Programa  <span class="cmt"># Ex: EBPOST01</span>
+)
+
+<span class="str">$jcl</span> = <span class="str">@"
+//EBBUILD  JOB ,'EMUNAH BUILD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//CL       EXEC IGYWCL
+//COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL($Programa),DISP=SHR
+//COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
+//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB($Programa),DISP=SHR
+//LKED.SYSPRINT DD SYSOUT=*
+//*
+"@</span>
+
+<span class="cmt"># Grava JCL temporário e submete via Zowe</span>
+<span class="str">$jcl</span> | Out-File -FilePath <span class="str">".\jcl\temp\BUILD_$Programa.jcl"</span> -Encoding ASCII
+zowe zos-files upload file-to-data-set <span class="str">".\jcl\temp\BUILD_$Programa.jcl"</span> <span class="str">"Z77948.EMUNAH.DEV.JCL(EBBUILD)"</span>
+zowe zos-jobs submit data-set <span class="str">"Z77948.EMUNAH.DEV.JCL(EBBUILD)"</span>
+Write-Host <span class="str">"Build de $Programa submetido."</span></pre>
+      </div>
+      <div class="ib tip"><span class="ib-i">💡</span><div>Uso: <code>.\build_programa.ps1 -Programa EBPOST01</code>. Isso cria o JCL dinamicamente para qualquer programa, sem precisar editar o membro no host.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ C — MELHORIAS ════ -->
+<section class="sec" id="melhoria">
+  <div class="sec-hdr">
+    <div class="sec-num">C // MELHORIAS</div>
+    <h2>7 Incrementos que elevam o lab ao nível de mercado</h2>
+    <p>Não são bugs — o lab funciona sem eles. Mas são o que diferencia um lab de estudo de um lab de carreira.</p>
+  </div>
+
+  <div class="step">
+    <div class="step-hdr" onclick="toggleStep(this)">
+      <div class="step-n">M1</div>
+      <div class="step-ttl"><h3>EBJREPR — Job de Reprocessamento</h3><p>Membro prometido na documentação mas nunca implementado</p></div>
+      <span class="step-tog">▼</span>
+    </div>
+    <div class="step-body">
+      <p>O <code>EBJREPR</code> reaplica registros corrigidos do arquivo de rejeitos. É um dos cenários mais comuns em operação real.</p>
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">JCL — EBJREPR completo</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="jc">//* EBJREPR — Reprocessamento de Rejeitos Corrigidos</span>
+<span class="jc">//* Nao faz parte da cadeia principal. Acionamento manual.</span>
+<span class="jk">//EBJREPR</span>  <span class="jp">JOB</span> ,<span class="str">'EMUNAH REPR'</span>,CLASS=A,MSGCLASS=X,MSGLEVEL=(<span class="num">1</span>,<span class="num">1</span>)
+<span class="jk">//*</span>
+<span class="jk">//*</span> STEP1 — Revalida os rejeitos corrigidos
+<span class="jk">//REVAL</span>    <span class="jp">EXEC</span> PGM=EBVALI01
+<span class="jk">//STEPLIB</span>  <span class="jp">DD</span>  DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+<span class="jk">//ENTRADA</span>  <span class="jp">DD</span>  DSN=Z77948.EMUNAH.ARQ.CORRIG.SEQ,DISP=SHR
+<span class="jk">//VALIDOS</span>  <span class="jp">DD</span>  DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+<span class="jk">//REJEITOS</span> <span class="jp">DD</span>  DSN=Z77948.EMUNAH.ARQ.REJEIT2.SEQ,DISP=MOD
+<span class="jk">//SYSOUT</span>   <span class="jp">DD</span>  SYSOUT=*
+<span class="jk">//SYSPRINT</span> <span class="jp">DD</span>  SYSOUT=*
+<span class="jk">//*</span>
+<span class="jk">//*</span> STEP2 — Reaplica os validados
+<span class="jk">//REPOST</span>   <span class="jp">EXEC</span> PGM=EBPOST01,COND=(<span class="num">4</span>,LT,REVAL)
+<span class="jk">//STEPLIB</span>  <span class="jp">DD</span>  DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+<span class="jk">//MOVTIN</span>   <span class="jp">DD</span>  DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+<span class="jk">//CONTA</span>    <span class="jp">DD</span>  DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+<span class="jk">//AUDIT</span>    <span class="jp">DD</span>  DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+<span class="jk">//SYSOUT</span>   <span class="jp">DD</span>  SYSOUT=*</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-hdr" onclick="toggleStep(this)">
+      <div class="step-n">M2</div>
+      <div class="step-ttl"><h3>PRECHECK em REXX — Verificação pré-batch</h3><p>Verifica existência de datasets e integridade antes de rodar a cadeia</p></div>
+      <span class="step-tog">▼</span>
+    </div>
+    <div class="step-body">
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">REXX — EMUNAH.DEV.REXX(PRECHECK)</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="jc">/* REXX ─────────────────────────────────────── */</span>
+<span class="jc">/* PRECHECK — Verifica ambiente pre-batch       */</span>
+<span class="jc">/* RC=0 ambiente OK / RC=8 falha critica        */</span>
+<span class="jc">/* ──────────────────────────────────────────── */</span>
+
+SAY <span class="str">'=== EMUNAH BANK — PRE-CHECK ==='</span>
+WS_RC = <span class="num">0</span>
+
+<span class="jc">/* Lista de datasets obrigatorios */</span>
+DSN.<span class="num">1</span> = <span class="str">'Z77948.EMUNAH.ARQ.ENTRADA.SEQ'</span>
+DSN.<span class="num">2</span> = <span class="str">'Z77948.EMUNAH.ARQ.CLIENTE.KSDS'</span>
+DSN.<span class="num">3</span> = <span class="str">'Z77948.EMUNAH.ARQ.CONTA.KSDS'</span>
+DSN.<span class="num">4</span> = <span class="str">'Z77948.EMUNAH.ARQ.LANCTO.ESDS'</span>
+DSN.<span class="num">5</span> = <span class="str">'Z77948.EMUNAH.DEV.LOADLIB'</span>
+DSN.<span class="num">0</span> = <span class="num">5</span>
+
+<span class="kw">Do</span> i = <span class="num">1</span> To DSN.<span class="num">0</span>
+  x = LISTDSI(DSN.i)
+  <span class="kw">If</span> x = <span class="num">0</span> <span class="kw">Then</span>
+    SAY <span class="str">'[OK]  '</span> DSN.i
+  <span class="kw">Else</span> <span class="kw">Do</span>
+    SAY <span class="str">'[ERRO]'</span> DSN.i <span class="str">'- AUSENTE OU INACESSIVEL'</span>
+    WS_RC = <span class="num">8</span>
+  <span class="kw">End</span>
+<span class="kw">End</span>
+
+<span class="kw">If</span> WS_RC = <span class="num">0</span> <span class="kw">Then</span>
+  SAY <span class="str">'>>> PRE-CHECK OK — Cadeia pode iniciar'</span>
+<span class="kw">Else</span>
+  SAY <span class="str">'>>> PRE-CHECK FALHOU — Corrija antes de rodar a cadeia'</span>
+
+<span class="kw">Return</span> WS_RC</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-hdr" onclick="toggleStep(this)">
+      <div class="step-n">M3</div>
+      <div class="step-ttl"><h3>EBBUILD paramétrico via script PS1</h3><p>Compila qualquer programa sem editar o JCL manualmente</p></div>
+      <span class="step-tog">▼</span>
+    </div>
+    <div class="step-body">
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">PowerShell — scripts/build.ps1</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="cmt"># build.ps1 — Build parametrico EMUNAH-BANK-LAB</span>
+param([string]$Pgm = <span class="str">"EBCLLOAD"</span>, [switch]$Run)
+
+<span class="str">$hq</span>  = <span class="str">"Z77948.EMUNAH"</span>
+<span class="str">$jcl</span> = <span class="str">@"
+//EBBUILD  JOB ,'EB $Pgm',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//CL       EXEC IGYWCL
+//COBOL.SYSIN   DD DSN=$hq.DEV.COBOL($Pgm),DISP=SHR
+//COBOL.SYSLIB  DD DSN=$hq.DEV.COPY,DISP=SHR
+//LKED.SYSLMOD  DD DSN=$hq.DEV.LOADLIB($Pgm),DISP=SHR
+//LKED.SYSPRINT DD SYSOUT=*
+//*
+"@</span>
+
+<span class="str">$tmp</span> = <span class="str">".\jcl\temp\BUILD_$Pgm.jcl"</span>
+<span class="str">$jcl</span> | Out-File <span class="str">$tmp</span> -Encoding ASCII
+Write-Host <span class="str">"[BUILD] Subindo fonte $Pgm..."</span>
+zowe zos-files upload file-to-data-set <span class="str">".\cobol\batch\$Pgm.cbl"</span> <span class="str">"$hq.DEV.COBOL($Pgm)"</span>
+Write-Host <span class="str">"[BUILD] Compilando..."</span>
+zowe zos-files upload file-to-data-set <span class="str">$tmp</span> <span class="str">"$hq.DEV.JCL(EBBUILD)"</span>
+<span class="str">$jobid</span> = zowe zos-jobs submit data-set <span class="str">"$hq.DEV.JCL(EBBUILD)"</span> <span class="op">| Select-Object -Last 1</span>
+Write-Host <span class="str">"[BUILD] Job submetido: $jobid"</span></pre>
+      </div>
+      <div class="ib tip"><span class="ib-i">💡</span><div>Uso: <code>.\build.ps1 -Pgm EBPOST01</code> ou <code>.\build.ps1 -Pgm EBVALI01</code>. Basta trocar o nome do programa.</div></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-hdr" onclick="toggleStep(this)">
+      <div class="step-n amber">M4</div>
+      <div class="step-ttl"><h3>Upgrade do CPAUD001 — Auditoria estruturada em todos os programas</h3><p>Substituir STRING livre por copybook CPAUD001 padronizado</p></div>
+      <span class="step-tog">▼</span>
+    </div>
+    <div class="step-body">
+      <p>Você já tem o copybook <code>CPAUD001</code> definido mas nenhum programa o usa ainda. Os programas usam <code>PIC X(120)</code> com STRING livre. O upgrade é:</p>
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">COBOL — padrão de auditoria estruturada</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="jc">      * No FD do arquivo de auditoria:</span>
+       FD  AUDIT-OUT
+           RECORD CONTAINS <span class="num">128</span> CHARACTERS
+           RECORDING MODE IS F.
+       <span class="num">01</span>  AUDIT-REG.
+           COPY CPAUD001.
+
+<span class="jc">      * Na WORKING-STORAGE:</span>
+       <span class="num">01</span>  WS-AUDIT-WORK.
+           COPY CPAUD001.
+
+<span class="jc">      * Na gravação estruturada:</span>
+       <span class="fn">8800-GRAVA-AUDIT</span>.
+           MOVE <span class="str">'ERRO'</span>          TO AU-TIPO-EVENTO OF WS-AUDIT-WORK
+           MOVE <span class="str">'EBPOST01'</span>    TO AU-PROGRAMA     OF WS-AUDIT-WORK
+           MOVE WS-DATA-HOJE  TO AU-DATA-EVENTO  OF WS-AUDIT-WORK
+           MOVE WS-HORA-ATUAL TO AU-HORA-EVENTO  OF WS-AUDIT-WORK
+           MOVE <span class="str">'CNTNERR01'</span>   TO AU-COD-EVENTO   OF WS-AUDIT-WORK
+           MOVE WS-CHAVE-CONTA TO AU-CHAVE-REF   OF WS-AUDIT-WORK
+           MOVE <span class="str">'CONTA NAO ENCONTRADA'</span>
+                              TO AU-MENSAGEM     OF WS-AUDIT-WORK
+           MOVE WS-AUDIT-WORK TO AUDIT-REG
+           WRITE AUDIT-REG.</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-hdr" onclick="toggleStep(this)">
+      <div class="step-n amber">M5</div>
+      <div class="step-ttl"><h3>Adicionar ACCEPT FROM DATE/TIME nos programas</h3><p>Registrar data e hora real do sistema nos logs de auditoria</p></div>
+      <span class="step-tog">▼</span>
+    </div>
+    <div class="step-body">
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">COBOL — ACCEPT FROM DATE/TIME</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="jc">      * Na WORKING-STORAGE:</span>
+       <span class="num">01</span>  WS-DATETIME.
+           <span class="num">05</span>  WS-DATA-HOJE     PIC <span class="num">9</span>(<span class="num">8</span>).  <span class="jc">*&gt; AAAAMMDD</span>
+           <span class="num">05</span>  WS-HORA-ATUAL    PIC <span class="num">9</span>(<span class="num">8</span>).  <span class="jc">*&gt; HHMMSSth</span>
+
+<span class="jc">      * Na PROCEDURE DIVISION (inicio do programa):</span>
+       <span class="fn">0100-CAPTURA-DATETIME</span>.
+           ACCEPT WS-DATA-HOJE FROM DATE YYYYMMDD
+           ACCEPT WS-HORA-ATUAL FROM TIME.
+
+<span class="jc">      *  Use nos registros de auditoria, cabecalhos de relatorio e</span>
+<span class="jc">      *  controle de execucao. Diferencial enorme em entrevistas!</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-hdr" onclick="toggleStep(this)">
+      <div class="step-n amber">M6</div>
+      <div class="step-ttl"><h3>Adicionar EBREPR01.cbl — Programa de Reprocessamento</h3><p>Reutiliza EBVALI01 + EBPOST01 com controle de idempotência</p></div>
+      <span class="step-tog">▼</span>
+    </div>
+    <div class="step-body">
+      <p>O programa de reprocessamento deve checar se o lançamento já foi processado antes de reaplicar (idempotência). Isso é crítico em bancos — processar duas vezes significa debitar/creditar duas vezes.</p>
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">COBOL — EBREPR01 — lógica de idempotência</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="jc">      * Antes de reaplicar, verifica se lancamento ja existe</span>
+       <span class="fn">2150-VERIFICA-DUPLICIDADE</span>.
+           MOVE LCT-LOTE    TO WS-CHAVE-LANCTO-LOTE
+           MOVE LCT-NSEQ    TO WS-CHAVE-LANCTO-SEQ
+           READ LANCTO-ESDS
+               INVALID KEY
+                   CONTINUE           <span class="jc">*&gt; nao existe, pode processar</span>
+               NOT INVALID KEY
+                   MOVE <span class="str">'D'</span> TO WS-STATUS-LANCTO
+                   ADD <span class="num">1</span> TO WS-DUPLICADOS
+                   <span class="jc">*&gt; ja existe! nao reprocessa</span>
+           END-READ.
+
+<span class="jc">      * So reaplica se nao for duplicado</span>
+       <span class="fn">2200-REAPLICA</span>.
+           IF WS-STATUS-LANCTO NOT = <span class="str">'D'</span>
+               PERFORM <span class="fn">2300-ATUALIZAR-CONTA</span>
+           ELSE
+               ADD <span class="num">1</span> TO WS-IGNORADOS
+           END-IF.</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-hdr" onclick="toggleStep(this)">
+      <div class="step-n blue">M7</div>
+      <div class="step-ttl"><h3>Adicionar EMUNAH.DEV.HML.LOAD ao mapa — separação real de ambientes</h3><p>Promoção DEV→HML com datasets separados</p></div>
+      <span class="step-tog">▼</span>
+    </div>
+    <div class="step-body">
+      <p>O mapa define HML.JCL e HML.COBOL mas não HML.LOADLIB. Para promover de DEV para HML de forma realista, você precisa compilar na HML com a LOADLIB própria.</p>
+      <table class="tbl">
+        <thead><tr><th>Dataset</th><th>Tipo</th><th>Para que serve</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">Z77948.EMUNAH.HML.LOADLIB</td><td>PDS/E</td><td>Executáveis compilados para teste em HML</td></tr>
+          <tr><td class="mono">Z77948.EMUNAH.HML.COPY</td><td>PDS/E</td><td>Copybooks aprovados para HML</td></tr>
+          <tr><td class="mono">Z77948.EMUNAH.HML.PARMLIB</td><td>PDS/E</td><td>Parâmetros de execução HML</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ════ D1 — CONTROL-M ════ -->
+<section class="sec" id="ctm">
+  <div class="sec-hdr">
+    <div class="sec-num">D1 // CONTROL-M</div>
+    <h2>Simulação de Control-M no Lab</h2>
+    <p>Control-M é o scheduler batch mais usado em bancos brasileiros. Você não vai usar o produto real (licença cara), mas vai aprender os conceitos e simular o comportamento.</p>
+  </div>
+
+  <div class="tool-header">
+    <div class="tool-logo">⏰</div>
+    <div><div class="tool-name">BMC Control-M</div><div class="tool-sub">Workload Automation · Job Scheduling · Dependency Engine</div></div>
+  </div>
+
+  <div class="ib info"><span class="ib-i">ℹ️</span><div><strong>O que é:</strong> Control-M é um schedulador de jobs batch. Em vez de submeter JCL manualmente, o Control-M sabe: <em>quem depende de quem, em que hora, em que dia do mês, com que condições</em>. No Bradesco, Itaú, Caixa — toda a cadeia batch roda pelo Control-M ou pelo CA7 (concorrente).</div></div>
+
+  <h3>Conceitos fundamentais que você precisa dominar</h3>
+  <table class="tbl">
+    <thead><tr><th>Conceito</th><th>O que é</th><th>Equivalente no lab</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Job</strong></td><td>Unidade de trabalho (um JCL)</td><td>EBJVALD, EBJPOST etc.</td></tr>
+      <tr><td><strong>Flow</strong></td><td>Grafo de dependências entre jobs</td><td>Seu grade-batch.md</td></tr>
+      <tr><td><strong>Condition</strong></td><td>Flag que um job seta ao terminar. Ex: VALD-OK</td><td>RC=0 do EBJVALD</td></tr>
+      <tr><td><strong>Predecessor</strong></td><td>Job que deve completar antes</td><td>EBJVALD antes de EBJPOST</td></tr>
+      <tr><td><strong>Time Window</strong></td><td>Horário permitido de execução</td><td>Janela batch simulada</td></tr>
+      <tr><td><strong>Calendar</strong></td><td>Dias em que o flow roda</td><td>Dias úteis bancários</td></tr>
+      <tr><td><strong>Critical Path</strong></td><td>Sequência mais longa do flow</td><td>LOAD→VALD→POST→SALD→EXTR→CONC→EOD</td></tr>
+      <tr><td><strong>RERUN</strong></td><td>Reexecução de um job que falhou</td><td>Seu cenário reprocess-required</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Simulação — Python Scheduler (Control-M simplificado)</h3>
+  <p>Crie o arquivo <code>scripts/ctm_sim.py</code>:</p>
+  <div class="cb">
+    <div class="cb-hdr"><span class="cb-lang">PYTHON — scripts/ctm_sim.py</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+    <pre><span class="kw">import</span> subprocess, time, logging, json
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime
+
+logging.basicConfig(
+    level=logging.INFO,
+    format=<span class="str">'%(asctime)s [CTM-SIM] %(levelname)s %(message)s'</span>,
+    handlers=[
+        logging.FileHandler(<span class="str">'logs/ctm_sim.log'</span>),
+        logging.StreamHandler()
+    ]
+)
+
+<span class="jc"># Mapa de dependências — simula o flow do Control-M</span>
+FLOW = {
+    <span class="str">"EBJLOAD"</span>: {
+        <span class="str">"predecessors"</span>: [],               <span class="jc"># sem predecessor</span>
+        <span class="str">"jcl_member"</span>: <span class="str">"EBJLOAD"</span>,
+        <span class="str">"condition_out"</span>: <span class="str">"LOAD-OK"</span>,
+        <span class="str">"max_rc"</span>: <span class="num">0</span>
+    },
+    <span class="str">"EBJVALD"</span>: {
+        <span class="str">"predecessors"</span>: [<span class="str">"LOAD-OK"</span>],
+        <span class="str">"jcl_member"</span>: <span class="str">"EBJVALD"</span>,
+        <span class="str">"condition_out"</span>: <span class="str">"VALD-OK"</span>,
+        <span class="str">"max_rc"</span>: <span class="num">4</span>
+    },
+    <span class="str">"EBJPOST"</span>: {
+        <span class="str">"predecessors"</span>: [<span class="str">"VALD-OK"</span>],
+        <span class="str">"jcl_member"</span>: <span class="str">"EBJPOST"</span>,
+        <span class="str">"condition_out"</span>: <span class="str">"POST-OK"</span>,
+        <span class="str">"max_rc"</span>: <span class="num">4</span>
+    },
+    <span class="str">"EBJSALD"</span>: {
+        <span class="str">"predecessors"</span>: [<span class="str">"POST-OK"</span>],
+        <span class="str">"jcl_member"</span>: <span class="str">"EBJSALD"</span>,
+        <span class="str">"condition_out"</span>: <span class="str">"SALD-OK"</span>,
+        <span class="str">"max_rc"</span>: <span class="num">4</span>
+    },
+    <span class="str">"EBJEXTR"</span>: {
+        <span class="str">"predecessors"</span>: [<span class="str">"SALD-OK"</span>],
+        <span class="str">"jcl_member"</span>: <span class="str">"EBJEXTR"</span>,
+        <span class="str">"condition_out"</span>: <span class="str">"EXTR-OK"</span>,
+        <span class="str">"max_rc"</span>: <span class="num">0</span>
+    },
+    <span class="str">"EBJCONC"</span>: {
+        <span class="str">"predecessors"</span>: [<span class="str">"EXTR-OK"</span>],
+        <span class="str">"jcl_member"</span>: <span class="str">"EBJCONC"</span>,
+        <span class="str">"condition_out"</span>: <span class="str">"CONC-OK"</span>,
+        <span class="str">"max_rc"</span>: <span class="num">0</span>
+    },
+    <span class="str">"EBJEOD"</span>: {
+        <span class="str">"predecessors"</span>: [<span class="str">"CONC-OK"</span>],
+        <span class="str">"jcl_member"</span>: <span class="str">"EBJEOD"</span>,
+        <span class="str">"condition_out"</span>: <span class="str">"EOD-OK"</span>,
+        <span class="str">"max_rc"</span>: <span class="num">0</span>
+    },
+}
+
+conditions_ativas = set()  <span class="jc"># conditions satisfeitas</span>
+HLQ = <span class="str">"Z77948.EMUNAH.DEV.JCL"</span>
+
+<span class="kw">def</span> <span class="fn">submete_e_aguarda</span>(job_name, member):
+    <span class="str">"""Submete JCL via Zowe e aguarda completion"""</span>
+    logging.info(<span class="str">f"SUBMIT {job_name}"</span>)
+    result = subprocess.run(
+        [<span class="str">"zowe"</span>, <span class="str">"zos-jobs"</span>, <span class="str">"submit"</span>, <span class="str">"data-set"</span>, <span class="str">f"{HLQ}({member})"</span>],
+        capture_output=True, text=True
+    )
+    <span class="jc"># Extrai jobid da saida do Zowe</span>
+    jobid = <span class="kw">None</span>
+    <span class="kw">for</span> line <span class="kw">in</span> result.stdout.splitlines():
+        <span class="kw">if</span> <span class="str">'jobid'</span> <span class="kw">in</span> line.lower() <span class="kw">or</span> <span class="str">'JOB'</span> <span class="kw">in</span> line:
+            jobid = line.split()[-<span class="num">1</span>].strip()
+            <span class="kw">break</span>
+    <span class="kw">if not</span> jobid:
+        logging.error(<span class="str">f"Nao foi possivel obter JOBID para {job_name}"</span>)
+        <span class="kw">return</span> <span class="num">99</span>
+    <span class="jc"># Aguarda completion</span>
+    <span class="kw">for</span> _ <span class="kw">in</span> range(<span class="num">30</span>):  <span class="jc"># max 150s</span>
+        time.sleep(<span class="num">5</span>)
+        st = subprocess.run(
+            [<span class="str">"zowe"</span>, <span class="str">"zos-jobs"</span>, <span class="str">"view"</span>, <span class="str">"job-status-by-jobid"</span>, jobid],
+            capture_output=True, text=True
+        )
+        <span class="kw">if</span> <span class="str">"OUTPUT"</span> <span class="kw">in</span> st.stdout <span class="kw">or</span> <span class="str">"CC "</span> <span class="kw">in</span> st.stdout:
+            rc_line = [l <span class="kw">for</span> l <span class="kw">in</span> st.stdout.splitlines() <span class="kw">if</span> <span class="str">"CC "</span> <span class="kw">in</span> l]
+            rc = int(rc_line[-<span class="num">1</span>].split(<span class="str">"CC "</span>)[-<span class="num">1</span>].strip()[:4]) <span class="kw">if</span> rc_line <span class="kw">else</span> <span class="num">0</span>
+            logging.info(<span class="str">f"{job_name} ({jobid}) RC={rc}"</span>)
+            <span class="kw">return</span> rc
+    logging.error(<span class="str">f"Timeout aguardando {job_name}"</span>)
+    <span class="kw">return</span> <span class="num">99</span>
+
+<span class="kw">def</span> <span class="fn">roda_flow</span>():
+    <span class="str">"""Executa o flow do dia simulando o Control-M"""</span>
+    logging.info(<span class="str">"=== EMUNAH CTM-SIM — INICIO DO DIA ==="</span>)
+    <span class="kw">for</span> job, cfg <span class="kw">in</span> FLOW.items():
+        <span class="jc"># Verifica predecessores</span>
+        pendentes = [p <span class="kw">for</span> p <span class="kw">in</span> cfg[<span class="str">"predecessors"</span>] <span class="kw">if</span> p <span class="kw">not in</span> conditions_ativas]
+        <span class="kw">if</span> pendentes:
+            logging.warning(<span class="str">f"[HOLD] {job} — aguardando conditions: {pendentes}"</span>)
+            <span class="kw">continue</span>
+        rc = <span class="fn">submete_e_aguarda</span>(job, cfg[<span class="str">"jcl_member"</span>])
+        <span class="kw">if</span> rc <= cfg[<span class="str">"max_rc"</span>]:
+            conditions_ativas.add(cfg[<span class="str">"condition_out"</span>])
+            logging.info(<span class="str">f"[OK] Condition {cfg['condition_out']} adicionada"</span>)
+        <span class="kw">else</span>:
+            logging.error(<span class="str">f"[FAIL] {job} RC={rc} — Flow BLOQUEADO"</span>)
+            <span class="kw">break</span>
+    logging.info(<span class="str">"=== FLOW CONCLUIDO ==="</span>)
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
+    <span class="fn">roda_flow</span>()</pre>
+  </div>
+
+  <div class="ib tip"><span class="ib-i">💡</span><div><strong>Como treinar leitura operacional do Control-M:</strong> Acesse o site <strong>bmc.com/it-solutions/control-m</strong> e estude as screenshots de JOB ORDER e JOB FLOW. O que você está simulando no Python é exatamente o que o Control-M mostra graficamente. Em entrevistas, saber explicar o conceito de CONDITIONS e PREDECESSOR já impressiona.</div></div>
+</section>
+
+<!-- ════ D2 — ENDEVOR/CHANGEMAN ════ -->
+<section class="sec" id="endevor">
+  <div class="sec-hdr">
+    <div class="sec-num">D2 // ENDEVOR / CHANGEMAN ZMF</div>
+    <h2>Simulação de Controle de Fonte</h2>
+    <p>Endevor (Broadcom) e ChangeMan ZMF (Micro Focus) são ferramentas de SCM mainframe. Você simula o comportamento com Git + scripts de promoção.</p>
+  </div>
+
+  <div class="tool-header">
+    <div class="tool-logo">📦</div>
+    <div><div class="tool-name">Endevor / ChangeMan ZMF</div><div class="tool-sub">Source Code Management · Promote/Demote · Package Control</div></div>
+  </div>
+
+  <h3>Conceitos fundamentais</h3>
+  <table class="tbl">
+    <thead><tr><th>Conceito Endevor</th><th>Equivalente no lab</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Element</strong></td><td>Um membro de biblioteca (ex: EBPOST01 em DEV.COBOL)</td></tr>
+      <tr><td><strong>Environment</strong></td><td>DEV, HML, PRD</td></tr>
+      <tr><td><strong>Stage</strong></td><td>Estágio dentro do ambiente (DEV-DEV1, DEV-DEV2)</td></tr>
+      <tr><td><strong>Type</strong></td><td>COBOL, JCL, COPY, LOAD</td></tr>
+      <tr><td><strong>Package</strong></td><td>Conjunto de alterações agrupadas para promoção</td></tr>
+      <tr><td><strong>Promote</strong></td><td>Mover elemento DEV → HML → PRD</td></tr>
+      <tr><td><strong>Demote</strong></td><td>Reverter elemento (rollback)</td></tr>
+      <tr><td><strong>Retrieve</strong></td><td>Baixar elemento do repositório para edição</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Simulação — Git como Endevor</h3>
+  <p>Estrutura de branches que espelha os ambientes Endevor:</p>
+  <div class="flow">
+<pre>
+Git Branch Strategy — Simula Endevor Environments
+
+  feature/EBPOST01-fix          ← desenvolvimento da alteração
+        │
+        ▼  merge + CI build
+  dev                           ← DEV.COBOL, DEV.JCL no mainframe
+        │
+        ▼  promote (aprovação técnica)
+  homolog                       ← HML.COBOL, HML.JCL no mainframe
+        │
+        ▼  promote (aprovação negócio + UAT)
+  main                          ← PRD.COBOL, PRD.JCL no mainframe
+        │
+        ▼  tag
+  v1.0.0-EBPOST01               ← versão imutável em produção
+</pre>
+  </div>
+
+  <h3>Script de Promoção DEV → HML (simula Endevor Promote)</h3>
+  <div class="cb">
+    <div class="cb-hdr"><span class="cb-lang">PowerShell — scripts/promote_dev_hml.ps1</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+    <pre><span class="cmt"># promote_dev_hml.ps1 — Promove elemento de DEV para HML</span>
+<span class="cmt"># Simula o PROMOTE do Endevor/ChangeMan</span>
+param(
+  [Parameter(Mandatory=$true)]
+  [string]$Programa,     <span class="cmt"># Ex: EBPOST01</span>
+  [string]$Tipo = <span class="str">"COBOL"</span> <span class="cmt"># COBOL, JCL, COPY</span>
+)
+
+<span class="str">$HLQ_DEV</span> = <span class="str">"Z77948.EMUNAH.DEV"</span>
+<span class="str">$HLQ_HML</span> = <span class="str">"Z77948.EMUNAH.HML"</span>
+<span class="str">$DATE</span>    = Get-Date -Format <span class="str">"yyyyMMdd-HHmmss"</span>
+
+Write-Host <span class="str">"[PROMOTE] $Tipo($Programa) DEV -> HML"</span>
+Write-Host <span class="str">"[PROMOTE] Data: $DATE"</span>
+
+<span class="cmt"># 1. Verifica existencia no DEV</span>
+<span class="str">$check</span> = zowe zos-files list members <span class="str">"$HLQ_DEV.$Tipo"</span> 2>&amp;1
+<span class="kw">if</span> (<span class="str">$check</span> -notmatch <span class="str">$Programa</span>) {
+    Write-Error <span class="str">"[PROMOTE] ERRO: $Programa nao encontrado em $HLQ_DEV.$Tipo"</span>
+    exit 8
+}
+
+<span class="cmt"># 2. Copia membro DEV para HML via REXX no host</span>
+<span class="str">$rexx</span> = <span class="str">@"
+/* REXX - Copia membro DEV para HML */
+CALL OUTTRAP 'LINHAS.'
+'ISPEXEC LMINIT DATAID(DEVIN) DATASET(''$HLQ_DEV.$Tipo'')'
+'ISPEXEC LMINIT DATAID(HMLOUT) DATASET(''$HLQ_HML.$Tipo'')'
+'ISPEXEC LMCOPY FROMID(DEVIN) FROMMEM($Programa) '||,
+         'TODATAID(HMLOUT) TOMEM($Programa) REPLACE'
+'ISPEXEC LMFREE DATAID(DEVIN)'
+'ISPEXEC LMFREE DATAID(HMLOUT)'
+SAY 'PROMOTE OK: $Programa DEV->HML'
+Return 0
+"@</span>
+
+<span class="str">$rexx</span> | Out-File <span class="str">".\rexx\temp\PROMOTE.rex"</span> -Encoding ASCII
+zowe zos-files upload file-to-data-set <span class="str">".\rexx\temp\PROMOTE.rex"</span> <span class="str">"Z77948.EMUNAH.DEV.REXX(PROMOTE)"</span>
+
+Write-Host <span class="str">"[PROMOTE] Registrando no change log..."</span>
+Add-Content <span class="str">".\docs\change-log.md"</span> <span class="str">"| $DATE | PROMOTE | $Tipo | $Programa | DEV->HML | $(git log -1 --pretty='%s') |"</span>
+
+Write-Host <span class="str">"[PROMOTE] Concluido. Lembre de recompilar em HML!"</span></pre>
+  </div>
+
+  <h3>Change Log — Simula Package Control do ChangeMan</h3>
+  <p>Crie o arquivo <code>docs/change-log.md</code> e mantenha o registro de todas as promoções:</p>
+  <div class="cb">
+    <div class="cb-hdr"><span class="cb-lang">MARKDOWN — docs/change-log.md</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+    <pre><span class="jc"># Change Log — EMUNAH-BANK-LAB</span>
+
+<span class="jc">## Formato: Data | Operação | Tipo | Elemento | Rota | Motivo</span>
+
+| Data | Op | Tipo | Elemento | Rota | Motivo |
+|------|-----|------|----------|------|--------|
+| 20260315-140000 | PROMOTE | COBOL | EBPOST01 | DEV->HML | Fix BUG-04 MOVTIN |
+| 20260315-150000 | PROMOTE | JCL | EBJPOST | DEV->HML | Corrige DDname |
+| 20260315-160000 | DEMOTE | COBOL | EBEXTR01 | HML->DEV | Erro compilacao |</pre>
+  </div>
+</section>
+
+<!-- ════ D3 — FILE MANAGER ════ -->
+<section class="sec" id="filemgr">
+  <div class="sec-hdr">
+    <div class="sec-num">D3 // FILE MANAGER (IBM)</div>
+    <h2>File Manager — já disponível no Z Xplore</h2>
+    <p>Boa notícia: o IBM File Manager está disponível no ambiente Marist/Z Xplore. Você já tem acesso. Só precisa saber usar.</p>
+  </div>
+
+  <div class="tool-header">
+    <div class="tool-logo">📁</div>
+    <div><div class="tool-name">IBM File Manager for z/OS</div><div class="tool-sub">Dataset Browsing · VSAM Editing · Template-based Access</div></div>
+  </div>
+
+  <div class="ib tip"><span class="ib-i">💡</span><div>No TN3270, acesse pelo TSO: <code>TSO FM</code> ou pelo ISPF: opção <strong>FM</strong> no menu principal (se disponível). Também acessível via menu direto no Z Xplore.</div></div>
+
+  <h3>Exercícios práticos com File Manager no EMUNAH Lab</h3>
+
+  <div class="step">
+    <div class="step-hdr" onclick="toggleStep(this)">
+      <div class="step-n blue">FM1</div>
+      <div class="step-ttl"><h3>Browsar o KSDS de Contas</h3><p>Visualizar registros do EMUNAH.ARQ.CONTA.KSDS em modo tabela</p></div>
+      <span class="step-tog">▼</span>
+    </div>
+    <div class="step-body">
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">TSO PANEL — File Manager Browse VSAM</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="jc">No painel File Manager:</span>
+  Option ===> <span class="fn">B</span>    (Browse)
+  
+  Dataset name  ===> <span class="str">Z77948.EMUNAH.ARQ.CONTA.KSDS</span>
+  Member        ===> (blank para VSAM)
+  Template ds   ===> Z77948.EMUNAH.DEV.COPY
+  Template mbr  ===> CPCNT001
+  
+  <span class="jc">Com o template CPCNT001 apontado, o File Manager</span>
+  <span class="jc">vai exibir os campos nomeados em vez de hex bruto:</span>
+  
+  CNT-AGENCIA  CNT-NUM-CONTA  CNT-TIPO  CNT-STATUS  CNT-SALDO
+  0001         00000001       C         A           000000010050</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-hdr" onclick="toggleStep(this)">
+      <div class="step-n blue">FM2</div>
+      <div class="step-ttl"><h3>Editar registro VSAM direto (simula suporte em produção)</h3><p>Corrigir saldo ou status de uma conta manualmente</p></div>
+      <span class="step-tog">▼</span>
+    </div>
+    <div class="step-body">
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">TSO PANEL — File Manager Edit VSAM</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="jc">Option ===> E    (Edit)</span>
+Dataset ===> Z77948.EMUNAH.ARQ.CONTA.KSDS
+
+<span class="jc">Encontra conta 00000005:</span>
+  FIND KEY(00010000000500005)    <span class="jc">← chave: agencia+conta</span>
+  
+<span class="jc">Na linha do registro, pressiona E (edit field):</span>
+  CNT-STATUS: A → B    <span class="jc">← Bloqueia a conta</span>
+  PF3 para salvar
+  
+<span class="jc">Exercício de fault: bloquear conta, rodar EBJPOST,</span>
+<span class="jc">verificar rejeição no arquivo de auditoria.</span></pre>
+      </div>
+      <div class="ib warn"><span class="ib-i">⚠️</span><div>Em produção, editar VSAM diretamente é uma operação de suporte de alta criticidade. Sempre exige autorização, registro e rollback plan. No lab, é um excelente exercício.</div></div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-hdr" onclick="toggleStep(this)">
+      <div class="step-n blue">FM3</div>
+      <div class="step-ttl"><h3>Criar template do CPCNT001 no File Manager</h3><p>Template permite navegar o VSAM como uma tabela estruturada</p></div>
+      <span class="step-tog">▼</span>
+    </div>
+    <div class="step-body">
+      <div class="cb">
+        <div class="cb-hdr"><span class="cb-lang">TSO — Criando template File Manager</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+        <pre><span class="jc">File Manager menu:</span>
+  Option ===> T    (Templates)
+  
+  T ===> C    (Create)
+  Template dataset ===> Z77948.EMUNAH.DEV.COPY
+  Template member  ===> CPCNT001T   <span class="jc">← novo membro</span>
+  Copy from copybook:
+  Copybook dataset ===> Z77948.EMUNAH.DEV.COPY
+  Copybook member  ===> CPCNT001
+  
+  <span class="jc">O FM cria o template automaticamente a partir do copybook.</span>
+  <span class="jc">Depois use na busca por dataset para ver campos nomeados.</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ D4 — FAULT ANALYZER ════ -->
+<section class="sec" id="fault">
+  <div class="sec-hdr">
+    <div class="sec-num">D4 // FAULT ANALYZER / ABEND-AID</div>
+    <h2>Diagnóstico de ABENDs e Dumps</h2>
+    <p>Fault Analyzer (IBM) e Abend-AID (Broadcom) formatam dumps de mainframe em linguagem humana. Você vai treinar com o dump bruto — que é o que você tem disponível gratuitamente.</p>
+  </div>
+
+  <div class="tool-header">
+    <div class="tool-logo">💥</div>
+    <div><div class="tool-name">IBM Fault Analyzer / Broadcom Abend-AID</div><div class="tool-sub">Dump Formatting · ABEND Analysis · Root Cause</div></div>
+  </div>
+
+  <h3>Catálogo de ABENDs para o lab</h3>
+  <table class="tbl">
+    <thead><tr><th>ABEND</th><th>Nome</th><th>Causa mais comum</th><th>Como reproduzir no lab</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">S0C7</td><td>Data Exception</td><td>Campo numérico com espaços ou caracteres inválidos</td><td>Seed com campo numérico vazio, rodar EBJPOST</td></tr>
+      <tr><td class="mono">S0C4</td><td>Protection Exception</td><td>Subscript fora de tabela, ponteiro inválido</td><td>PERFORM VARYING sem UNTIL correto</td></tr>
+      <tr><td class="mono">S013</td><td>OPEN Error</td><td>DCB incompatível com o arquivo físico</td><td>Mudar LRECL no JCL sem mudar no dataset</td></tr>
+      <tr><td class="mono">S222</td><td>Job Cancelled</td><td>Operador cancelou ou time exceeded</td><td>Loop infinito no COBOL</td></tr>
+      <tr><td class="mono">S806</td><td>Module Not Found</td><td>PGM= não encontrado na STEPLIB/JOBLIB</td><td>Referenciar PGM que não foi compilado</td></tr>
+      <tr><td class="mono">S913</td><td>Security/RACF</td><td>Falta autorização para o dataset</td><td>Tentar ler dataset sem permissão</td></tr>
+      <tr><td class="mono">B37</td><td>Space Abend</td><td>Dataset sem espaço para crescer</td><td>Alocar SPACE minúsculo e gerar muito dado</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Programa de Fault Injection — EBFAULT1</h3>
+  <p>Crie o arquivo <code>cobol/batch/EBFAULT1.cbl</code> — programa que causa ABENDs controlados:</p>
+  <div class="cb">
+    <div class="cb-hdr"><span class="cb-lang">COBOL — EBFAULT1.cbl (fault injection)</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+    <pre><span class="jc">      *=============================================================*</span>
+<span class="jc">      * EBFAULT1 — Programa de Fault Injection para treinamento     *</span>
+<span class="jc">      * Causa ABENDs controlados para pratica de diagnostico        *</span>
+<span class="jc">      *=============================================================*</span>
+       <span class="kw">IDENTIFICATION DIVISION</span>.
+       PROGRAM-ID. EBFAULT1.
+
+       <span class="kw">DATA DIVISION</span>.
+       <span class="kw">WORKING-STORAGE SECTION</span>.
+       <span class="num">01</span>  WS-PARM              PIC <span class="str">X(8)</span>.
+       <span class="num">01</span>  WS-CAMPO-NUM         PIC <span class="num">9</span>(<span class="num">5</span>).
+       <span class="num">01</span>  WS-CAMPO-X           PIC <span class="str">X(5)</span>.
+       <span class="num">01</span>  WS-RESULTADO         PIC <span class="num">9</span>(<span class="num">10</span>).
+       <span class="num">01</span>  WS-TABELA.
+           <span class="num">05</span>  WS-TB-ITEM         PIC <span class="str">X(10)</span>
+                                  OCCURS <span class="num">5</span> TIMES.
+       <span class="num">01</span>  WS-INDICE            PIC <span class="num">99</span>.
+
+       <span class="kw">PROCEDURE DIVISION</span>.
+       <span class="fn">0000-PRINCIPAL</span>.
+           ACCEPT WS-PARM FROM SYSPARM
+
+           EVALUATE WS-PARM
+               WHEN <span class="str">'S0C7    '</span>    PERFORM <span class="fn">1000-CAUSA-S0C7</span>
+               WHEN <span class="str">'S0C4    '</span>    PERFORM <span class="fn">2000-CAUSA-S0C4</span>
+               WHEN <span class="str">'LOOP    '</span>    PERFORM <span class="fn">3000-LOOP-INFINITO</span>
+               WHEN OTHER
+                   DISPLAY <span class="str">'USO: PARM=S0C7 ou S0C4 ou LOOP'</span>
+           END-EVALUATE
+           GOBACK.
+
+       <span class="fn">1000-CAUSA-S0C7</span>.
+<span class="jc">      *  Move espacos para campo numerico e opera = S0C7</span>
+           DISPLAY <span class="str">'CAUSANDO S0C7 - DATA EXCEPTION'</span>
+           MOVE SPACES TO WS-CAMPO-X
+           MOVE WS-CAMPO-X TO WS-CAMPO-NUM   <span class="jc">*&gt; campo X com espacos</span>
+           ADD <span class="num">1</span> TO WS-CAMPO-NUM             <span class="jc">*&gt; ABEND S0C7 aqui!</span>
+           DISPLAY WS-CAMPO-NUM.
+
+       <span class="fn">2000-CAUSA-S0C4</span>.
+<span class="jc">      *  Acessa subscript além da tabela = S0C4</span>
+           DISPLAY <span class="str">'CAUSANDO S0C4 - PROTECTION EXCEPTION'</span>
+           MOVE <span class="num">99</span> TO WS-INDICE               <span class="jc">*&gt; tabela tem apenas 5</span>
+           DISPLAY WS-TB-ITEM(WS-INDICE)       <span class="jc">*&gt; ABEND S0C4 aqui!</span>
+
+       <span class="fn">3000-LOOP-INFINITO</span>.
+<span class="jc">      *  Loop sem saida = S222 se operador cancelar</span>
+           DISPLAY <span class="str">'CAUSANDO LOOP (aguarde S222)'</span>
+           PERFORM FOREVER
+               ADD <span class="num">1</span> TO WS-RESULTADO
+           END-PERFORM.</pre>
+  </div>
+
+  <h3>JCL para testar um ABEND específico</h3>
+  <div class="cb">
+    <div class="cb-hdr"><span class="cb-lang">JCL — EBTFAULT (test fault)</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+    <pre><span class="jk">//EBTFAULT</span> <span class="jp">JOB</span> ,<span class="str">'FAULT TEST'</span>,CLASS=A,MSGCLASS=X,MSGLEVEL=(<span class="num">1</span>,<span class="num">1</span>)
+<span class="jk">//*</span> Altere o PARM abaixo para testar: S0C7, S0C4 ou LOOP
+<span class="jk">//STEP1</span>    <span class="jp">EXEC</span> PGM=EBFAULT1,PARM=<span class="str">'S0C7'</span>
+<span class="jk">//STEPLIB</span>  <span class="jp">DD</span>  DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+<span class="jk">//SYSABEND</span> <span class="jp">DD</span>  SYSOUT=*    <span class="jc">&lt;- dump formatado sai aqui!</span>
+<span class="jk">//SYSOUT</span>   <span class="jp">DD</span>  SYSOUT=*
+<span class="jk">//SYSPARM</span>  <span class="jp">DD</span> *
+S0C7
+<span class="jk">/*</span></pre>
+  </div>
+
+  <h3>Como ler o dump gerado (sem Fault Analyzer)</h3>
+  <div class="cb">
+    <div class="cb-hdr"><span class="cb-lang">DUMP READING — Guia de diagnóstico manual</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+    <pre><span class="jc">Quando o job terminar com ABEND S0C7, no spool SYSABEND:</span>
+
+<span class="jc">1. Procure a linha: "COMPLETION CODE  SYSTEM=0C7"</span>
+   COMPLETION CODE  SYSTEM=0C7  USER=0000
+
+<span class="jc">2. Ache o PSW (Program Status Word) e o offset:</span>
+   ABEND S0C7  PSW AT ABEND <span class="fn">00E00000 8001AB3C</span>
+   <span class="jc">            └── 8001AB3C = endereço da instrução que falhou</span>
+
+<span class="jc">3. No SYSPRINT do compilador (com MAP), localize o offset:</span>
+   <span class="jc">Subtraia o endereço do início do programa do endereço do ABEND</span>
+   <span class="jc">Essa diferença é o OFFSET dentro do programa compilado</span>
+
+<span class="jc">4. No mapa de compilação (SYSPRINT com LIST,MAP), encontre</span>
+   <span class="jc">qual paragrafo/instrução corresponde a esse offset</span>
+
+<span class="jc">5. Regra prática: procure no dump por registros GR0-GR15</span>
+   <span class="jc">Em S0C7, o registrador que aponta para o dado inválido</span>
+   <span class="jc">vai estar numa área com caracteres não numéricos</span></pre>
+  </div>
+
+  <div class="ib tip"><span class="ib-i">💡</span><div>Criar um ABEND, abrir o SYSABEND no SDSF, identificar o paragrafo que causou o problema, corrigir o código e recompilar — esse ciclo completo é o que você vai fazer todo dia em produção. Treinar isso no lab te diferencia muito.</div></div>
+</section>
+
+<!-- ════ D5 — HEXAVISION ════ -->
+<section class="sec" id="hex">
+  <div class="sec-hdr">
+    <div class="sec-num">D5 // HEXAVISION</div>
+    <h2>Inspeção Hexadecimal de Datasets</h2>
+    <p>HexaVision é uma ferramenta brasileira de VSAM browsing muito usada em bancos nacionais. O mesmo conceito existe em IDCAMS, File Manager e no ISPF browse em hex mode.</p>
+  </div>
+
+  <div class="tool-header">
+    <div class="tool-logo">🔍</div>
+    <div><div class="tool-name">HexaVision (simulado)</div><div class="tool-sub">VSAM Browser · Hex Dump · Record Navigation</div></div>
+  </div>
+
+  <h3>Leitura hexadecimal — por que importa?</h3>
+  <div class="ib info"><span class="ib-i">ℹ️</span><div>Em mainframe, os dados são armazenados em EBCDIC (não ASCII) e campos numéricos usam COMP-3 (packed decimal). Saber ler hex é obrigatório para diagnosticar dados corrompidos, entender dumps de memória e usar o File Manager.</div></div>
+
+  <h3>Tabela EBCDIC × ASCII mais usada</h3>
+  <table class="tbl">
+    <thead><tr><th>Char</th><th>EBCDIC hex</th><th>ASCII hex</th><th>Uso em mainframe</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td class="mono">F0</td><td class="mono">30</td><td>Dígito 0</td></tr>
+      <tr><td>9</td><td class="mono">F9</td><td class="mono">39</td><td>Dígito 9</td></tr>
+      <tr><td>A</td><td class="mono">C1</td><td class="mono">41</td><td>Letra maiúscula</td></tr>
+      <tr><td>Z</td><td class="mono">E9</td><td class="mono">5A</td><td>Letra maiúscula</td></tr>
+      <tr><td>Espaço</td><td class="mono">40</td><td class="mono">20</td><td>Preenchimento de campos X</td></tr>
+      <tr><td>+ (sign)</td><td class="mono">C</td><td>N/A</td><td>Nibble de sinal positivo em COMP-3</td></tr>
+      <tr><td>- (sign)</td><td class="mono">D</td><td>N/A</td><td>Nibble de sinal negativo em COMP-3</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Exercício — IDCAMS PRINT HEX do KSDS de Contas</h3>
+  <div class="cb">
+    <div class="cb-hdr"><span class="cb-lang">JCL — EBHEX01 — Dump hexadecimal do KSDS</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+    <pre><span class="jk">//EBHEX01</span>  <span class="jp">JOB</span> ,<span class="str">'EMUNAH HEX'</span>,CLASS=A,MSGCLASS=X,MSGLEVEL=(<span class="num">1</span>,<span class="num">1</span>)
+<span class="jk">//HEXDUMP</span>  <span class="jp">EXEC</span> PGM=IDCAMS
+<span class="jk">//SYSPRINT</span> <span class="jp">DD</span>  SYSOUT=*
+<span class="jk">//VSAMIN</span>   <span class="jp">DD</span>  DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+<span class="jk">//SYSIN</span>    <span class="jp">DD</span> *
+  PRINT INFILE(VSAMIN) -
+        CHARACTER                <span class="jc">← modo texto legível</span>
+        COUNT(5)                 <span class="jc">← mostra 5 registros</span>
+
+  PRINT INFILE(VSAMIN) -
+        HEX                      <span class="jc">← modo hexadecimal bruto</span>
+        COUNT(2)                 <span class="jc">← 2 registros em hex</span>
+<span class="jk">/*</span></pre>
+  </div>
+
+  <h3>Como ler a saída HEX do PRINT</h3>
+  <div class="cb">
+    <div class="cb-hdr"><span class="cb-lang">OUTPUT — IDCAMS PRINT HEX (exemplo)</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+    <pre><span class="jc">LISTING FROM DATASET -- Z77948.EMUNAH.ARQ.CONTA.KSDS</span>
+
+KEY OF RECORD - F0F0F0F1F0F0F0F0F0F0F0F0 <span class="jc">← chave: 000100000001</span>
+
+RBA OF RECORD - 0
+
+RECORD SEQUENCE NUMBER - 1
+<span class="fn">F0F0F0 1F0F0F0 F0F0F0 F0F0F1 C3C1 F0 F0F0F2F6</span>
+<span class="jc">└─────┘ └──────────────┘ └─────┘└──┘└──┘└────────┘</span>
+<span class="jc"> AGEN    NUM-CONTA        CLIEN  TP  ST  DATA</span>
+<span class="jc"> 0001    00000001         00001  CA  0   20260312</span>
+
+<span class="jc">O CNT-SALDO (COMP-3, 13 dígitos) aparece assim:</span>
+<span class="jc">Valor 1005.00 em COMP-3 = 0000001005 0C (nibble C = positivo)</span>
+000000010050C <span class="jc">← 6 bytes COMP-3</span></pre>
+  </div>
+
+  <h3>Modo HEX no ISPF Browse — sem nenhum software extra</h3>
+  <div class="cb">
+    <div class="cb-hdr"><span class="cb-lang">ISPF — Browse em modo HEX</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+    <pre><span class="jc">1. ISPF opção 1 (Browse) → informe o dataset</span>
+<span class="jc">2. Dentro do browse, digite na linha de comando:</span>
+
+    HEX ON       <span class="jc">← ativa modo hex</span>
+    HEX OFF      <span class="jc">← volta modo texto</span>
+    COLS ON      <span class="jc">← mostra régua de colunas</span>
+    FIND /F0/    <span class="jc">← encontra byte F0 em qualquer posição</span>
+    
+<span class="jc">Visualização HEX ON mostra duas linhas por registro:</span>
+<span class="jc">Linha 1: representação EBCDIC (texto)</span>
+<span class="jc">Linha 2: valores hexadecimais dos bytes</span></pre>
+  </div>
+</section>
+
+<!-- ════ E — NOVOS MÓDULOS ════ -->
+<section class="sec" id="novos">
+  <div class="sec-hdr">
+    <div class="sec-num">E // NOVOS MÓDULOS</div>
+    <h2>O que adicionar para cobrir lacunas de carreira</h2>
+    <p>O lab atual cobre muito bem o ciclo batch. Estas são as adições que completam o perfil de desenvolvedor mainframe de mercado.</p>
+  </div>
+
+  <div class="mod-grid">
+    <div class="mod-card">
+      <div class="mod-icon">📋</div>
+      <h4>EBJIRA — Tracker de Issues</h4>
+      <p>Simula o uso do Jira para registrar bugs, tarefas e change requests do lab. Use um <code>docs/issues/</code> no formato Jira-like.</p>
+      <span class="mod-tag t-blue">PROCESSO</span>
+    </div>
+    <div class="mod-card">
+      <div class="mod-icon">🔄</div>
+      <h4>EBRECON — Reconciliação melhorada</h4>
+      <p>Upgrade do EBCONC01 para comparar totais reais: QTD entrada × QTD válidos + QTD rejeitos = QTD total.</p>
+      <span class="mod-tag t-green">COBOL</span>
+    </div>
+    <div class="mod-card">
+      <div class="mod-icon">📊</div>
+      <h4>EBREPORT — Relatório Gerencial</h4>
+      <p>Programa COBOL que gera relatório em 132 colunas com totais por conta, por tipo de lançamento e por canal.</p>
+      <span class="mod-tag t-green">COBOL</span>
+    </div>
+    <div class="mod-card">
+      <div class="mod-icon">🔑</div>
+      <h4>CPCNT001 Alt Key — Chave alternativa</h4>
+      <p>Adicionar AIX (Alternate Index) por CPF do cliente no KSDS de contas — feature avançada de VSAM muito cobrada.</p>
+      <span class="mod-tag t-amber">VSAM</span>
+    </div>
+    <div class="mod-card">
+      <div class="mod-icon">📱</div>
+      <h4>EBPIX01 — Simulação de PIX batch</h4>
+      <p>Programa que processa lançamentos tipo PIX com validação de chave (CPF/CNPJ) no batch noturno.</p>
+      <span class="mod-tag t-green">COBOL</span>
+    </div>
+    <div class="mod-card">
+      <div class="mod-icon">🧮</div>
+      <h4>EBSORT01 — DFSORT/ICETOOL</h4>
+      <p>JCL que ordena o arquivo de lançamentos por data+conta antes da postagem. Uso real do DFSORT com ICETOOL.</p>
+      <span class="mod-tag t-amber">JCL</span>
+    </div>
+    <div class="mod-card">
+      <div class="mod-icon">🔐</div>
+      <h4>CPRACF — Simulação RACF</h4>
+      <p>Documentar perfis de segurança simulados, dataset profiles, GROUP e USER commands do RACF no Z Xplore.</p>
+      <span class="mod-tag t-purple">SEGURANÇA</span>
+    </div>
+    <div class="mod-card">
+      <div class="mod-icon">🌐</div>
+      <h4>EBZCONN — z/OS Connect EE</h4>
+      <p>Expor um serviço COBOL como REST API via z/OS Connect — modernização incremental, muito requisitado.</p>
+      <span class="mod-tag t-cyan">MODERNO</span>
+    </div>
+  </div>
+
+  <h3>Jira simulado — estrutura de issues no Git</h3>
+  <div class="cb">
+    <div class="cb-hdr"><span class="cb-lang">MARKDOWN — docs/issues/EMUNAH-001.md</span><button class="cb-copy" onclick="copyCode(this)">copiar</button></div>
+    <pre><span class="jc"># EMUNAH-001 — Bug: EBJVALD sem DD VALIDOS</span>
+
+**Status:** RESOLVIDO
+**Tipo:** Bug
+**Prioridade:** P1-Critica
+**Assignee:** Desenvolvedor
+**Data abertura:** 2026-03-15
+**Data resolucao:** 2026-03-15
+
+## Descricao
+EBJVALD nao define o DD VALIDOS necessario para EBVALI01.
+O programa tenta abrir o arquivo VALIDOS e recebe OPEN error.
+
+## Causa Raiz
+JCL criado com foco no arquivo de rejeitos mas esqueceu
+o arquivo de saida de registros validos.
+
+## Solucao Aplicada
+Adicionada DD VALIDOS apontando para LANCTO.ESDS.
+Corrigido tambem o DDNAME de REJEITO para REJEITOS
+para bater com ASSIGN TO REJEITOS no COBOL.
+
+## Arquivos Alterados
+- jcl/batch/EBJVALD.jcl
+- docs/04-mapa-datasets.md (adicionado LANCTO.ESDS como saida)
+
+## Evidencias
+- Spool do job antes da correcao: CC 0012
+- Spool do job apos correcao: CC 0000</pre>
+  </div>
+</section>
+
+<!-- ════ F — ROADMAP ════ -->
+<section class="sec" id="roadmap2">
+  <div class="sec-hdr">
+    <div class="sec-num">F // ROADMAP REVISADO</div>
+    <h2>Próximos passos — ordem de prioridade</h2>
+    <p>Baseado nos bugs encontrados e nos incrementos propostos.</p>
+  </div>
+
+  <div class="ph-badge pb-red">● Semana 1 — Corrigir os bugs bloqueadores</div>
+  <div class="tl" style="margin-top:16px;">
+    <div class="tl-item"><div class="tl-dot"></div>
+      <div class="tl-week">Imediato</div>
+      <div class="tl-ttl">Corrigir BUGs 01-09</div>
+      <div class="tl-desc">Especialmente BUG-03 (VALIDOS DD), BUG-04 (MOVTIN), BUG-05 (CONCOUT). Esses três juntos impedem a cadeia de funcionar do início ao fim.</div>
+    </div>
+    <div class="tl-item"><div class="tl-dot"></div>
+      <div class="tl-week">Dia 2</div>
+      <div class="tl-ttl">Testar ciclo completo</div>
+      <div class="tl-desc">Após corrigir os bugs, submeter a cadeia completa: EBJCLLD → EBJLOAD → EBJVALD → EBJPOST → EBJSALD → EBJEXTR → EBJCONC → EBJEOD. Objetivo: RC=0 ou RC=4 em todos.</div>
+    </div>
+    <div class="tl-item"><div class="tl-dot a"></div>
+      <div class="tl-week">Semana 2</div>
+      <div class="tl-ttl">Implementar EBJREPR + script build.ps1</div>
+      <div class="tl-desc">O reprocessamento é uma das rotinas mais cobradas em entrevistas. O build paramétrico vai acelerar o ciclo de desenvolvimento no lab.</div>
+    </div>
+    <div class="tl-item"><div class="tl-dot a"></div>
+      <div class="tl-week">Semana 3</div>
+      <div class="tl-ttl">Control-M simulation + ctm_sim.py</div>
+      <div class="tl-desc">Colocar o scheduler Python rodando automaticamente. Testar os cenários de hold-job, missing-input e reprocess com o CTM simulado.</div>
+    </div>
+    <div class="tl-item"><div class="tl-dot b"></div>
+      <div class="tl-week">Semana 4</div>
+      <div class="tl-ttl">Fault Injection + Dump Reading</div>
+      <div class="tl-desc">Compilar EBFAULT1, causar S0C7 e S0C4, ler os dumps no SDSF. Documentar o diagnóstico no runbook. Esse exercício tem valor de portfólio enorme.</div>
+    </div>
+    <div class="tl-item"><div class="tl-dot b"></div>
+      <div class="tl-week">Mês 2</div>
+      <div class="tl-ttl">File Manager + CPAUD001 estruturado</div>
+      <div class="tl-desc">Criar templates no File Manager para CPCNT001 e CPCLI001. Migrar os programas para usar CPAUD001 em vez de STRING livre.</div>
+    </div>
+    <div class="tl-item"><div class="tl-dot p"></div>
+      <div class="tl-week">Mês 3</div>
+      <div class="tl-ttl">Endevor simulation + promote scripts</div>
+      <div class="tl-desc">Implementar o workflow Git com branches dev/homolog/main. Criar os scripts de promoção e o change-log.md. Simular uma mudança completa: feature → dev → homolog → main.</div>
+    </div>
+    <div class="tl-item"><div class="tl-dot p"></div>
+      <div class="tl-week">Mês 4+</div>
+      <div class="tl-ttl">DFSORT, AIX, z/OS Connect — diferenciação</div>
+      <div class="tl-desc">EBSORT01 com DFSORT antes do EBJPOST. Alternate Index por CPF no KSDS de contas. REST API sobre COBOL via z/OS Connect EE — isso é modernização mainframe, o tópico mais quente do mercado.</div>
+    </div>
+  </div>
+
+  <div class="ib tip" style="margin-top:28px;"><span class="ib-i">🏆</span><div><strong>Dica de portfólio:</strong> Quando for a entrevistas, mostre o seu Git com o <code>change-log.md</code>, o <code>docs/issues/</code> como se fossem tickets Jira, e o <code>ctm_sim.py</code> rodando. Diga: "Simulei Control-M, Endevor e Fault Analyzer no meu lab pessoal." Pouquíssimos candidatos chegam com esse nível de preparação.</div></div>
+
+  <div style="margin-top:36px; background:var(--surf); border:1px solid var(--brd); border-radius:var(--r2); padding:24px; text-align:center;">
+    <div style="font-family:var(--mono); font-size:9px; color:var(--text3); letter-spacing:2px; margin-bottom:8px;">EMUNAH-BANK-LAB · REVISÃO TÉCNICA v2</div>
+    <div style="font-size:18px; font-weight:700; color:#fff; margin-bottom:6px;">Laboratório bem estruturado — agora corrija os bugs e expanda!</div>
+    <div style="color:var(--text3); font-size:12px;">Em 5 dias você construiu algo que poucos candidatos mainframe têm. Continue.</div>
+    <div style="margin-top:14px; font-family:var(--mono); font-size:10px; color:var(--green3);">COBOL · JCL · VSAM · GDG · ZOWE · TN3270 · Control-M · Endevor · File Manager · Fault Analyzer</div>
+  </div>
+</section>
+
+</div><!-- /content -->
+</main>
+</div><!-- /shell -->
+
+<script>
+/* ── estado resolvido em memória (por sessão) ── */
+const resolved = new Set();
+
+/* mapa: id-da-section → { selector, navId, label } */
+const SECTION_META = {
+  bugs:     { sel: '.bug-card',  navId: 'nav-bugs',     label: 'Bugs Críticos' },
+  incons:   { sel: '.bug-card',  navId: 'nav-incons',   label: 'Inconsistências' },
+  melhoria: { sel: '.step',      navId: 'nav-melhoria', label: 'Melhorias' },
+};
+
+/* ── injeta botão + stamp + barra de progresso em cada card ── */
+function initResolveButtons() {
+  Object.entries(SECTION_META).forEach(([secId, meta]) => {
+    const sec = document.getElementById(secId);
+    if (!sec) return;
+
+    /* barra de progresso logo após o sec-hdr */
+    const hdr = sec.querySelector('.sec-hdr');
+    const bar = document.createElement('div');
+    bar.className = 'progress-bar-wrap';
+    bar.id = `prog-${secId}`;
+    bar.innerHTML = `
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="fill-${secId}"></div></div>
+      <div class="progress-label" id="lbl-${secId}">0 / 0 resolvidos</div>`;
+    hdr.after(bar);
+
+    /* botão + stamp em cada card header */
+    sec.querySelectorAll(meta.sel).forEach((card, idx) => {
+      const cardId = `${secId}-${idx}`;
+      card.dataset.cardId = cardId;
+
+      const hdrEl = card.querySelector('.bug-hdr, .step-hdr');
+      if (!hdrEl) return;
+
+      const btn = document.createElement('button');
+      btn.className = 'resolved-btn';
+      btn.dataset.cardId = cardId;
+      btn.innerHTML = '✓ Marcar resolvido';
+      btn.onclick = (e) => { e.stopPropagation(); toggleResolved(cardId, secId); };
+
+      const stamp = document.createElement('span');
+      stamp.className = 'resolved-stamp';
+      stamp.id = `stamp-${cardId}`;
+      stamp.textContent = '● RESOLVIDO';
+
+      /* insere antes do toggle ▼ */
+      const tog = hdrEl.querySelector('.bug-tog, .step-tog');
+      hdrEl.insertBefore(stamp, tog);
+      hdrEl.insertBefore(btn, stamp);
+    });
+
+    updateProgress(secId);
+  });
+}
+
+function toggleResolved(cardId, secId) {
+  const isNowResolved = !resolved.has(cardId);
+  if (isNowResolved) resolved.add(cardId); else resolved.delete(cardId);
+
+  const card = document.querySelector(`[data-card-id="${cardId}"]`);
+  const btn  = document.querySelector(`.resolved-btn[data-card-id="${cardId}"]`);
+  if (!card || !btn) return;
+
+  card.classList.toggle('resolved', isNowResolved);
+  btn.classList.toggle('done', isNowResolved);
+  btn.innerHTML = isNowResolved ? '↩ Reabrir' : '✓ Marcar resolvido';
+
+  updateProgress(secId);
+  updateNavBadge(secId);
+}
+
+function updateProgress(secId) {
+  const sec  = document.getElementById(secId);
+  const meta = SECTION_META[secId];
+  if (!sec || !meta) return;
+  const cards = [...sec.querySelectorAll(meta.sel)];
+  const total = cards.length;
+  const done  = cards.filter(c => resolved.has(c.dataset.cardId)).length;
+  const pct   = total ? Math.round((done / total) * 100) : 0;
+  const fill  = document.getElementById(`fill-${secId}`);
+  const lbl   = document.getElementById(`lbl-${secId}`);
+  if (fill) fill.style.width = pct + '%';
+  if (lbl)  lbl.innerHTML = `<span>${done}</span> / ${total} resolvidos`;
+}
+
+function updateNavBadge(secId) {
+  const sec  = document.getElementById(secId);
+  const meta = SECTION_META[secId];
+  if (!sec || !meta) return;
+  const cards = [...sec.querySelectorAll(meta.sel)];
+  const total = cards.length;
+  const done  = cards.filter(c => resolved.has(c.dataset.cardId)).length;
+  const pending = total - done;
+
+  /* encontra o nav-a correspondente pela função show() no onclick */
+  const navLink = document.querySelector(`.nav-a[onclick*="'${secId}'"]`);
+  if (!navLink) return;
+  const badge = navLink.querySelector('.nav-badge');
+  if (!badge) return;
+  if (pending === 0) {
+    badge.style.background = 'rgba(0,255,157,.1)';
+    badge.style.color      = 'var(--green)';
+    badge.style.border     = '1px solid rgba(0,255,157,.25)';
+    badge.textContent      = '✓ ok';
+  } else {
+    /* restaura cor original */
+    const isRed    = badge.classList.contains('nb-bug');
+    const isAmber  = badge.classList.contains('nb-warn');
+    badge.style.background = '';
+    badge.style.color      = '';
+    badge.style.border     = '';
+    badge.textContent      = pending;
+  }
+}
+
+/* ── navegação ── */
+function show(id) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nav-a').forEach(n => n.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  event.currentTarget.classList.add('on');
+  document.querySelector('.main').scrollTop = 0;
+}
+
+/* ── toggle expand de bug card ── */
+function toggleBug(hdr) {
+  /* não expande se clicou no botão resolve */
+  if (event.target.closest('.resolved-btn')) return;
+  const body = hdr.nextElementSibling;
+  const tog  = hdr.querySelector('.bug-tog');
+  body.classList.toggle('open');
+  tog.classList.toggle('open');
+}
+
+/* ── toggle expand de step card ── */
+function toggleStep(hdr) {
+  if (event.target.closest('.resolved-btn')) return;
+  const body = hdr.nextElementSibling;
+  const tog  = hdr.querySelector('.step-tog');
+  body.classList.toggle('open');
+  tog.classList.toggle('open');
+}
+
+/* ── copiar código ── */
+function copyCode(btn) {
+  const pre = btn.closest('.cb').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'copiado!';
+    setTimeout(() => btn.textContent = 'copiar', 2000);
+  });
+}
+
+/* ── inicializa ── */
+document.addEventListener('DOMContentLoaded', () => {
+  initResolveButtons();
+  /* abre o primeiro bug automaticamente */
+  const firstBugHdr = document.querySelector('#bugs .bug-card .bug-hdr');
+  if (firstBugHdr) {
+    firstBugHdr.nextElementSibling.classList.add('open');
+    const tog = firstBugHdr.querySelector('.bug-tog');
+    if (tog) tog.classList.add('open');
+  }
+});
+</script>
+</body>
+</html>
