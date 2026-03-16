@@ -4014,6 +4014,105 @@ zowe zos-jobs view job-status-by-jobid JOB12345
 Ver spool completo
 
 
+16/06 - SEGUNDA
+
+
+USEI O CLAUDE.AI E ELE FEZ UM SITE PARA MIM. DEPOIS DE ALGUNS TESTES USANDO TAMBÉM O CHATGPT, FIZ ESSAS CORREÇÕES:
+
+
+a documentação e o manual passaram a separar os papéis: EBCOMP compila, EBLINK link-edita e EBBUILD usa IGYWCL para compile + link em um único job.
+
+os três membros estavam conceitualmente sobrepostos, o que confundia o fluxo de build.
+
+JCL — EBCOMP.jcl
+copiar
+caminho local: jcl/compile/EBCOMP.jcl
+//* ------------------------------------------------------------
+//* JOB: EBCOMP
+//* FINALIDADE:
+//* Executar a compilacao do programa COBOL informado em PGMNAME.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler o fonte COBOL.
+//* 2. Resolver os copybooks.
+//* 3. Gerar o modulo objeto.
+//* 4. Emitir listagem e mensagens de compilacao.
+//* ------------------------------------------------------------
+//EBCOMP   JOB ,'EMUNAH COMP',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//COMPILE  EXEC PGM=IGYCRCTL,PARM='OBJECT,LIST,MAP,APOST,RENT'
+//* Executa o compilador COBOL.
+//SYSPRINT DD SYSOUT=*
+//* Relatorio detalhado da compilacao.
+//SYSLIB   DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
+//* Biblioteca de copybooks.
+//SYSIN    DD DSN=Z77948.EMUNAH.DEV.COBOL(&PGMNAME),DISP=SHR
+//* Fonte COBOL a ser compilado.
+//SYSLIN   DD DSN=&&OBJ,DISP=(,PASS),UNIT=SYSDA,
+//             SPACE=(TRK,(1,1)),DCB=(RECFM=FB,LRECL=80,BLKSIZE=3200)
+//* Dataset temporario que recebera o modulo objeto gerado na
+//* compilacao para ser usado depois na link-edicao.
+//SYSOUT   DD SYSOUT=*
+//* Saida geral do compilador.
+JCL — EBLINK.jcl
+copiar
+caminho local: jcl/compile/EBLINK.jcl
+//* ------------------------------------------------------------
+//* JOB: EBLINK
+//* FINALIDADE:
+//* Realizar a link-edicao do modulo objeto gerado no EBCOMP.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler o objeto temporario.
+//* 2. Invocar o linkage editor.
+//* 3. Gravar o modulo executavel na LOADLIB.
+//* ------------------------------------------------------------
+//EBLINK   JOB ,'EMUNAH LINK',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//LINK     EXEC PGM=IEWBLINK,PARM='RENT,REUS'
+//* Executa o linkage editor.
+//SYSPRINT DD SYSOUT=*
+//* Listagem detalhada do link-edit.
+//SYSLIN   DD DSN=&&OBJ,DISP=(OLD,DELETE)
+//* Modulo objeto vindo do passo de compilacao.
+//SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(&PGMNAME),DISP=SHR
+//* Biblioteca que recebera o executavel final.
+JCL — EBBUILD.jcl
+copiar
+caminho local: jcl/compile/EBBUILD.jcl
+//* ------------------------------------------------------------
+//* JOB: EBBUILD
+//* FINALIDADE:
+//* Executar compilacao e link-edicao em um unico job usando IGYWCL.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler o fonte COBOL.
+//* 2. Resolver copybooks.
+//* 3. Compilar e link-editar.
+//* 4. Gerar o modulo na LOADLIB.
+//* ------------------------------------------------------------
+//EBBUILD  JOB ,'EMUNAH BUILD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//CL       EXEC IGYWCL
+//* Procedure IBM que compila e link-edita de uma vez.
+//COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCLLOAD),DISP=SHR
+//* Fonte COBOL alvo do build.
+//COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
+//* Copybooks utilizados na compilacao.
+//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBCLLOAD),DISP=SHR
+//* Saida do modulo executavel.
+//LKED.SYSPRINT DD SYSOUT=*
+//* Relatorio da fase de link-edicao. 
+
+Resultado
+o aprendizado ficou mais fiel ao processo real e o manual agora explica quando usar cada caminho, com o fonte JCL completo dentro da própria correção.
+
+Problema: os três membros estavam conceitualmente sobrepostos, o que confundia o fluxo de build.
+
+Resolução aplicada: a documentação e o manual passaram a separar os papéis: EBCOMP compila, EBLINK link-edita e EBBUILD usa IGYWCL para compile + link em um único job.
+
+Resultado: o aprendizado ficou mais fiel ao processo real e o manual agora explica quando usar cada caminho, com o fonte JCL completo dentro da própria correção.
+
+
+
+
 
 
 
