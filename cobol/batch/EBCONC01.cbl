@@ -75,10 +75,10 @@
       * '00' = sucesso   '10' = fim de arquivo                        *
       *---------------------------------------------------------------*
        01  WS-FILE-STATUS.
-           05 WS-FS-MOVTIN            PIC XX.
+           05 WS-FS-MOVTIN            PIC XX VALUE SPACES.
               88 FS-MOVTIN-OK         VALUE '00'.
               88 FS-MOVTIN-EOF        VALUE '10'.
-           05 WS-FS-CONCOUT           PIC XX.
+           05 WS-FS-CONCOUT           PIC XX VALUE SPACES.
               88 FS-CONCOUT-OK        VALUE '00'.
 
       *---------------------------------------------------------------*
@@ -137,6 +137,9 @@
 
            IF NAO-OCORREU-ERRO-IO
                PERFORM 2000-PROCESSAR-MOVIMENTOS
+           END-IF
+
+           IF NAO-OCORREU-ERRO-IO
                PERFORM 3000-GRAVAR-TOTAIS
            END-IF
 
@@ -148,8 +151,7 @@
       * Abre os arquivos de entrada e saida                           *
       *---------------------------------------------------------------*
        1000-ABRIR-ARQUIVOS.
-           OPEN INPUT  MOVTO-IN
-                OUTPUT CONCIL-OUT
+           OPEN INPUT MOVTO-IN
 
            IF FS-MOVTIN-OK
                SET MOVTIN-ABERTO TO TRUE
@@ -159,12 +161,16 @@
                SET OCORREU-ERRO-IO TO TRUE
            END-IF
 
-           IF FS-CONCOUT-OK
-               SET CONCOUT-ABERTO TO TRUE
-           ELSE
-               DISPLAY '*** ERRO OPEN CONCIL-OUT - STATUS: '
-                       WS-FS-CONCOUT
-               SET OCORREU-ERRO-IO TO TRUE
+           IF NAO-OCORREU-ERRO-IO
+               OPEN OUTPUT CONCIL-OUT
+
+               IF FS-CONCOUT-OK
+                   SET CONCOUT-ABERTO TO TRUE
+               ELSE
+                   DISPLAY '*** ERRO OPEN CONCIL-OUT - STATUS: '
+                           WS-FS-CONCOUT
+                   SET OCORREU-ERRO-IO TO TRUE
+               END-IF
            END-IF.
 
       *---------------------------------------------------------------*
