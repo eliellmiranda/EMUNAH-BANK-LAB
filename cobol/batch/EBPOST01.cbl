@@ -1,5 +1,6 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. EBPOST01.
+
       *===============================================================*
       * PROGRAMA: EBPOST01                                            *
       * FUNCAO : POSTAR MOVIMENTOS NAS CONTAS                         *
@@ -20,6 +21,7 @@
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
+
       *---------------------------------------------------------------*
       * MOVTO-IN = arquivo de entrada com os movimentos do dia        *
       * Ex.: creditos, debitos, ajustes                               *
@@ -93,15 +95,23 @@
       * Area para armazenar os file status dos arquivos               *
       *---------------------------------------------------------------*
        01  WS-FILE-STATUS.
-           05 WS-FS-MOVTIN            PIC XX.
-           05 WS-FS-CONTA             PIC XX.
-           05 WS-FS-AUDIT             PIC XX.
+           05 WS-FS-MOVTIN            PIC XX VALUE SPACES.
+           05 WS-FS-CONTA             PIC XX VALUE SPACES.
+           05 WS-FS-AUDIT             PIC XX VALUE SPACES.
 
       *---------------------------------------------------------------*
-      * Controle de fim de arquivo                                    *
+      * Controle de processamento                                     *
       *---------------------------------------------------------------*
        01  WS-CONTROLES.
            05 WS-EOF-MOVTO            PIC X VALUE 'N'.
+              88 FIM-MOVTO                 VALUE 'S'.
+           05 WS-FALHA-INICIALIZACAO PIC X VALUE 'N'.
+           05 WS-MOVTO-ABERTO        PIC X VALUE 'N'.
+           05 WS-CONTA-ABERTO        PIC X VALUE 'N'.
+           05 WS-AUDIT-ABERTO        PIC X VALUE 'N'.
+           05 WS-MOVIMENTO-VALIDO    PIC X VALUE 'S'.
+              88 MOVIMENTO-OK             VALUE 'S'.
+              88 MOVIMENTO-ERRO           VALUE 'N'.
 
       *---------------------------------------------------------------*
       * Contadores para resumo final                                  *
@@ -119,35 +129,65 @@
            05 WS-NUM-CONTA            PIC 9(8).
 
       *---------------------------------------------------------------*
-      * Campos auxiliares                                             *
+      * Campos auxiliares para exibicao em auditoria                  *
       *---------------------------------------------------------------*
-       01  WS-VALOR-EDIT              PIC ZZZ.ZZZ.ZZ9,99.
-       01  WS-SALDO-ANTES-EDIT        PIC ZZZ.ZZZ.ZZ9,99.
-       01  WS-SALDO-DEPOIS-EDIT       PIC ZZZ.ZZZ.ZZ9,99.
+       01  WS-AREAS-EDICAO.
+           05 WS-VALOR-EDIT           PIC ZZZ.ZZZ.ZZZ.ZZ9,99.
+           05 WS-SALDO-ANTES-EDIT     PIC -ZZZ.ZZZ.ZZZ.ZZ9,99.
+           05 WS-SALDO-DEPOIS-EDIT    PIC -ZZZ.ZZZ.ZZZ.ZZ9,99.
 
        PROCEDURE DIVISION.
+
       *===============================================================*
       * FLUXO PRINCIPAL                                               *
       *===============================================================*
        0000-PRINCIPAL.
            PERFORM 1000-ABRIR-ARQUIVOS
-           PERFORM 2000-PROCESSAR-MOVIMENTOS
+
+           IF WS-FALHA-INICIALIZACAO = 'N'
+               PERFORM 2000-PROCESSAR-MOVIMENTOS
+           END-IF
+
            PERFORM 9000-ENCERRAR
            GOBACK.
 
       *---------------------------------------------------------------*
-      * Abre os arquivos necessarios                                  *
+      * Abre os arquivos necessarios e valida os file status          *
       *---------------------------------------------------------------*
        1000-ABRIR-ARQUIVOS.
-           OPEN INPUT  MOVTO-IN
-           OPEN I-O    CONTA-KSDS
-           OPEN OUTPUT AUDIT-OUT.
+           OPEN INPUT MOVTO-IN
+           IF WS-FS-MOVTIN = '00'
+               MOVE 'S' TO WS-MOVTO-ABERTO
+           ELSE
+               MOVE 'S' TO WS-FALHA-INICIALIZACAO
+               DISPLAY 'ERRO OPEN MOVTO-IN. FS=' WS-FS-MOVTIN
+           END-IF
+
+           IF WS-FALHA-INICIALIZACAO = 'N'
+               OPEN I-O CONTA-KSDS
+               IF WS-FS-CONTA = '00'
+                   MOVE 'S' TO WS-CONTA-ABERTO
+               ELSE
+                   MOVE 'S' TO WS-FALHA-INICIALIZACAO
+                   DISPLAY 'ERRO OPEN CONTA-KSDS. FS=' WS-FS-CONTA
+               END-IF
+           END-IF
+
+           IF WS-FALHA-INICIALIZACAO = 'N'
+               OPEN OUTPUT AUDIT-OUT
+               IF WS-FS-AUDIT = '00'
+                   MOVE 'S' TO WS-AUDIT-ABERTO
+               ELSE
+                   MOVE 'S' TO WS-FALHA-INICIALIZACAO
+                   DISPLAY 'ERRO OPEN AUDIT-OUT. FS=' WS-FS-AUDIT
+               END-IF
+           END-IF.
 
       *---------------------------------------------------------------*
       * Loop principal de leitura do arquivo de movimentos            *
       *---------------------------------------------------------------*
        2000-PROCESSAR-MOVIMENTOS.
-           PERFORM UNTIL WS-EOF-MOVTO = 'S'
+           PERFORM UNTIL FIM-MOVTO
                READ MOVTO-IN
                    AT END
                        MOVE 'S' TO WS-EOF-MOVTO
@@ -159,27 +199,17 @@
 
       *---------------------------------------------------------------*
       * Trata cada movimento lido                                     *
-      * - valida tipo                                                 *
+      * - valida dados basicos                                        *
       * - monta chave da conta                                        *
       * - le a conta no KSDS                                          *
       * - atualiza saldo                                              *
       *---------------------------------------------------------------*
        2100-TRATAR-MOVIMENTO.
-           IF MV-TIPO NOT = 'C'
-              AND MV-TIPO NOT = 'D'
-               ADD 1 TO WS-REJEITADOS
-               MOVE SPACES TO AUDIT-REG
-               STRING 'REJEITADO - TIPO INVALIDO - AG '
-                      MV-AGENCIA
-                      ' CTA '
-                      MV-CONTA
-                      ' DATA '
-                      MV-DATA
-                      DELIMITED BY SIZE
-                      INTO AUDIT-REG
-               END-STRING
-               WRITE AUDIT-REG
-           ELSE
+           SET MOVIMENTO-OK TO TRUE
+
+           PERFORM 2110-VALIDAR-MOVIMENTO
+
+           IF MOVIMENTO-OK
                MOVE MV-AGENCIA TO WS-AGENCIA
                MOVE MV-CONTA   TO WS-NUM-CONTA
 
@@ -198,10 +228,63 @@
                               DELIMITED BY SIZE
                               INTO AUDIT-REG
                        END-STRING
-                       WRITE AUDIT-REG
+                       PERFORM 7000-GRAVAR-AUDITORIA
+                       SET MOVIMENTO-ERRO TO TRUE
                    NOT INVALID KEY
                        PERFORM 2200-ATUALIZAR-SALDO
                END-READ
+           END-IF.
+
+      *---------------------------------------------------------------*
+      * Valida o movimento antes da tentativa de postagem             *
+      * OBS.: Mesmo que haja etapa anterior de validacao, manter      *
+      * esta protecao aqui ajuda na robustez do batch                 *
+      *---------------------------------------------------------------*
+       2110-VALIDAR-MOVIMENTO.
+           IF MV-TIPO NOT = 'C'
+              AND MV-TIPO NOT = 'D'
+               SET MOVIMENTO-ERRO TO TRUE
+               ADD 1 TO WS-REJEITADOS
+               MOVE SPACES TO AUDIT-REG
+               STRING 'REJEITADO - TIPO INVALIDO - AG '
+                      MV-AGENCIA
+                      ' CTA '
+                      MV-CONTA
+                      ' DATA '
+                      MV-DATA
+                      DELIMITED BY SIZE
+                      INTO AUDIT-REG
+               END-STRING
+               PERFORM 7000-GRAVAR-AUDITORIA
+           ELSE
+               IF MV-AGENCIA = ZERO
+                  OR MV-CONTA = ZERO
+                   SET MOVIMENTO-ERRO TO TRUE
+                   ADD 1 TO WS-REJEITADOS
+                   MOVE SPACES TO AUDIT-REG
+                   STRING 'REJEITADO - CHAVE INVALIDA - AG '
+                          MV-AGENCIA
+                          ' CTA '
+                          MV-CONTA
+                          DELIMITED BY SIZE
+                          INTO AUDIT-REG
+                   END-STRING
+                   PERFORM 7000-GRAVAR-AUDITORIA
+               ELSE
+                   IF MV-VALOR <= ZERO
+                       SET MOVIMENTO-ERRO TO TRUE
+                       ADD 1 TO WS-REJEITADOS
+                       MOVE SPACES TO AUDIT-REG
+                       STRING 'REJEITADO - VALOR INVALIDO - AG '
+                              MV-AGENCIA
+                              ' CTA '
+                              MV-CONTA
+                              DELIMITED BY SIZE
+                              INTO AUDIT-REG
+                       END-STRING
+                       PERFORM 7000-GRAVAR-AUDITORIA
+                   END-IF
+               END-IF
            END-IF.
 
       *---------------------------------------------------------------*
@@ -231,11 +314,10 @@
                           DELIMITED BY SIZE
                           INTO AUDIT-REG
                    END-STRING
-                   WRITE AUDIT-REG
+                   PERFORM 7000-GRAVAR-AUDITORIA
                NOT INVALID KEY
                    ADD 1 TO WS-PROCESSADOS
-                   MOVE MV-VALOR               TO WS-VALOR-EDIT
-                   MOVE WS-SALDO-ANTES-EDIT    TO WS-SALDO-ANTES-EDIT
+                   MOVE MV-VALOR TO WS-VALOR-EDIT
                    MOVE CNT-SALDO OF CONTA-REG TO WS-SALDO-DEPOIS-EDIT
                    MOVE SPACES TO AUDIT-REG
                    STRING 'POSTADO - AG '
@@ -246,11 +328,24 @@
                           MV-TIPO
                           ' VALOR '
                           WS-VALOR-EDIT
+                          ' SALDO ANT '
+                          WS-SALDO-ANTES-EDIT
+                          ' SALDO DEP '
+                          WS-SALDO-DEPOIS-EDIT
                           DELIMITED BY SIZE
                           INTO AUDIT-REG
                    END-STRING
-                   WRITE AUDIT-REG
+                   PERFORM 7000-GRAVAR-AUDITORIA
            END-REWRITE.
+
+      *---------------------------------------------------------------*
+      * Centraliza a gravacao do arquivo de auditoria                 *
+      *---------------------------------------------------------------*
+       7000-GRAVAR-AUDITORIA.
+           WRITE AUDIT-REG
+           IF WS-FS-AUDIT NOT = '00'
+               DISPLAY 'ERRO WRITE AUDIT-OUT. FS=' WS-FS-AUDIT
+           END-IF.
 
       *---------------------------------------------------------------*
       * Exibe resumo e fecha os arquivos                              *
@@ -261,6 +356,14 @@
            DISPLAY 'LANCAMENTOS PROCESSADOS: ' WS-PROCESSADOS
            DISPLAY 'LANCAMENTOS REJEITADOS : ' WS-REJEITADOS
 
-           CLOSE MOVTO-IN
-           CLOSE CONTA-KSDS
-           CLOSE AUDIT-OUT.
+           IF WS-MOVTO-ABERTO = 'S'
+               CLOSE MOVTO-IN
+           END-IF
+
+           IF WS-CONTA-ABERTO = 'S'
+               CLOSE CONTA-KSDS
+           END-IF
+
+           IF WS-AUDIT-ABERTO = 'S'
+               CLOSE AUDIT-OUT
+           END-IF.
