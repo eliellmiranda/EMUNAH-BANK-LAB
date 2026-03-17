@@ -1,5 +1,7 @@
 //* ------------------------------------------------------------
-//* JOB: EBSEED
+//* ARQUIVO      : EBSEED.jcl
+//* CAMINHO LOCAL: jcl/batch/EBSEED.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBSEED)
 //* FINALIDADE:
 //* Executar a carga inicial dos arquivos seed para os KSDS.
 //*
@@ -24,3 +26,5 @@
 //* KSDS de contas que sera carregado.
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
 //* Auditoria textual da execucao.
+//SYSOUT   DD SYSOUT=*
+//* Saida geral do programa.

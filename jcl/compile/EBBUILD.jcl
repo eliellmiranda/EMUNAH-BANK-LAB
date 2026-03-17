@@ -1,22 +1,24 @@
 //* ------------------------------------------------------------
-//* JOB: EBBUILD
+//* ARQUIVO      : EBBUILD.jcl
+//* CAMINHO LOCAL: jcl/compile/EBBUILD.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBBUILD)
 //* FINALIDADE:
-//* Executar compilacao e link-edicao em um unico job usando IGYWCL.
+//* Compilar e link-editar em um unico job.
 //*
 //* FLUXO ESPERADO:
 //* 1. Ler o fonte COBOL.
 //* 2. Resolver copybooks.
-//* 3. Compilar e link-editar.
-//* 4. Gerar o modulo na LOADLIB.
+//* 3. Compilar e link-editar usando IGYWCL.
+//* 4. Gravar o executavel na LOADLIB.
 //* ------------------------------------------------------------
 //EBBUILD  JOB ,'EMUNAH BUILD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //CL       EXEC IGYWCL
-//* Procedure IBM que compila e link-edita de uma vez.
+//* Procedure catalogada IBM que faz compile + link.
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCLLOAD),DISP=SHR
-//* Fonte COBOL alvo do build.
+//* Fonte COBOL principal da compilacao.
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//* Copybooks utilizados na compilacao.
+//* Biblioteca de copybooks.
 //LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBCLLOAD),DISP=SHR
-//* Saida do modulo executavel.
+//* Destino final do executavel.
 //LKED.SYSPRINT DD SYSOUT=*
-//* Relatorio da fase de link-edicao.
+//* Relatorio do link-editor.

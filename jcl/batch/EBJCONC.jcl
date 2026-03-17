@@ -1,15 +1,26 @@
 //* ------------------------------------------------------------
-//* JOB: EBJEOD
+//* ARQUIVO      : EBJCONC.jcl
+//* CAMINHO LOCAL: jcl/batch/EBJCONC.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJCONC)
 //* FINALIDADE:
-//* Job previsto para o processamento de fechamento diario do
-//* laboratorio EMUNAH.
+//* Conciliar os movimentos processados e gerar evidencias da
+//* conciliacao do dia.
 //*
-//* STATUS:
-//* Estrutura inicial criada. Ajustar programa, DDs e datasets
-//* quando a rotina real for implementada.
+//* FLUXO ESPERADO:
+//* 1. Ler MOVTIN em ARQ.LANCTO.ESDS.
+//* 2. Comparar totais processados.
+//* 3. Gerar arquivo de saida em ARQ.CONCIL.SEQ.
 //* ------------------------------------------------------------
-//EBJEOD   JOB ,'EMUNAH EOD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
-//STEP1    EXEC PGM=IEFBR14
-//* Step temporario apenas para validar submissao do job.
-//* IEFBR14 e um programa simples, usado para testes e rotinas
-//* basicas de JCL.
+//EBJCONC  JOB ,'EMUNAH CONC',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//STEP1    EXEC PGM=EBCONC01
+//* Programa de conciliacao do processamento.
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//* Biblioteca do executavel EBCONC01.
+//MOVTIN   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//* Entrada de movimentos ja validados/processados.
+//CONCOUT  DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,DISP=MOD
+//* Saida com o relatorio de conciliacao.
+//SYSOUT   DD SYSOUT=*
+//* Saida geral do programa.
+//SYSPRINT DD SYSOUT=*
+//* Mensagens tecnicas.
