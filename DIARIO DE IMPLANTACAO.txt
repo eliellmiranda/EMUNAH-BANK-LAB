@@ -4110,6 +4110,299 @@ Resolução aplicada: a documentação e o manual passaram a separar os papéis:
 
 Resultado: o aprendizado ficou mais fiel ao processo real e o manual agora explica quando usar cada caminho, com o fonte JCL completo dentro da própria correção.
 
+atualizado:
+
+JCL — EBCOMP.jcl
+copiar
+//* ------------------------------------------------------------
+//* ARQUIVO      : EBCOMP.jcl
+//* CAMINHO LOCAL: jcl/compile/EBCOMP.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBCOMP)
+//* FINALIDADE:
+//* Executar a compilacao do programa COBOL EBCLLOAD.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler o fonte COBOL.
+//* 2. Resolver os copybooks.
+//* 3. Gerar o modulo objeto.
+//* 4. Emitir listagem e mensagens de compilacao.
+//* ------------------------------------------------------------
+//EBCOMP   JOB ,'EMUNAH COMP',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//STEP1    EXEC PGM=IGYCRCTL
+//* Executa o compilador COBOL.
+//SYSIN    DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCLLOAD),DISP=SHR
+//* Fonte COBOL a ser compilado.
+//SYSLIB   DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
+//* Biblioteca de copybooks.
+//SYSLIN   DD DSN=&&OBJSET,DISP=(,PASS),UNIT=SYSDA,
+//             SPACE=(TRK,(1,1)),DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
+//* Dataset temporario que recebera o modulo objeto gerado na
+//* compilacao para ser usado depois na link-edicao.
+//SYSPRINT DD SYSOUT=*
+//* Relatorio detalhado da compilacao.
+//SYSOUT   DD SYSOUT=*
+//* Saida geral do compilador.
+Zowe CLI — EBCOMP
+copiar
+zowe zos-files upload file-to-data-set .\jcl\compile\EBCOMP.jcl "Z77948.EMUNAH.DEV.JCL(EBCOMP)"
+zowe zos-files view data-set "Z77948.EMUNAH.DEV.JCL(EBCOMP)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBCOMP)"
+
+
+
+JCL — EBBUILD.jcl
+copiar
+//* ------------------------------------------------------------
+//* ARQUIVO      : EBBUILD.jcl
+//* CAMINHO LOCAL: jcl/compile/EBBUILD.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBBUILD)
+//* FINALIDADE:
+//* Compilar e link-editar em um unico job.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler o fonte COBOL.
+//* 2. Resolver copybooks.
+//* 3. Compilar e link-editar usando IGYWCL.
+//* 4. Gravar o executavel na LOADLIB.
+//* ------------------------------------------------------------
+//EBBUILD  JOB ,'EMUNAH BUILD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//CL       EXEC IGYWCL
+//* Procedure catalogada IBM que faz compile + link.
+//COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCLLOAD),DISP=SHR
+//* Fonte COBOL principal da compilacao.
+//COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
+//* Biblioteca de copybooks.
+//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBCLLOAD),DISP=SHR
+//* Destino final do executavel.
+//LKED.SYSPRINT DD SYSOUT=*
+//* Relatorio do link-editor.
+Zowe CLI — EBBUILD
+copiar
+zowe zos-files upload file-to-data-set .\jcl\compile\EBBUILD.jcl "Z77948.EMUNAH.DEV.JCL(EBBUILD)"
+zowe zos-files view data-set "Z77948.EMUNAH.DEV.JCL(EBBUILD)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBBUILD)"
+
+
+
+
+JCL — EBSEED.jcl
+copiar
+//* ------------------------------------------------------------
+//* ARQUIVO      : EBSEED.jcl
+//* CAMINHO LOCAL: jcl/batch/EBSEED.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBSEED)
+//* FINALIDADE:
+//* Executar a carga inicial dos arquivos seed para os KSDS.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler CLIENTES.SEQ e CONTAS.SEQ.
+//* 2. Chamar o programa EBCLLOAD.
+//* 3. Popular CLIENTE.KSDS e CONTA.KSDS.
+//* 4. Registrar a execucao na auditoria.
+//* ------------------------------------------------------------
+//EBSEED   JOB ,'EMUNAH SEED',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//STEP1    EXEC PGM=EBCLLOAD
+//* Programa de carga inicial.
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//* Biblioteca onde esta o executavel EBCLLOAD.
+//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ,DISP=SHR
+//* Dataset de entrada com os clientes seed.
+//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ,DISP=SHR
+//* Dataset de entrada com as contas seed.
+//CLIENTE  DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=OLD
+//* KSDS de clientes que sera carregado.
+//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=OLD
+//* KSDS de contas que sera carregado.
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//* Auditoria textual da execucao.
+//SYSOUT   DD SYSOUT=*
+//* Saida geral do programa.
+Zowe CLI — EBSEED
+copiar
+zowe zos-files upload file-to-data-set .\jcl\batch\EBSEED.jcl "Z77948.EMUNAH.DEV.JCL(EBSEED)"
+zowe zos-files view data-set "Z77948.EMUNAH.DEV.JCL(EBSEED)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBSEED)"
+
+
+
+
+JCL — EBJLOAD.jcl
+copiar
+//* ------------------------------------------------------------
+//* ARQUIVO      : EBJLOAD.jcl
+//* CAMINHO LOCAL: jcl/batch/EBJLOAD.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJLOAD)
+//* FINALIDADE:
+//* Verificar se o arquivo de entrada do dia existe e esta catalogado.
+//*
+//* FLUXO ESPERADO:
+//* 1. Consultar o catalogo do z/OS.
+//* 2. Validar a existencia de ARQ.ENTRADA.SEQ.
+//* 3. Retornar RC=0 se existir.
+//* 4. Retornar RC alto para bloquear a cadeia se faltar.
+//* ------------------------------------------------------------
+//EBJLOAD  JOB ,'EMUNAH LOAD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//PRECHECK EXEC PGM=IDCAMS
+//* Executa utilitario de catalogo e administracao de datasets.
+//SYSPRINT DD SYSOUT=*
+//* Relatorio do IDCAMS.
+//SYSIN    DD *
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.ENTRADA.SEQ') ALL
+  IF LASTCC > 0 THEN -
+    SET MAXCC = 12
+/*
+//* RC 0  = arquivo existe.
+//* RC 12 = arquivo ausente ou inacessivel.
+Zowe CLI — EBJLOAD
+copiar
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJLOAD.jcl "Z77948.EMUNAH.DEV.JCL(EBJLOAD)"
+zowe zos-files view data-set "Z77948.EMUNAH.DEV.JCL(EBJLOAD)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJLOAD)"
+
+
+
+Problema: o job não refletia corretamente o contrato do COBOL para saída de válidos e rejeitos.
+
+Resolução aplicada: a revisão agora mostra o JCL comentado do EBJVALD e o trecho COBOL do EBVALI01 que exige os DDNAMEs VALIDOS e REJEITOS.
+
+✅
+Arquivos da correção: jcl/batch/EBJVALD.jcl e cobol/batch/EBVALI01.cbl.
+
+JCL — EBJVALD.jcl
+copiar
+//* ------------------------------------------------------------
+//* ARQUIVO      : EBJVALD.jcl
+//* CAMINHO LOCAL: jcl/batch/EBJVALD.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJVALD)
+//* FINALIDADE:
+//* Validar o lote bruto do dia.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler ARQ.ENTRADA.SEQ.
+//* 2. Chamar o programa EBVALI01.
+//* 3. Gravar validos em ARQ.LANCTO.ESDS.
+//* 4. Gravar rejeitos em ARQ.REJEITO.SEQ.
+//* ------------------------------------------------------------
+//EBJVALD  JOB ,'EMUNAH VALD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//STEP1    EXEC PGM=EBVALI01
+//* Programa de validacao do lote bruto.
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//* Biblioteca onde esta o executavel EBVALI01.
+//ENTRADA  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.SEQ,DISP=SHR
+//* Lote bruto do dia.
+//VALIDOS  DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//* Saida de lancamentos aprovados pela validacao.
+//REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITO.SEQ,DISP=MOD
+//* Saida dos registros rejeitados.
+//SYSOUT   DD SYSOUT=*
+//* Saida geral do programa.
+//SYSPRINT DD SYSOUT=*
+//* Mensagens tecnicas da execucao.
+COBOL — EBVALI01.cbl (trecho relevante)
+copiar
+* ------------------------------------------------------------
+* ARQUIVO      : EBVALI01.cbl
+* CAMINHO LOCAL: cobol/batch/EBVALI01.cbl
+* HOST / PDS   : Z77948.EMUNAH.DEV.COBOL(EBVALI01)
+* FINALIDADE:
+* Validar o arquivo bruto de entrada e separar registros validos
+* dos rejeitados.
+* ------------------------------------------------------------
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT ENTRADA   ASSIGN TO ENTRADA.
+*          Arquivo bruto recebido do dia.
+           SELECT VALIDOS   ASSIGN TO VALIDOS.
+*          Arquivo/dataset de saida para registros aprovados.
+           SELECT REJEITOS  ASSIGN TO REJEITOS.
+*          Arquivo/dataset de saida para registros rejeitados.
+Zowe CLI — EBJVALD / EBVALI01
+copiar
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJVALD.jcl "Z77948.EMUNAH.DEV.JCL(EBJVALD)"
+zowe zos-files view data-set "Z77948.EMUNAH.DEV.JCL(EBJVALD)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJVALD)"
+
+zowe zos-files upload file-to-data-set .\cobol\batch\EBVALI01.cbl "Z77948.EMUNAH.DEV.COBOL(EBVALI01)"
+zowe zos-files view data-set "Z77948.EMUNAH.DEV.COBOL(EBVALI01)"
+Resultado: ficou claro, dentro da própria revisão, por que o JCL precisa bater exatamente com os DDNAMEs do COBOL.
+
+
+Problema: a postagem estava descrita de forma ambígua em relação à entrada do job.
+
+Resolução aplicada: a revisão agora traz o JCL comentado do EBJPOST e o trecho COBOL do EBPOST01 que mostra o ASSIGN TO MOVTIN.
+
+🔁
+Arquivos da correção: jcl/batch/EBJPOST.jcl e cobol/batch/EBPOST01.cbl.
+
+JCL — EBJPOST.jcl
+copiar
+//* ------------------------------------------------------------
+//* ARQUIVO      : EBJPOST.jcl
+//* CAMINHO LOCAL: jcl/batch/EBJPOST.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJPOST)
+//* FINALIDADE:
+//* Aplicar nas contas os lancamentos ja validados.
+//*
+//* FLUXO ESPERADO:
+//* 1. Ler MOVTIN a partir de ARQ.LANCTO.ESDS.
+//* 2. Localizar CLIENTE e CONTA.
+//* 3. Atualizar os saldos e gravar auditoria.
+//* ------------------------------------------------------------
+//EBJPOST  JOB ,'EMUNAH POST',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//STEP1    EXEC PGM=EBPOST01
+//* Programa de postagem dos lancamentos validos.
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//* Biblioteca do executavel EBPOST01.
+//MOVTIN   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//* Entrada de movimentos ja validados.
+//CLIENTE  DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
+//* Cadastro master de clientes.
+//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//* Cadastro master de contas.
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//* Auditoria da execucao da postagem.
+//SYSOUT   DD SYSOUT=*
+//* Saida geral do programa.
+//SYSPRINT DD SYSOUT=*
+//* Mensagens tecnicas.
+COBOL — EBPOST01.cbl (trecho relevante)
+copiar
+* ------------------------------------------------------------
+* ARQUIVO      : EBPOST01.cbl
+* CAMINHO LOCAL: cobol/batch/EBPOST01.cbl
+* HOST / PDS   : Z77948.EMUNAH.DEV.COBOL(EBPOST01)
+* FINALIDADE:
+* Aplicar os movimentos ja validados nas contas do banco.
+* ------------------------------------------------------------
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT MOVTO-IN ASSIGN TO MOVTIN.
+*          Entrada de lancamentos validados.
+           SELECT CLIENTE-MST ASSIGN TO CLIENTE.
+*          KSDS de clientes.
+           SELECT CONTA-MST   ASSIGN TO CONTA.
+*          KSDS de contas.
+           SELECT AUDIT-OUT   ASSIGN TO AUDIT.
+*          Arquivo sequencial de auditoria.
+Zowe CLI — EBJPOST / EBPOST01
+copiar
+zowe zos-files upload file-to-data-set .\jcl\batch\EBJPOST.jcl "Z77948.EMUNAH.DEV.JCL(EBJPOST)"
+zowe zos-files view data-set "Z77948.EMUNAH.DEV.JCL(EBJPOST)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJPOST)"
+
+zowe zos-files upload file-to-data-set .\cobol\batch\EBPOST01.cbl "Z77948.EMUNAH.DEV.COBOL(EBPOST01)"
+zowe zos-files view data-set "Z77948.EMUNAH.DEV.COBOL(EBPOST01)"
+Resultado: a revisão passa a mostrar o vínculo real entre o DDNAME do JCL e o ASSIGN TO do programa COBOL.
+
+
+
+
+
+
+
+
 
 
 

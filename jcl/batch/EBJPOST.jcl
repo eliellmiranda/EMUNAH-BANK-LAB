@@ -1,29 +1,29 @@
 //* ------------------------------------------------------------
-//* JOB: EBJPOST
+//* ARQUIVO      : EBJPOST.jcl
+//* CAMINHO LOCAL: jcl/batch/EBJPOST.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJPOST)
 //* FINALIDADE:
-//* Executar o programa EBPOST01 para processar os lancamentos
-//* de entrada do laboratorio EMUNAH.
+//* Aplicar nas contas os lancamentos ja validados.
 //*
 //* FLUXO ESPERADO:
-//* 1. Ler os movimentos de entrada do dia.
-//* 2. Localizar a conta correspondente.
-//* 3. Aplicar credito ou debito.
-//* 4. Registrar as ocorrencias em auditoria.
-//* 5. Gerar mensagens e relatorio de processamento.
+//* 1. Ler MOVTIN a partir de ARQ.LANCTO.ESDS.
+//* 2. Localizar CLIENTE e CONTA.
+//* 3. Atualizar os saldos e gravar auditoria.
 //* ------------------------------------------------------------
 //EBJPOST  JOB ,'EMUNAH POST',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
-//* Define o job de processamento dos lancamentos.
 //STEP1    EXEC PGM=EBPOST01
-//* Executa o programa responsavel pela postagem.
+//* Programa de postagem dos lancamentos validos.
 //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
-//* Biblioteca onde esta o modulo executavel EBPOST01.
-//MOVTIN   DD DSN=Z77948.EMUNAH.ENTRADA.LANC.D0.SEQ,DISP=SHR
-//* Arquivo sequencial de entrada com os lancamentos do dia.
+//* Biblioteca do executavel EBPOST01.
+//MOVTIN   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//* Entrada de movimentos ja validados.
+//CLIENTE  DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
+//* Cadastro master de clientes.
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
-//* Arquivo VSAM KSDS de contas a ser consultado e atualizado.
+//* Cadastro master de contas.
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
-//* Arquivo sequencial de auditoria do processamento.
+//* Auditoria da execucao da postagem.
 //SYSOUT   DD SYSOUT=*
-//* Saida geral do step para o spool.
+//* Saida geral do programa.
 //SYSPRINT DD SYSOUT=*
-//* Saida detalhada, relatorio e mensagens do programa.
+//* Mensagens tecnicas.

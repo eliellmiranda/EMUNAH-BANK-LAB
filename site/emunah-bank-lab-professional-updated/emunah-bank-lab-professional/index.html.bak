@@ -1,0 +1,1937 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EMUNAH-BANK-LAB — versão reescrita</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a href="#mainContent" class="skip-link">Pular para o conteúdo</a>
+
+  <header class="topbar" aria-label="Créditos">
+    <strong>Desenvolvido por Eliel Miranda</strong>
+    <span class="sep">|</span>
+    <span>LinkedIn:</span>
+    <a href="https://www.linkedin.com/in/eliel-miranda-dev/" target="_blank" rel="noopener noreferrer">linkedin.com/in/eliel-miranda-dev</a>
+    <span class="sep">|</span>
+    <span>GitHub:</span>
+    <a href="https://github.com/eliellmiranda" target="_blank" rel="noopener noreferrer">github.com/eliellmiranda</a>
+  </header>
+
+  <div class="overlay" id="overlay"></div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Navegação lateral">
+      <div class="brand">
+        <div class="pill"><span class="dot"></span> lab online</div>
+        <h1>EMUNAH-BANK-LAB</h1>
+        <p>Blueprint revisado + manual operacional</p>
+      </div>
+
+      <div class="switch" role="tablist" aria-label="Troca de visualização">
+        <button type="button" class="active" data-view-btn="blueprint" aria-selected="true">Blueprint</button>
+        <button type="button" data-view-btn="review" aria-selected="false">Revisão</button>
+      </div>
+
+      <div class="nav-pane" data-nav-pane="blueprint">
+        <div class="nav-group">
+          <h2>Blueprint</h2>
+          <ul class="nav-list">
+            <li><button class="nav-btn active" type="button" data-page="blueprint" data-target="overview"><span class="nav-code">00</span><span class="nav-text">Visão geral</span></button></li>
+            <li><button class="nav-btn" type="button" data-page="blueprint" data-target="arch"><span class="nav-code">01</span><span class="nav-text">Arquitetura</span></button></li>
+            <li><button class="nav-btn" type="button" data-page="blueprint" data-target="datasets"><span class="nav-code">D2</span><span class="nav-text">Mapa de datasets</span></button></li>
+            <li><button class="nav-btn" type="button" data-page="blueprint" data-target="batch"><span class="nav-code">D3</span><span class="nav-text">Grade batch</span></button></li>
+            <li><button class="nav-btn" type="button" data-page="blueprint" data-target="manual"><span class="nav-code">M1</span><span class="nav-text">Manual operacional</span></button></li>
+            <li><button class="nav-btn" type="button" data-page="blueprint" data-target="sources"><span class="nav-code">M2</span><span class="nav-text">Fontes COBOL e JCL</span></button></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="nav-pane" data-nav-pane="review" style="display:none">
+        <div class="nav-group">
+          <h2>Revisão</h2>
+          <ul class="nav-list">
+            <li><button class="nav-btn active" type="button" data-page="review" data-target="rv-bugs"><span class="nav-code">A</span><span class="nav-text">Bugs corrigidos</span><span class="badge danger" data-badge="rv-bugs">0</span></button></li>
+            <li><button class="nav-btn" type="button" data-page="review" data-target="rv-inc"><span class="nav-code">B</span><span class="nav-text">Inconsistências</span><span class="badge warn" data-badge="rv-inc">0</span></button></li>
+            <li><button class="nav-btn" type="button" data-page="review" data-target="rv-next"><span class="nav-code">C</span><span class="nav-text">Melhorias</span><span class="badge" data-badge="rv-next">0</span></button></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sidebar-foot">
+        © 2026 EMUNAH-BANK-LAB<br>
+        Simulação bancária mainframe com foco em COBOL, JCL, VSAM, Zowe e troubleshooting.<br><br>
+        <em>"[...] mas o justo viverá pela sua fé."</em><br>
+        <span style="color:var(--green)">Habacuque 2:4</span>
+      </div>
+    </aside>
+
+    <main class="main" id="mainContent">
+      <div class="mobile-bar">
+        <div>
+          <strong>EMUNAH-BANK-LAB</strong><br>
+          <span style="font-size:12px;color:var(--text3)">Blueprint + revisão</span>
+        </div>
+        <button type="button" id="menuToggle" style="width:42px;height:42px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);cursor:pointer">☰</button>
+      </div>
+
+      <section class="view active" data-view="blueprint">
+        <div class="crumb">EMUNAH-BANK-LAB <span>/ Blueprint revisado / Manual completo</span></div>
+        <div class="hero">
+          <div class="hero-tag"><span class="dot"></span> mainframe lab blueprint</div>
+          <h2>EMUNAH<span>-BANK</span>-LAB</h2>
+          <p>Versão reescrita do site, com navegação acessível, persistência do checklist de revisão, correções estruturais de HTML/CSS/JS e manual ampliado com JCLs e fontes COBOL comentados.</p>
+          <div class="meta">
+            <div class="meta-card"><strong>IBM Z Xplore</strong><span>z/OS real via Marist · HLQ Z77948</span></div>
+            <div class="meta-card"><strong>Fluxo corrigido</strong><span>EBJLOAD → EBJVALD → EBJPOST → EBJSALD → EBJEXTR → EBJCONC → EBJEOD</span></div>
+            <div class="meta-card"><strong>Código reescrito</strong><span>Sem onclick inline e sem event global</span></div>
+            <div class="meta-card"><strong>Manual ampliado</strong><span>Inclui COBOL e JCL comentados</span></div>
+          </div>
+        </div>
+
+        <div class="content">
+          <section class="section active" id="overview">
+            <div class="section-header">
+              <div class="eyebrow">00 // Visão geral</div>
+              <h2 class="section-title">O que foi corrigido</h2>
+              <p class="section-desc">A proposta visual foi mantida, mas a implementação foi simplificada e fortalecida. Agora o site usa componentes mais acessíveis, contadores dinâmicos, menu mobile e revisão técnica persistente.</p>
+            </div>
+
+            <div class="notice tip">
+              <div>💡</div>
+              <p>Esta versão usa <strong>data attributes</strong> para navegação, botões reais em vez de links clicáveis sem href, <strong>localStorage</strong> para o checklist de revisão e manual com os principais JCLs e COBOLs comentados.</p>
+            </div>
+
+            <div class="cards">
+              <article class="card">
+                <div>🧭</div>
+                <h3>Navegação reescrita</h3>
+                <p>As ações agora são ligadas por JavaScript centralizado, sem onclick inline.</p>
+                <span class="chip green">corrigido</span>
+              </article>
+              <article class="card">
+                <div>♿</div>
+                <h3>Acessibilidade melhorada</h3>
+                <p>Accordions com aria-expanded, foco visível e skip link.</p>
+                <span class="chip green">corrigido</span>
+              </article>
+              <article class="card">
+                <div>📱</div>
+                <h3>Sidebar mobile</h3>
+                <p>Agora o menu lateral abre e fecha em telas menores com overlay.</p>
+                <span class="chip green">corrigido</span>
+              </article>
+              <article class="card">
+                <div>💾</div>
+                <h3>Checklist persistente</h3>
+                <p>Itens de revisão marcados como resolvidos continuam salvos ao recarregar.</p>
+                <span class="chip green">corrigido</span>
+              </article>
+              <article class="card">
+                <div>🧱</div>
+                <h3>Fluxo batch alinhado</h3>
+                <p>DDNAMEs e datasets agora refletem o fluxo real do lab.</p>
+                <span class="chip green">corrigido</span>
+              </article>
+              <article class="card">
+                <div>📘</div>
+                <h3>Manual ampliado</h3>
+                <p>O manual agora inclui os principais programas e jobs comentados.</p>
+                <span class="chip blue">novo</span>
+              </article>
+            </div>
+
+            <div class="diagram">
+<pre>FLUXO CORRETO DO LAB
+
+ARQ.ENTRADA.SEQ
+   │
+   ▼
+EBJLOAD  → precheck da entrada do dia
+   │
+   ▼
+EBJVALD  → VALIDOS em ARQ.LANCTO.ESDS / REJEITOS em ARQ.REJEITO.SEQ
+   │
+   ▼
+EBJPOST  → MOVTIN = ARQ.LANCTO.ESDS
+   │
+   ▼
+EBJSALD  → SALDIN / SALDOUT
+   │
+   ▼
+EBJEXTR  → GDG de extrato
+   │
+   ▼
+EBJCONC  → CONCOUT
+   │
+   ▼
+EBJEOD   → backup + registro de fechamento</pre>
+            </div>
+          </section>
+
+          <section class="section" id="arch">
+            <div class="section-header">
+              <div class="eyebrow">01 // Arquitetura</div>
+              <h2 class="section-title">Arquitetura real do laboratório</h2>
+              <p class="section-desc">Para reduzir ambiguidade, esta versão deixa claro que o lab oficial roda em IBM Z Xplore. Hercules/TK4- pode existir como trilha alternativa de estudo, mas não como base principal da documentação.</p>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Camada</th><th>Ferramenta</th><th>Papel</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><strong>Local</strong></td><td class="mono">VS Code + Git + PowerShell</td><td>Edição, versionamento e scripts</td><td>Oficial</td></tr>
+                  <tr><td><strong>Integração</strong></td><td class="mono">Zowe CLI / Explorer</td><td>Upload, submit de jobs e consulta de datasets</td><td>Oficial</td></tr>
+                  <tr><td><strong>Execução</strong></td><td class="mono">IBM Z Xplore / Marist</td><td>z/OS real com PDS, JES2, VSAM e GDG</td><td>Oficial</td></tr>
+                  <tr><td><strong>Operação</strong></td><td class="mono">Vista TN3270</td><td>TSO, ISPF, SDSF e troubleshooting</td><td>Oficial</td></tr>
+                  <tr><td><strong>Alternativa</strong></td><td class="mono">Hercules + TK4-</td><td>Trilha opcional de estudo local</td><td>Opcional</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="diagram">
+<pre>PC LOCAL
+  │ VS Code + Git + PowerShell
+  ▼
+ZOWE CLI / ZOWE EXPLORER
+  ▼
+IBM Z XPLORE / MARIST
+  │ Z77948.EMUNAH.DEV.*
+  ▼
+VISTA TN3270
+  │ TSO / ISPF / SDSF
+  ▼
+DIAGNÓSTICO E OPERAÇÃO</pre>
+            </div>
+          </section>
+
+          <section class="section" id="datasets">
+            <div class="section-header">
+              <div class="eyebrow">D2 // Mapa de datasets</div>
+              <h2 class="section-title">Mapa corrigido de datasets</h2>
+              <p class="section-desc">Foram corrigidos o typo de LANCTO.ESDS, a ambiguidade entre EBJLOAD e EBSEED e os datasets faltantes de conciliação, backup e HML.</p>
+            </div>
+
+            <div class="notice danger">
+              <div>🔴</div>
+              <p>O nome correto do arquivo de lançamentos validados é <code>Z77948.EMUNAH.ARQ.LANCTO.ESDS</code>. Esta versão também adiciona <code>ARQ.CONCIL.SEQ</code>, <code>BAK.CONTA.SEQ</code> e <code>HML.LOADLIB</code>.</p>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Dataset</th><th>Tipo</th><th>DDNAME</th><th>Finalidade</th><th>Usado por</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td class="mono">Z77948.EMUNAH.DEV.COBOL</td><td>PDSE</td><td class="mono">SYSIN</td><td>Fontes COBOL</td><td>build</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.DEV.COPY</td><td>PDSE</td><td class="mono">SYSLIB</td><td>Copybooks</td><td>build</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.DEV.LOADLIB</td><td>PDSE</td><td class="mono">STEPLIB</td><td>Executáveis DEV</td><td>jobs batch</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.HML.LOADLIB</td><td>PDSE</td><td class="mono">STEPLIB</td><td>Executáveis HML</td><td>homologação</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.SEED.CLIENTES.SEQ</td><td>PS</td><td class="mono">CLIENTIN</td><td>Massa inicial de clientes</td><td>EBCLLOAD</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.SEED.CONTAS.SEQ</td><td>PS</td><td class="mono">CONTAIN</td><td>Massa inicial de contas</td><td>EBCLLOAD</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.ARQ.ENTRADA.SEQ</td><td>PS</td><td class="mono">ENTRADA</td><td>Lote bruto do dia</td><td>EBJLOAD / EBVALI01</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.ARQ.REJEITO.SEQ</td><td>PS</td><td class="mono">REJEITOS</td><td>Rejeitos da validação</td><td>EBVALI01 / EBREPR01</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.ARQ.AUDIT.SEQ</td><td>PS</td><td class="mono">AUDIT</td><td>Auditoria operacional</td><td>todos os jobs</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.ARQ.CLIENTE.KSDS</td><td>KSDS</td><td class="mono">CLIENTE</td><td>Cadastro master de clientes</td><td>EBCLLOAD / EBPOST01</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.ARQ.CONTA.KSDS</td><td>KSDS</td><td class="mono">CONTA</td><td>Cadastro master de contas</td><td>EBPOST01 / EBSALD01</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.ARQ.LANCTO.ESDS</td><td>ESDS</td><td class="mono">VALIDOS / MOVTIN</td><td>Lançamentos validados</td><td>EBPOST01 / EBEXTR01 / EBCONC01</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.ARQ.SALDO.KSDS</td><td>KSDS</td><td class="mono">SALDIN</td><td>Saldo consolidado</td><td>EBSALD01 / EBEXTR01</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.ARQ.SALDO.REL.SEQ</td><td>PS</td><td class="mono">SALDOUT</td><td>Saída de saldo</td><td>EBSALD01</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.ARQ.EXTRATO.GDG</td><td>GDG</td><td class="mono">EXTROUT</td><td>Extratos gerados</td><td>EBEXTR01</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.ARQ.CONCIL.SEQ</td><td>PS</td><td class="mono">CONCOUT</td><td>Saída da conciliação</td><td>EBCONC01 / EBJEOD</td></tr>
+                  <tr><td class="mono">Z77948.EMUNAH.BAK.CONTA.SEQ</td><td>PS</td><td class="mono">OUTBAK</td><td>Backup lógico</td><td>EBJEOD</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section" id="batch">
+            <div class="section-header">
+              <div class="eyebrow">D3 // Grade batch</div>
+              <h2 class="section-title">Cadeia batch corrigida</h2>
+              <p class="section-desc">A carga inicial foi separada do processamento do dia. O job antigo de carga foi renomeado conceitualmente para <strong>EBSEED</strong> para não colidir com o papel do EBJLOAD.</p>
+            </div>
+
+            <div class="diagram">
+<pre>SETUP / SOB DEMANDA
+  EBSEED  -> carrega clientes e contas a partir dos arquivos SEED
+
+ROTINA DIÁRIA
+  EBJLOAD -> precheck do ARQ.ENTRADA.SEQ
+  EBJVALD -> valida lote bruto
+  EBJPOST -> aplica lançamentos validados
+  EBJSALD -> consolida saldo
+  EBJEXTR -> gera extrato GDG
+  EBJCONC -> concilia totais
+  EBJEOD  -> backup + fechamento</pre>
+            </div>
+
+            <div class="cards">
+              <article class="card">
+                <div>✅</div>
+                <h3>EBSEED</h3>
+                <p>Nome reservado para o job de carga inicial dos seeds.</p>
+                <span class="chip green">ajustado</span>
+              </article>
+              <article class="card">
+                <div>🔎</div>
+                <h3>EBJLOAD</h3>
+                <p>Agora representa somente o precheck da entrada do dia.</p>
+                <span class="chip green">corrigido</span>
+              </article>
+              <article class="card">
+                <div>🔁</div>
+                <h3>EBJPOST</h3>
+                <p>Consome MOVTIN = ARQ.LANCTO.ESDS, nunca mais a entrada bruta.</p>
+                <span class="chip green">corrigido</span>
+              </article>
+            </div>
+          </section>
+
+          <section class="section" id="manual">
+            <div class="section-header">
+              <div class="eyebrow">M1 // Manual operacional</div>
+              <h2 class="section-title">Manual resumido de operação</h2>
+              <p class="section-desc">As etapas abaixo cobrem o que você precisa para subir fontes, compilar e rodar a cadeia.</p>
+            </div>
+
+            <div class="accordion-list">
+              <article class="accordion open">
+                <button type="button" class="acc-btn" aria-expanded="true">
+                  <span class="acc-index">1.1</span>
+                  <span class="acc-head">
+                    <span class="acc-title">Pré-requisitos locais</span>
+                    <span class="acc-sub">Java, Node, Git, Python, Zowe e Vista TN3270</span>
+                  </span>
+                  <span class="acc-chevron">⌄</span>
+                </button>
+                <div class="acc-panel">
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">PowerShell</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>Set-ExecutionPolicy RemoteSigned
+
+java -version
+node --version
+git --version
+python --version
+zowe --version</pre>
+                  </div>
+                </div>
+              </article>
+
+              <article class="accordion">
+                <button type="button" class="acc-btn" aria-expanded="false">
+                  <span class="acc-index">1.2</span>
+                  <span class="acc-head">
+                    <span class="acc-title">Perfil Zowe para IBM Z Xplore</span>
+                    <span class="acc-sub">Base oficial do laboratório</span>
+                  </span>
+                  <span class="acc-chevron">⌄</span>
+                </button>
+                <div class="acc-panel">
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">PowerShell</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>npm install -g @zowe/cli
+
+zowe profiles create zosmf ZXplore ^
+  --host wtsc57.itsc.marist.edu ^
+  --port 10443 ^
+  --user Z77948 ^
+  --password SUA_SENHA ^
+  --reject-unauthorized false
+
+zowe zosmf check status</pre>
+                  </div>
+                </div>
+              </article>
+
+              <article class="accordion">
+                <button type="button" class="acc-btn" aria-expanded="false">
+                  <span class="acc-index">1.3</span>
+                  <span class="acc-head">
+                    <span class="acc-title">Criação básica de datasets</span>
+                    <span class="acc-sub">Sequenciais, VSAM e GDG</span>
+                  </span>
+                  <span class="acc-chevron">⌄</span>
+                </button>
+                <div class="acc-panel">
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">PowerShell</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>zowe zos-files create data-set "Z77948.EMUNAH.SEED.CLIENTES.SEQ" --like "Z77948.EMUNAH.ARQ.REJEITO.SEQ"
+zowe zos-files create data-set "Z77948.EMUNAH.SEED.CONTAS.SEQ"   --like "Z77948.EMUNAH.ARQ.REJEITO.SEQ"
+zowe zos-files create data-set "Z77948.EMUNAH.ARQ.ENTRADA.SEQ"   --like "Z77948.EMUNAH.ARQ.REJEITO.SEQ"
+zowe zos-files create data-set "Z77948.EMUNAH.ARQ.AUDIT.SEQ"     --like "Z77948.EMUNAH.ARQ.REJEITO.SEQ"
+zowe zos-files create data-set "Z77948.EMUNAH.ARQ.CONCIL.SEQ"    --like "Z77948.EMUNAH.ARQ.REJEITO.SEQ"
+zowe zos-files create data-set-vsam "Z77948.EMUNAH.ARQ.CLIENTE.KSDS"
+zowe zos-files create data-set-vsam "Z77948.EMUNAH.ARQ.CONTA.KSDS"
+zowe zos-files create data-set-vsam "Z77948.EMUNAH.ARQ.SALDO.KSDS"</pre>
+                  </div>
+
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — CRLANCT</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//CRLANCT  JOB CLASS=A,MSGCLASS=X,NOTIFY=&SYSUID
+//* CRIA O ESDS DE LANCAMENTOS VALIDOS DO LAB
+//STEP1    EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DEFINE CLUSTER ( -
+    NAME(Z77948.EMUNAH.ARQ.LANCTO.ESDS) -
+    NONINDEXED -
+    RECORDSIZE(120 120) -
+    RECORDS(10000 2000)) -
+  DATA(NAME(Z77948.EMUNAH.ARQ.LANCTO.ESDS.DATA))
+/*</pre>
+                  </div>
+
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — DEFGDG</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//DEFGDG   JOB CLASS=A,MSGCLASS=X,NOTIFY=&SYSUID
+//* DEFINE A BASE GDG DE EXTRATOS
+//STEP1    EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DEFINE GENERATIONDATAGROUP -
+    (NAME(Z77948.EMUNAH.ARQ.EXTRATO.GDG) -
+     LIMIT(30) -
+     NOEMPTY -
+     SCRATCH)
+/*</pre>
+                  </div>
+                </div>
+              </article>
+
+              <article class="accordion">
+                <button type="button" class="acc-btn" aria-expanded="false">
+                  <span class="acc-index">1.4</span>
+                  <span class="acc-head">
+                    <span class="acc-title">Upload dos fontes e execução</span>
+                    <span class="acc-sub">Local → host → build → batch</span>
+                  </span>
+                  <span class="acc-chevron">⌄</span>
+                </button>
+                <div class="acc-panel">
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">PowerShell</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>zowe zos-files upload dir-to-pds .\copybooks\layouts "Z77948.EMUNAH.DEV.COPY"
+zowe zos-files upload dir-to-pds .\cobolatch       "Z77948.EMUNAH.DEV.COBOL"
+zowe zos-files upload dir-to-pds .\jcl\compile       "Z77948.EMUNAH.DEV.JCL"
+zowe zos-files upload dir-to-pds .\jclatch         "Z77948.EMUNAH.DEV.JCL"
+
+zowe zos-files upload file-to-data-set .\data\seed\clientes.txt "Z77948.EMUNAH.SEED.CLIENTES.SEQ"
+zowe zos-files upload file-to-data-set .\data\seed\contas.txt   "Z77948.EMUNAH.SEED.CONTAS.SEQ"
+zowe zos-files upload file-to-data-set .\data\entrada\lancamentos_d0.txt "Z77948.EMUNAH.ARQ.ENTRADA.SEQ"
+
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBSEED)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJLOAD)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJVALD)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJPOST)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJSALD)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJEXTR)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJCONC)"
+zowe zos-jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJEOD)"</pre>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="section" id="sources">
+            <div class="section-header">
+              <div class="eyebrow">M2 // Fontes COBOL e JCL</div>
+              <h2 class="section-title">Principais fontes comentados</h2>
+              <p class="section-desc">Os exemplos abaixo foram organizados com foco didático. Eles documentam o contrato entre programas, datasets e DDNAMEs do lab.</p>
+            </div>
+
+            <div class="notice tip">
+              <div>📘</div>
+              <p>Os códigos abaixo já refletem as correções mais importantes da revisão: build separado, EBSEED distinto de EBJLOAD, VALIDOS/REJEITOS corretos, MOVTIN coerente e CONCOUT explícito.</p>
+            </div>
+
+            <div class="accordion-list">
+              <article class="accordion open">
+                <button type="button" class="acc-btn" aria-expanded="true">
+                  <span class="acc-index blue">C1</span>
+                  <span class="acc-head">
+                    <span class="acc-title">COBOL — EBCLLOAD</span>
+                    <span class="acc-sub">Carga inicial de clientes e contas</span>
+                  </span>
+                  <span class="acc-chevron">⌄</span>
+                </button>
+                <div class="acc-panel">
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">COBOL — EBCLLOAD.cbl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EBCLLOAD.
+      *==============================================================*
+      * CARGA INICIAL DOS ARQUIVOS DE SEED PARA OS KSDS.             *
+      * USAR NA FASE DE SETUP.                                       *
+      *==============================================================*
+
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT CLIENTE-IN ASSIGN TO CLIENTIN.
+           SELECT CONTA-IN   ASSIGN TO CONTAIN.
+           SELECT CLIENTE-KSDS ASSIGN TO CLIENTE
+               ORGANIZATION IS INDEXED
+               ACCESS MODE IS DYNAMIC
+               RECORD KEY IS CLI-ID.
+           SELECT CONTA-KSDS ASSIGN TO CONTA
+               ORGANIZATION IS INDEXED
+               ACCESS MODE IS DYNAMIC
+               RECORD KEY IS CNT-CHAVE.
+           SELECT AUDIT-OUT ASSIGN TO AUDIT.
+
+       DATA DIVISION.
+       FILE SECTION.
+       FD CLIENTE-IN.
+       01 REG-CLIENTE-IN.
+          COPY CPCLI001.
+
+       FD CONTA-IN.
+       01 REG-CONTA-IN.
+          COPY CPCNT001.
+
+       FD CLIENTE-KSDS.
+       01 REG-CLIENTE.
+          COPY CPCLI001.
+
+       FD CONTA-KSDS.
+       01 REG-CONTA.
+          COPY CPCNT001.
+
+       FD AUDIT-OUT.
+       01 REG-AUDIT PIC X(120).
+
+       WORKING-STORAGE SECTION.
+       01 WS-FIM-CLI PIC X VALUE 'N'.
+       01 WS-FIM-CNT PIC X VALUE 'N'.
+
+       PROCEDURE DIVISION.
+       0000-PRINCIPAL.
+      * PARA CARGA INICIAL, OPEN OUTPUT E O MAIS SEGURO.
+           OPEN INPUT CLIENTE-IN CONTA-IN
+                OUTPUT CLIENTE-KSDS CONTA-KSDS AUDIT-OUT
+
+           PERFORM UNTIL WS-FIM-CLI = 'S'
+               READ CLIENTE-IN
+                   AT END MOVE 'S' TO WS-FIM-CLI
+                   NOT AT END
+                       MOVE REG-CLIENTE-IN TO REG-CLIENTE
+                       WRITE REG-CLIENTE
+               END-READ
+           END-PERFORM
+
+           PERFORM UNTIL WS-FIM-CNT = 'S'
+               READ CONTA-IN
+                   AT END MOVE 'S' TO WS-FIM-CNT
+                   NOT AT END
+                       MOVE REG-CONTA-IN TO REG-CONTA
+                       WRITE REG-CONTA
+               END-READ
+           END-PERFORM
+
+           MOVE 'EBCLLOAD OK' TO REG-AUDIT
+           WRITE REG-AUDIT
+           CLOSE CLIENTE-IN CONTA-IN CLIENTE-KSDS CONTA-KSDS AUDIT-OUT
+           GOBACK.</pre>
+                  </div>
+                </div>
+              </article>
+
+              <article class="accordion">
+                <button type="button" class="acc-btn" aria-expanded="false">
+                  <span class="acc-index blue">C2</span>
+                  <span class="acc-head">
+                    <span class="acc-title">COBOL — EBVALI01</span>
+                    <span class="acc-sub">Validação do lote bruto</span>
+                  </span>
+                  <span class="acc-chevron">⌄</span>
+                </button>
+                <div class="acc-panel">
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">COBOL — EBVALI01.cbl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EBVALI01.
+      *==============================================================*
+      * ENTRADA  : ENTRADA  -> ARQ.ENTRADA.SEQ                       *
+      * VALIDOS  : VALIDOS  -> ARQ.LANCTO.ESDS                       *
+      * REJEITOS : REJEITOS -> ARQ.REJEITO.SEQ                       *
+      *==============================================================*
+
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT MOVTO-IN  ASSIGN TO ENTRADA.
+           SELECT MOVTO-VAL ASSIGN TO VALIDOS.
+           SELECT MOVTO-REJ ASSIGN TO REJEITOS.
+
+       DATA DIVISION.
+       FILE SECTION.
+       FD MOVTO-IN.
+       01 REG-MOVTO-IN.
+          COPY CPLCT001.
+
+       FD MOVTO-VAL.
+       01 REG-MOVTO-VAL.
+          COPY CPLCT001.
+
+       FD MOVTO-REJ.
+       01 REG-MOVTO-REJ.
+          COPY CPLCT001.
+
+       WORKING-STORAGE SECTION.
+       01 WS-FIM PIC X VALUE 'N'.
+
+       PROCEDURE DIVISION.
+       0000-PRINCIPAL.
+           OPEN INPUT MOVTO-IN
+                OUTPUT MOVTO-VAL MOVTO-REJ
+
+           PERFORM UNTIL WS-FIM = 'S'
+               READ MOVTO-IN
+                   AT END MOVE 'S' TO WS-FIM
+                   NOT AT END
+                       PERFORM 1000-VALIDA
+               END-READ
+           END-PERFORM
+
+           CLOSE MOVTO-IN MOVTO-VAL MOVTO-REJ
+           GOBACK.
+
+       1000-VALIDA.
+      * EXEMPLO DIDATICO: ACEITA SOMENTE TIPO C OU D.
+           IF LCT-TIPO = 'C' OR LCT-TIPO = 'D'
+               MOVE REG-MOVTO-IN TO REG-MOVTO-VAL
+               WRITE REG-MOVTO-VAL
+           ELSE
+               MOVE REG-MOVTO-IN TO REG-MOVTO-REJ
+               WRITE REG-MOVTO-REJ
+           END-IF.</pre>
+                  </div>
+                </div>
+              </article>
+
+              <article class="accordion">
+                <button type="button" class="acc-btn" aria-expanded="false">
+                  <span class="acc-index blue">C3</span>
+                  <span class="acc-head">
+                    <span class="acc-title">COBOL — EBPOST01</span>
+                    <span class="acc-sub">Aplicação dos válidos nas contas</span>
+                  </span>
+                  <span class="acc-chevron">⌄</span>
+                </button>
+                <div class="acc-panel">
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">COBOL — EBPOST01.cbl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EBPOST01.
+      *==============================================================*
+      * LE OS MOVIMENTOS VALIDOS E APLICA NAS CONTAS.                *
+      * MOVTIN E O DDNAME CORRETO DE ENTRADA.                        *
+      *==============================================================*
+
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT MOVTO-IN   ASSIGN TO MOVTIN.
+           SELECT CONTA-KSDS ASSIGN TO CONTA
+               ORGANIZATION IS INDEXED
+               ACCESS MODE IS DYNAMIC
+               RECORD KEY IS CNT-CHAVE.
+           SELECT AUDIT-OUT  ASSIGN TO AUDIT.
+
+       DATA DIVISION.
+       FILE SECTION.
+       FD MOVTO-IN.
+       01 REG-MOVTO-IN.
+          COPY CPLCT001.
+
+       FD CONTA-KSDS.
+       01 REG-CONTA.
+          COPY CPCNT001.
+
+       FD AUDIT-OUT.
+       01 REG-AUDIT PIC X(120).
+
+       WORKING-STORAGE SECTION.
+       01 WS-FIM PIC X VALUE 'N'.
+
+       PROCEDURE DIVISION.
+       0000-PRINCIPAL.
+           OPEN INPUT MOVTO-IN
+                I-O CONTA-KSDS
+                EXTEND AUDIT-OUT
+
+           PERFORM UNTIL WS-FIM = 'S'
+               READ MOVTO-IN
+                   AT END MOVE 'S' TO WS-FIM
+                   NOT AT END
+                       PERFORM 1000-POSTA
+               END-READ
+           END-PERFORM
+
+           CLOSE MOVTO-IN CONTA-KSDS AUDIT-OUT
+           GOBACK.
+
+       1000-POSTA.
+      * CHAVE DE CONTA MONTADA A PARTIR DO MOVIMENTO.
+           MOVE LCT-AGENCIA TO CNT-AGENCIA
+           MOVE LCT-CONTA   TO CNT-NUM-CONTA
+           READ CONTA-KSDS
+               INVALID KEY
+                   MOVE 'CONTA NAO ENCONTRADA' TO REG-AUDIT
+                   WRITE REG-AUDIT
+               NOT INVALID KEY
+                   IF LCT-TIPO = 'C'
+                       ADD LCT-VALOR TO CNT-SALDO-ATUAL
+                   ELSE
+                       SUBTRACT LCT-VALOR FROM CNT-SALDO-ATUAL
+                   END-IF
+                   REWRITE REG-CONTA
+           END-READ.</pre>
+                  </div>
+                </div>
+              </article>
+
+              <article class="accordion">
+                <button type="button" class="acc-btn" aria-expanded="false">
+                  <span class="acc-index blue">C4</span>
+                  <span class="acc-head">
+                    <span class="acc-title">COBOL — EBSALD01, EBEXTR01 e EBCONC01</span>
+                    <span class="acc-sub">Trechos-base documentados</span>
+                  </span>
+                  <span class="acc-chevron">⌄</span>
+                </button>
+                <div class="acc-panel">
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">COBOL — EBSALD01.cbl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EBSALD01.
+      * SALDIN = ARQ.SALDO.KSDS
+      * SALDOUT = ARQ.SALDO.REL.SEQ
+
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT SALDO-IN  ASSIGN TO SALDIN.
+           SELECT SALDO-OUT ASSIGN TO SALDOUT.</pre>
+                  </div>
+
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">COBOL — EBEXTR01.cbl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EBEXTR01.
+      * MOVTIN = ARQ.LANCTO.ESDS
+      * SALDO  = ARQ.SALDO.KSDS
+      * EXTROUT = GDG(+1)
+
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT MOVTO-IN    ASSIGN TO MOVTIN.
+           SELECT SALDO-IN    ASSIGN TO SALDO.
+           SELECT EXTRATO-OUT ASSIGN TO EXTROUT.</pre>
+                  </div>
+
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">COBOL — EBCONC01.cbl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EBCONC01.
+      * MOVTIN = ARQ.LANCTO.ESDS
+      * CONCOUT = ARQ.CONCIL.SEQ
+
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT MOVTO-IN    ASSIGN TO MOVTIN.
+           SELECT CONCIL-OUT  ASSIGN TO CONCOUT.</pre>
+                  </div>
+                </div>
+              </article>
+
+              <article class="accordion">
+                <button type="button" class="acc-btn" aria-expanded="false">
+                  <span class="acc-index amber">J1</span>
+                  <span class="acc-head">
+                    <span class="acc-title">JCL — EBCOMP, EBLINK e EBBUILD</span>
+                    <span class="acc-sub">Build corretamente separado</span>
+                  </span>
+                  <span class="acc-chevron">⌄</span>
+                </button>
+                <div class="acc-panel">
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — EBCOMP.jcl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//EBCOMP   JOB ,'EMUNAH COMP',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* APENAS COMPILACAO DO FONTE COBOL.
+//COMPILE  EXEC PGM=IGYCRCTL,PARM='OBJECT,LIST,MAP,APOST,RENT'
+//SYSPRINT DD SYSOUT=*
+//SYSLIB   DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
+//SYSIN    DD DSN=Z77948.EMUNAH.DEV.COBOL(&PGMNAME),DISP=SHR
+//SYSLIN   DD DSN=&&OBJ,DISP=(,PASS),UNIT=SYSDA,
+//            SPACE=(TRK,(1,1)),DCB=(RECFM=FB,LRECL=80,BLKSIZE=3200)</pre>
+                  </div>
+
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — EBLINK.jcl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//EBLINK   JOB ,'EMUNAH LINK',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* APENAS LINK-EDICAO DO OBJETO GERADO NO EBCOMP.
+//LINK     EXEC PGM=IEWBLINK,PARM='RENT,REUS'
+//SYSPRINT DD SYSOUT=*
+//SYSLIN   DD DSN=&&OBJ,DISP=(OLD,DELETE)
+//SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(&PGMNAME),DISP=SHR</pre>
+                  </div>
+
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — EBBUILD.jcl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//EBBUILD  JOB ,'EMUNAH BUILD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* COMPILE + LINK EM UM UNICO JOB.
+//CL       EXEC IGYWCL
+//COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCLLOAD),DISP=SHR
+//COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
+//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBCLLOAD),DISP=SHR
+//LKED.SYSPRINT DD SYSOUT=*</pre>
+                  </div>
+                </div>
+              </article>
+
+              <article class="accordion">
+                <button type="button" class="acc-btn" aria-expanded="false">
+                  <span class="acc-index amber">J2</span>
+                  <span class="acc-head">
+                    <span class="acc-title">JCL — EBSEED, EBJLOAD e EBJVALD</span>
+                    <span class="acc-sub">Setup inicial e rotina do dia</span>
+                  </span>
+                  <span class="acc-chevron">⌄</span>
+                </button>
+                <div class="acc-panel">
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — EBSEED.jcl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//EBSEED   JOB ,'EMUNAH SEED',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* CARGA INICIAL DOS SEEDS PARA CLIENTE.KSDS E CONTA.KSDS.
+//STEP1    EXEC PGM=EBCLLOAD
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ,DISP=SHR
+//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ,DISP=SHR
+//CLIENTE  DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=OLD
+//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=OLD
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD</pre>
+                  </div>
+
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — EBJLOAD.jcl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//EBJLOAD  JOB ,'EMUNAH LOAD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* PRECHECK DA ENTRADA DO DIA.
+//PRECHECK EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.ENTRADA.SEQ') ALL
+  IF LASTCC > 0 THEN -
+    SET MAXCC = 12
+/*</pre>
+                  </div>
+
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — EBJVALD.jcl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//EBJVALD  JOB ,'EMUNAH VALD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* VALIDA O LOTE BRUTO.
+//STEP1    EXEC PGM=EBVALI01
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//ENTRADA  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.SEQ,DISP=SHR
+//VALIDOS  DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITO.SEQ,DISP=MOD
+//SYSOUT   DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*</pre>
+                  </div>
+                </div>
+              </article>
+
+              <article class="accordion">
+                <button type="button" class="acc-btn" aria-expanded="false">
+                  <span class="acc-index amber">J3</span>
+                  <span class="acc-head">
+                    <span class="acc-title">JCL — EBJPOST, EBJSALD, EBJEXTR, EBJCONC e EBJEOD</span>
+                    <span class="acc-sub">Fluxo diário alinhado</span>
+                  </span>
+                  <span class="acc-chevron">⌄</span>
+                </button>
+                <div class="acc-panel">
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — EBJPOST.jcl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//EBJPOST  JOB ,'EMUNAH POST',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* APLICA OS LANCAMENTOS VALIDOS NAS CONTAS.
+//STEP1    EXEC PGM=EBPOST01
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//MOVTIN   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//CLIENTE  DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
+//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD</pre>
+                  </div>
+
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — EBJSALD.jcl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//EBJSALD  JOB ,'EMUNAH SALD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* CONSOLIDA SALDO.
+//STEP1    EXEC PGM=EBSALD01
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SALDIN   DD DSN=Z77948.EMUNAH.ARQ.SALDO.KSDS,DISP=SHR
+//SALDOUT  DD DSN=Z77948.EMUNAH.ARQ.SALDO.REL.SEQ,DISP=MOD</pre>
+                  </div>
+
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — EBJEXTR.jcl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//EBJEXTR  JOB ,'EMUNAH EXTR',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* GERA EXTRATO EM UMA NOVA GERACAO GDG.
+//STEP1    EXEC PGM=EBEXTR01
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//MOVTIN   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//SALDO    DD DSN=Z77948.EMUNAH.ARQ.SALDO.KSDS,DISP=SHR
+//EXTROUT  DD DSN=Z77948.EMUNAH.ARQ.EXTRATO.GDG(+1),
+//            DISP=(NEW,CATLG,DELETE),
+//            SPACE=(TRK,(3,1)),
+//            DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)</pre>
+                  </div>
+
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — EBJCONC.jcl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//EBJCONC  JOB ,'EMUNAH CONC',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* CONCILIA O PROCESSAMENTO DO DIA.
+//STEP1    EXEC PGM=EBCONC01
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//MOVTIN   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//CONCOUT  DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,DISP=MOD</pre>
+                  </div>
+
+                  <div class="code">
+                    <div class="code-head"><span class="code-lang">JCL — EBJEOD.jcl</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//EBJEOD   JOB ,'EMUNAH EOD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//* BACKUP + FECHAMENTO DO DIA.
+//BAKCONTS EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//INVSAM   DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//OUTBAK   DD DSN=Z77948.EMUNAH.BAK.CONTA.SEQ,DISP=MOD
+//SYSIN    DD *
+  REPRO INFILE(INVSAM) OUTFILE(OUTBAK)
+/*
+//REGFECH  EXEC PGM=IEBGENER,COND=(4,LT,BAKCONTS)
+//SYSPRINT DD SYSOUT=*
+//SYSUT1   DD *
+EOD-OK  EBJEOD  FECHAMENTO DIARIO CONCLUIDO COM SUCESSO
+/*
+//SYSUT2   DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//SYSIN    DD DUMMY</pre>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <div class="footer-note">
+              <div class="small">manual ampliado</div>
+              <h3>Os principais fontes já estão documentados aqui</h3>
+              <p>Você pode usar esta seção como base de estudo, referência para entrevistas e guia de evolução do lab.</p>
+            </div>
+          <section class="section" id="consultas">
+            <div class="section-header">
+              <div class="eyebrow">R1 // Consultas &amp; referência</div>
+              <h2 class="section-title">Guia completo de desenvolvimento mainframe</h2>
+              <p class="section-desc">Referência prática para laboratório e operação z/OS, organizada para consulta rápida durante estudo, troubleshooting e execução do dia a dia.</p>
+            </div>
+
+            <div class="notice info">
+              <div>📘</div>
+              <p><strong>Objetivo desta área:</strong> servir como guia de referência operacional. Use o sumário clicável abaixo, a pesquisa do site e os botões de expandir/recolher para navegar mais rápido pelo conteúdo.</p>
+            </div>
+
+            <div class="guide-toolbar" data-guide-controls>
+              <div class="guide-toolbar-text">
+                <strong>Sumário rápido</strong>
+                <span>Navegue por capítulos e controle a expansão dos tópicos desta seção.</span>
+              </div>
+              <div class="guide-toolbar-actions">
+                <button type="button" class="ghost-btn" data-guide-expand>Expandir tudo</button>
+                <button type="button" class="ghost-btn" data-guide-collapse>Recolher tudo</button>
+              </div>
+            </div>
+
+            <nav class="guide-toc" aria-label="Sumário interno do guia">
+              <a href="#consultas-ambiente" class="guide-toc-link">1. Ambiente &amp; Ferramentas</a>
+              <a href="#consultas-linguagens" class="guide-toc-link">2. Linguagens &amp; Compilação</a>
+              <a href="#consultas-db2" class="guide-toc-link">3. Banco de Dados DB2</a>
+              <a href="#consultas-utilitarios" class="guide-toc-link">4. Programas Utilitários</a>
+              <a href="#consultas-cics" class="guide-toc-link">5. CICS</a>
+              <a href="#consultas-simulacoes" class="guide-toc-link">6. Simulações de Tarefas Diárias</a>
+              <a href="#consultas-problemas" class="guide-toc-link">7. Problemas &amp; Resolução</a>
+              <a href="#consultas-abends" class="guide-toc-link">8. ABENDs</a>
+              <a href="#consultas-cheats" class="guide-toc-link">9. Referência Rápida</a>
+              <a href="#consultas-glossario" class="guide-toc-link">10. Glossário</a>
+              <a href="#consultas-cobol-bancos" class="guide-toc-link">11. COBOL em bancos</a>
+            </nav>
+
+            <div class="accordion-list guide-accordion-list">
+              <article class="accordion open" id="consultas-ambiente">
+                <button type="button" class="acc-btn" aria-expanded="true"><span class="acc-index">1</span><span class="acc-head"><span class="acc-title">Ambiente &amp; Ferramentas</span><span class="acc-sub">Zowe CLI, Git, TSO / ISPF e setup do laboratório</span></span><span class="acc-chevron">⌄</span></button>
+                <div class="acc-panel guide-panel">
+                  <h3>1.1 Zowe CLI — Comandos mais usados</h3>
+                  <p>O Zowe CLI é uma ferramenta open-source que permite interagir com o mainframe z/OS a partir do terminal do seu computador local, sem precisar de emulador 3270.</p>
+                  <div class="code"><div class="code-head"><span class="code-lang">bash</span><button type="button" class="copy" data-copy>copiar</button></div><pre>npm install -g @zowe/cli
+zowe --version
+
+zowe profiles create zosmf meu-perfil \
+  --host meu-mainframe.empresa.com \
+  --port 443 \
+  --user MEUSUSR \
+  --password MINHASENHA \
+  --reject-unauthorized false
+
+zowe profiles set-default zosmf meu-perfil</pre></div>
+                  <div class="table-wrap"><table><thead><tr><th>Categoria</th><th>Comando</th><th>Descrição</th></tr></thead><tbody>
+                    <tr><td><strong>Datasets</strong></td><td class="mono">zowe zos-files list ds "HLQ.*"</td><td>Lista datasets por HLQ</td></tr>
+                    <tr><td></td><td class="mono">zowe zos-files list am "MY.PDS"</td><td>Lista membros de PDS</td></tr>
+                    <tr><td></td><td class="mono">zowe zos-files view ds "MY.FILE"</td><td>Exibe conteúdo de dataset</td></tr>
+                    <tr><td></td><td class="mono">zowe zos-files view am "MY.PDS(MEMBRO)"</td><td>Exibe membro</td></tr>
+                    <tr><td></td><td class="mono">zowe zos-files download ds "MY.FILE" -f local.txt</td><td>Baixa dataset</td></tr>
+                    <tr><td></td><td class="mono">zowe zos-files upload file local.cbl "MY.PDS(MBR)"</td><td>Faz upload</td></tr>
+                    <tr><td></td><td class="mono">zowe zos-files create ds "MY.NEW.DS" --ps</td><td>Cria dataset sequencial</td></tr>
+                    <tr><td><strong>Jobs</strong></td><td class="mono">zowe zos-jobs submit ds "MY.JCL(MYJOB)"</td><td>Submete job</td></tr>
+                    <tr><td></td><td class="mono">zowe zos-jobs submit lf "local.jcl"</td><td>Submete JCL local</td></tr>
+                    <tr><td></td><td class="mono">zowe zos-jobs list js --owner MEUSUSR</td><td>Lista jobs do usuário</td></tr>
+                    <tr><td></td><td class="mono">zowe zos-jobs view jsbj JOB12345</td><td>Detalhes do job</td></tr>
+                    <tr><td></td><td class="mono">zowe zos-jobs view sfbi JOB12345 2</td><td>Exibe SYSOUT do step</td></tr>
+                    <tr><td></td><td class="mono">zowe zos-jobs download ofbj JOB12345</td><td>Baixa output do job</td></tr>
+                    <tr><td><strong>USS</strong></td><td class="mono">zowe zos-files list uf "/u/meususr"</td><td>Lista arquivos USS</td></tr>
+                    <tr><td><strong>Console</strong></td><td class="mono">zowe zos-console issue cmd "D A,L"</td><td>Emite comando z/OS</td></tr>
+                    <tr><td><strong>TSO</strong></td><td class="mono">zowe zos-tso issue cmd "LISTDS 'MY.DS'"</td><td>Executa comando TSO</td></tr>
+                  </tbody></table></div>
+                  <h3>1.2 Git no Mainframe — Comandos mais usados</h3>
+                  <div class="table-wrap"><table><thead><tr><th>Categoria</th><th>Comando</th><th>Descrição</th></tr></thead><tbody>
+                    <tr><td><strong>Configuração</strong></td><td class="mono">git config --global user.name "Seu Nome"</td><td>Define nome</td></tr>
+                    <tr><td></td><td class="mono">git config --global user.email "email@empresa.com"</td><td>Define e-mail</td></tr>
+                    <tr><td><strong>Repositório</strong></td><td class="mono">git init / git clone https://repo.url</td><td>Inicia ou clona</td></tr>
+                    <tr><td><strong>Status &amp; Log</strong></td><td class="mono">git status / git log --oneline --graph</td><td>Estado e histórico</td></tr>
+                    <tr><td><strong>Staging &amp; Commit</strong></td><td class="mono">git add . / git commit -m "mensagem"</td><td>Staging e commit</td></tr>
+                    <tr><td><strong>Branches</strong></td><td class="mono">git checkout -b feature/nova</td><td>Cria e muda de branch</td></tr>
+                    <tr><td><strong>Remote</strong></td><td class="mono">git pull origin main / git push origin main</td><td>Sincroniza</td></tr>
+                    <tr><td><strong>Desfazer</strong></td><td class="mono">git restore arquivo.cbl / git reset --hard HEAD~1</td><td>Reverte alterações</td></tr>
+                    <tr><td><strong>Stash</strong></td><td class="mono">git stash / git stash pop</td><td>Guarda mudanças</td></tr>
+                  </tbody></table></div>
+                  <div class="code"><div class="code-head"><span class="code-lang">.gitignore</span><button type="button" class="copy" data-copy>copiar</button></div><pre># Compilados
+*.lst
+*.obj
+*.load
+
+# Temporários
+*.tmp
+*.bak
+
+# Saídas
+*.sysout
+*.dump</pre></div>
+                  <h3>1.3 TSO / ISPF — Comandos e navegação básica</h3>
+                  <div class="code"><div class="code-head"><span class="code-lang">TSO / ISPF</span><button type="button" class="copy" data-copy>copiar</button></div><pre>LISTDS 'MY.DATASET'              - Informações do dataset
+LISTDS 'MY.PDS' MEMBERS          - Lista membros do PDS
+ALLOCATE DS('MY.NEW.DS') ...     - Aloca dataset
+DELETE 'MY.DATASET'              - Deleta dataset
+RENAME 'OLD.DS' 'NEW.DS'         - Renomeia dataset
+SUBMIT 'MY.JCL(MYJOB)'           - Submete job
+STATUS                           - Status de jobs
+CANCEL jobname                   - Cancela job
+PROFILE                          - Exibe perfil TSO
+LOGOFF                           - Sai do TSO
+
+=3.4    - Dataset List
+=3.2    - Dataset Utility
+=3.1    - Compressão de PDS
+=2      - Editor ISPF
+=5      - Submeter JCL
+=SD     - SDSF
+
+F texto           - Localiza texto
+C texto1 texto2   - Substitui texto
+CC ... CC         - Copia bloco
+MM ... MM         - Move bloco
+COL               - Exibe régua
+HEX ON            - Modo hexadecimal
+SAVE / END        - Salva e sai</pre></div>
+                </div>
+              </article>
+
+              <article class="accordion" id="consultas-linguagens">
+                <button type="button" class="acc-btn" aria-expanded="false"><span class="acc-index">2</span><span class="acc-head"><span class="acc-title">Linguagens &amp; Compilação</span><span class="acc-sub">COBOL, JCL e fundamentos de build</span></span><span class="acc-chevron">⌄</span></button>
+                <div class="acc-panel guide-panel">
+                  <h3>2.1 COBOL — Estrutura e exemplos</h3>
+                  <div class="code"><div class="code-head"><span class="code-lang">COBOL</span><button type="button" class="copy" data-copy>copiar</button></div><pre>IDENTIFICATION DIVISION.
+   PROGRAM-ID.   MEUPROG.
+   AUTHOR.       DESENVOLVEDOR.
+
+ENVIRONMENT DIVISION.
+   CONFIGURATION SECTION.
+   INPUT-OUTPUT SECTION.
+   FILE-CONTROL.
+       SELECT ARQUIVO-ENTRADA ASSIGN TO ENTRADA.
+       SELECT ARQUIVO-SAIDA   ASSIGN TO SAIDA.
+
+DATA DIVISION.
+   FILE SECTION.
+   FD ARQUIVO-ENTRADA.
+   01 REG-ENTRADA.
+       05 WS-CAMPO1  PIC X(10).
+       05 WS-CAMPO2  PIC 9(8).
+
+WORKING-STORAGE SECTION.
+   01 WS-VARIAVEIS.
+      05 WS-CONTADOR PIC 9(5) VALUE ZEROS.
+      05 WS-NOME     PIC X(30) VALUE SPACES.
+
+PROCEDURE DIVISION.
+   INICIO.
+       OPEN INPUT ARQUIVO-ENTRADA
+       PERFORM PROCESSAR UNTIL WS-FIM = 'S'
+       CLOSE ARQUIVO-ENTRADA
+       STOP RUN.</pre></div>
+                  <div class="table-wrap"><table><thead><tr><th>Verbo</th><th>Uso</th></tr></thead><tbody>
+                    <tr><td><code>MOVE</code></td><td>Atribuição de valores</td></tr>
+                    <tr><td><code>ADD</code>, <code>SUBTRACT</code>, <code>MULTIPLY</code>, <code>DIVIDE</code></td><td>Aritmética</td></tr>
+                    <tr><td><code>COMPUTE</code></td><td>Expressões matemáticas</td></tr>
+                    <tr><td><code>IF / ELSE / END-IF</code></td><td>Desvio condicional</td></tr>
+                    <tr><td><code>EVALUATE</code></td><td>CASE/SWITCH</td></tr>
+                    <tr><td><code>PERFORM</code></td><td>Laços e rotinas</td></tr>
+                    <tr><td><code>READ / WRITE / OPEN / CLOSE</code></td><td>Operações com arquivos</td></tr>
+                    <tr><td><code>CALL</code></td><td>Chamada de subprograma</td></tr>
+                    <tr><td><code>EXEC SQL</code></td><td>Acesso a DB2</td></tr>
+                    <tr><td><code>EXEC CICS</code></td><td>Acesso a CICS</td></tr>
+                  </tbody></table></div>
+                  <h3>2.2 JCL — Estrutura e parâmetros</h3>
+                  <div class="code"><div class="code-head"><span class="code-lang">JCL</span><button type="button" class="copy" data-copy>copiar</button></div><pre>//MYJOB    JOB (CONTA),'DESCRICAO',
+//             CLASS=A,
+//             MSGCLASS=X,
+//             MSGLEVEL=(1,1),
+//             NOTIFY=&SYSUID,
+//             REGION=0M
+//STEP010  EXEC PGM=IEBGENER
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD DUMMY
+//SYSUT1   DD DSN=MY.INPUT.FILE,DISP=SHR
+//SYSUT2   DD DSN=MY.OUTPUT.FILE,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,
+//             SPACE=(CYL,(1,1)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)</pre></div>
+                  <div class="table-wrap"><table><thead><tr><th>Parâmetro</th><th>Valores comuns</th><th>Descrição</th></tr></thead><tbody>
+                    <tr><td><code>CLASS</code></td><td>A-Z, 0-9</td><td>Classe de execução</td></tr>
+                    <tr><td><code>MSGCLASS</code></td><td>A-X</td><td>Classe de saída</td></tr>
+                    <tr><td><code>MSGLEVEL</code></td><td>(1,1) / (2,0)</td><td>Nível de mensagens</td></tr>
+                    <tr><td><code>NOTIFY</code></td><td>&amp;SYSUID</td><td>Notifica usuário</td></tr>
+                    <tr><td><code>REGION</code></td><td>0M, 128M</td><td>Memória disponível</td></tr>
+                    <tr><td><code>TIME</code></td><td>(mm,ss)</td><td>Limite de CPU</td></tr>
+                  </tbody></table></div>
+                  <div class="code"><div class="code-head"><span class="code-lang">DISP</span><button type="button" class="copy" data-copy>copiar</button></div><pre>DISP=(status-novo, status-normal, status-abend)
+NEW - Dataset novo
+OLD - Dataset existente, exclusivo
+SHR - Dataset existente, compartilhado
+MOD - Acrescenta ao final
+KEEP / CATLG / DELETE / UNCATLG</pre></div>
+                </div>
+              </article>
+
+              <article class="accordion" id="consultas-db2">
+                <button type="button" class="acc-btn" aria-expanded="false"><span class="acc-index">3</span><span class="acc-head"><span class="acc-title">Banco de Dados DB2</span><span class="acc-sub">SQL, utilitários e execução batch</span></span><span class="acc-chevron">⌄</span></button>
+                <div class="acc-panel guide-panel">
+                  <div class="code"><div class="code-head"><span class="code-lang">SQL DB2</span><button type="button" class="copy" data-copy>copiar</button></div><pre>SELECT NOME, SALDO, DT_NASCIMENTO
+  FROM DB2ADM.CLIENTES
+ WHERE CD_STATUS = 'A'
+   AND SALDO > 1000
+ ORDER BY NOME;
+
+INSERT INTO DB2ADM.MOVIMENTOS
+       (NR_CONTA, VL_MOVIMENTO, TP_MOVIMENTO, DT_MOVIMENTO)
+VALUES (:WS-CONTA, :WS-VALOR, 'C', CURRENT DATE);
+
+UPDATE DB2ADM.CLIENTES
+   SET SALDO      = SALDO + :WS-VALOR,
+       DT_ALTERAC = CURRENT TIMESTAMP
+ WHERE NR_CONTA   = :WS-CONTA;
+
+DELETE FROM DB2ADM.MOVIMENTOS
+ WHERE DT_MOVIMENTO < (CURRENT DATE - 365 DAYS)
+   AND TP_STATUS = 'P';</pre></div>
+                  <div class="table-wrap"><table><thead><tr><th>SQLCODE</th><th>Significado</th><th>Ação</th></tr></thead><tbody>
+                    <tr><td class="mono">0</td><td>Sucesso</td><td>OK</td></tr>
+                    <tr><td class="mono">+100</td><td>NOT FOUND</td><td>Tratar lógica</td></tr>
+                    <tr><td class="mono">-104</td><td>Token inválido</td><td>Verificar sintaxe</td></tr>
+                    <tr><td class="mono">-204</td><td>Objeto não encontrado</td><td>Verificar nomes</td></tr>
+                    <tr><td class="mono">-803</td><td>Chave duplicada</td><td>Verificar dados</td></tr>
+                    <tr><td class="mono">-805</td><td>DBRM não encontrado</td><td>Fazer bind</td></tr>
+                    <tr><td class="mono">-911</td><td>Timeout / Deadlock</td><td>Verificar concorrência</td></tr>
+                    <tr><td class="mono">-922</td><td>Sem autorização</td><td>Solicitar grant</td></tr>
+                  </tbody></table></div>
+                  <div class="code"><div class="code-head"><span class="code-lang">DSNUTILB</span><button type="button" class="copy" data-copy>copiar</button></div><pre>//LOADDB2  EXEC PGM=DSNUTILB,PARM='DBNAME'
+//SYSIN    DD *
+  LOAD DATA INDDN(LOADFILE)
+       INTO TABLE DB2ADM.CLIENTES
+       (NR_CONTA POSITION(1:10) CHAR,
+        NOME     POSITION(11:50) CHAR,
+        SALDO    POSITION(51:65) DECIMAL)
+  NOCOPYPEND
+/*
+
+//REORGTS  EXEC PGM=DSNUTILB,PARM='DBNAME'
+//SYSIN    DD *
+  REORG TABLESPACE DBNAME.TSNAME
+  LOG NO
+/*
+
+//RUNSTATS EXEC PGM=DSNUTILB,PARM='DBNAME'
+//SYSIN    DD *
+  RUNSTATS TABLESPACE DBNAME.TSNAME TABLE(ALL) INDEX(ALL)
+/*</pre></div>
+                </div>
+              </article>
+
+              <article class="accordion" id="consultas-utilitarios">
+                <button type="button" class="acc-btn" aria-expanded="false"><span class="acc-index">4</span><span class="acc-head"><span class="acc-title">Programas Utilitários</span><span class="acc-sub">IEBGENER, IEBCOPY, IDCAMS, SORT e IEFBR14</span></span><span class="acc-chevron">⌄</span></button>
+                <div class="acc-panel guide-panel">
+                  <div class="code"><div class="code-head"><span class="code-lang">IEBGENER / IEBCOPY / IDCAMS / SORT / IEFBR14</span><button type="button" class="copy" data-copy>copiar</button></div><pre>//COPY001  EXEC PGM=IEBGENER
+//SYSUT1   DD DSN=ORIGEM.DATASET,DISP=SHR
+//SYSUT2   DD DSN=DESTINO.DATASET,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(CYL,(1,1)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
+
+//COPYPDS  EXEC PGM=IEBCOPY
+//SYSUT1   DD DSN=ORIGEM.PDS,DISP=SHR
+//SYSUT2   DD DSN=DESTINO.PDS,DISP=SHR
+//SYSIN    DD *
+  COPY INDD=SYSUT1,OUTDD=SYSUT2
+/*
+
+//DEFVSAM  EXEC PGM=IDCAMS
+//SYSIN    DD *
+  DEFINE CLUSTER (NAME(MEU.VSAM.KSDS) INDEXED KEYS(10 0) RECORDSIZE(100 100) TRACKS(5 5) CISZ(4096))
+/*
+
+//SORT001  EXEC PGM=SORT
+//SORTIN   DD DSN=ENTRADA.DATASET,DISP=SHR
+//SORTOUT  DD DSN=SAIDA.DATASET,DISP=(NEW,CATLG,DELETE)
+//SYSIN    DD *
+  SORT FIELDS=(1,10,CH,A,11,8,CH,D)
+/*
+
+//ALOC001  EXEC PGM=IEFBR14
+//NEWFILE  DD DSN=MEU.NOVO.DATASET,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,
+//             SPACE=(CYL,(5,2)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)</pre></div>
+                  <div class="table-wrap"><table><thead><tr><th>Programa</th><th>Família</th><th>Função principal</th></tr></thead><tbody>
+                    <tr><td><code>IEBGENER</code></td><td>IEB</td><td>Cópia de datasets sequenciais</td></tr>
+                    <tr><td><code>IEBCOPY</code></td><td>IEB</td><td>Cópia e compactação de PDS</td></tr>
+                    <tr><td><code>IDCAMS</code></td><td>IDC</td><td>VSAM, catálogo, REPRO</td></tr>
+                    <tr><td><code>SORT</code></td><td>—</td><td>Ordenação e transformação</td></tr>
+                    <tr><td><code>ICETOOL</code></td><td>—</td><td>Utilitário avançado de SORT</td></tr>
+                    <tr><td><code>IEFBR14</code></td><td>IEF</td><td>Alocação/deleção</td></tr>
+                    <tr><td><code>DSNUTILB</code></td><td>DSN</td><td>Utilitários DB2</td></tr>
+                    <tr><td><code>IKJEFT01</code></td><td>IKJ</td><td>TSO batch / DSN</td></tr>
+                    <tr><td><code>DFHCSDUP</code></td><td>DFH</td><td>Manutenção CSD CICS</td></tr>
+                    <tr><td><code>IGYWCL</code></td><td>IGY</td><td>PROC compilação COBOL</td></tr>
+                    <tr><td><code>IGYCRCTL</code></td><td>IGY</td><td>Compilador COBOL isolado</td></tr>
+                    <tr><td><code>IEWL</code></td><td>IEW</td><td>Linkeditor</td></tr>
+                  </tbody></table></div>
+                </div>
+              </article>
+
+              <article class="accordion" id="consultas-cics">
+                <button type="button" class="acc-btn" aria-expanded="false"><span class="acc-index">5</span><span class="acc-head"><span class="acc-title">CICS</span><span class="acc-sub">Conceitos básicos, comandos usados e DFHCSDUP</span></span><span class="acc-chevron">⌄</span></button>
+                <div class="acc-panel guide-panel">
+                  <div class="table-wrap"><table><thead><tr><th>Conceito</th><th>Descrição</th></tr></thead><tbody>
+                    <tr><td><strong>Transaction</strong></td><td>Unidade de trabalho online</td></tr>
+                    <tr><td><strong>TRANSID</strong></td><td>Código de 4 chars</td></tr>
+                    <tr><td><strong>Program</strong></td><td>Programa COBOL/Assembler associado</td></tr>
+                    <tr><td><strong>CSD</strong></td><td>CICS System Definition</td></tr>
+                    <tr><td><strong>COMMAREA</strong></td><td>Área de comunicação</td></tr>
+                    <tr><td><strong>Map / Mapset</strong></td><td>Tela BMS</td></tr>
+                  </tbody></table></div>
+                  <div class="code"><div class="code-head"><span class="code-lang">EXEC CICS / DFHCSDUP</span><button type="button" class="copy" data-copy>copiar</button></div><pre>EXEC CICS READ DATASET('CLIENTES') INTO(WS-REG-CLIENTE) RIDFLD(WS-NR-CONTA) RESP(WS-RESP) END-EXEC.
+EXEC CICS WRITE DATASET('CLIENTES') FROM(WS-REG-CLIENTE) RIDFLD(WS-NR-CONTA) END-EXEC.
+EXEC CICS SEND MAP('MAPMENU') MAPSET('MAPSET01') ERASE END-EXEC.
+EXEC CICS LINK PROGRAM('OUTRO') COMMAREA(WS-COMMAREA) LENGTH(100) END-EXEC.
+
+//CSDUTIL  EXEC PGM=DFHCSDUP,REGION=0M
+//STEPLIB  DD DSN=CICS.LOADLIB,DISP=SHR
+//DFHCSD   DD DSN=CICS.CSD,DISP=SHR
+//SYSIN    DD *
+  LIST ALL
+/*</pre></div>
+                </div>
+              </article>
+
+              <article class="accordion" id="consultas-simulacoes">
+                <button type="button" class="acc-btn" aria-expanded="false"><span class="acc-index">6</span><span class="acc-head"><span class="acc-title">Simulações de tarefas diárias</span><span class="acc-sub">Compilar, executar, criar datasets, SQL batch, deploy e remessa</span></span><span class="acc-chevron">⌄</span></button>
+                <div class="acc-panel guide-panel">
+                  <div class="diagram"><pre>Código COBOL (.cbl) → Compilador (IGYCRCTL) → Objeto (.obj)
+Objeto (.obj) → Linkeditor (IEWL) → Load Module (.load)
+Load Module → Execução (EXEC PGM=)</pre></div>
+                  <div class="code"><div class="code-head"><span class="code-lang">Batch operacional</span><button type="button" class="copy" data-copy>copiar</button></div><pre>//COMPJOB  JOB (CONTA),'COMPILAR COBOL',CLASS=A,MSGCLASS=X
+//COBCLG   EXEC IGYWCL
+//COBOL.SYSIN DD DSN=MY.SOURCE.COBOL(MEUPROG),DISP=SHR
+//LKED.SYSLMOD DD DSN=MY.LOAD.LIB(MEUPROG),DISP=(NEW,CATLG,DELETE),UNIT=SYSDA,SPACE=(CYL,(1,1,1))
+
+//EXECJOB  JOB (CONTA),'EXECUTAR PROGRAMA',CLASS=A,MSGCLASS=X
+//STEP010  EXEC PGM=MEUPROG,REGION=0M
+//STEPLIB  DD DSN=MY.LOAD.LIB,DISP=SHR
+//ENTRADA  DD DSN=MY.INPUT.FILE,DISP=SHR
+//SAIDA    DD DSN=MY.OUTPUT.FILE,DISP=(NEW,CATLG,DELETE),UNIT=SYSDA,SPACE=(CYL,(5,2))
+
+zowe zos-jobs submit ds "MY.JCL(EXECJOB)"
+zowe zos-jobs list js --owner MEUSUSR
+zowe zos-jobs view sfbi JOB12345 2
+
+//CRIA001  EXEC PGM=IEFBR14
+//DATASET  DD DSN=MEU.NOVO.FILE,DISP=(NEW,CATLG,DELETE),UNIT=SYSDA,SPACE=(TRK,(10,5)),DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
+
+//SQLBATCH JOB (CONTA),'SQL BATCH',CLASS=A,MSGCLASS=X
+//STEP010  EXEC PGM=IKJEFT01,DYNAMNBR=20
+//SYSTSIN  DD *
+  DSN SYSTEM(DB2P)
+  RUN PROGRAM(DSNTEP2) PLAN(DSNTEP2) LIB('DB2.RUNLIB.LOAD')
+  END
+/*
+
+//DEPLOY   JOB (CONTA),'DEPLOY PRODUCAO',CLASS=A
+//STEP010  EXEC PGM=IEBCOPY
+//INLIB    DD DSN=DEV.LOAD.LIB,DISP=SHR
+//OUTLIB   DD DSN=PRD.LOAD.LIB,DISP=SHR
+//SYSIN    DD *
+  COPY INDD=INLIB,OUTDD=OUTLIB
+  SELECT MEMBER=((MEUPROG,,R))
+/*</pre></div>
+                </div>
+              </article>
+
+              <article class="accordion" id="consultas-problemas">
+                <button type="button" class="acc-btn" aria-expanded="false"><span class="acc-index">7</span><span class="acc-head"><span class="acc-title">Simulações de problemas &amp; resolução</span><span class="acc-sub">ABEND, RC ≠ 0, ENQ/DEQ, SQL, espaço e RACF</span></span><span class="acc-chevron">⌄</span></button>
+                <div class="acc-panel guide-panel">
+                  <div class="code"><div class="code-head"><span class="code-lang">Checklist de investigação</span><button type="button" class="copy" data-copy>copiar</button></div><pre>1. Verificar o ABEND CODE no output do job
+2. Localizar o step que abendou
+3. Verificar SYSOUT do step
+4. Verificar CEEDUMP ou SYSUDUMP
+5. Consultar tabela de ABENDs
+6. Analisar dados de entrada
+7. Corrigir e re-submeter
+
+RC comuns: 4 = warning, 8 = erro leve, 12 = erro grave, 16 = erro fatal
+
+//STEP020  EXEC PGM=MEUPROG,COND=(8,LT,STEP010)
+
+zowe zos-console issue cmd "D GRS,RES=(DATASET,'MY.LOCKED.DS')"
+
+PERMIT 'MY.DATASET.*' ID(MEUSUSR) ACCESS(UPDATE)</pre></div>
+                </div>
+              </article>
+
+              <article class="accordion" id="consultas-abends">
+                <button type="button" class="acc-btn" aria-expanded="false"><span class="acc-index">8</span><span class="acc-head"><span class="acc-title">ABENDs — dicionário de erros</span><span class="acc-sub">Sxxx, Uxxx, SQLCODEs, RCs e dumps</span></span><span class="acc-chevron">⌄</span></button>
+                <div class="acc-panel guide-panel">
+                  <div class="table-wrap"><table><thead><tr><th>ABEND</th><th>Nome</th><th>Causa</th><th>Solução</th></tr></thead><tbody>
+                    <tr><td class="mono">S0C1</td><td>Operation Exception</td><td>Instrução inválida</td><td>Verificar lógica</td></tr>
+                    <tr><td class="mono">S0C4</td><td>Protection Exception</td><td>Acesso inválido de memória</td><td>Verificar ponteiros e tabelas</td></tr>
+                    <tr><td class="mono">S0C7</td><td>Data Exception</td><td>Dado não numérico em PIC 9</td><td>Verificar entrada</td></tr>
+                    <tr><td class="mono">S013</td><td>Open Error</td><td>DCB incompatível ou sem autorização</td><td>Verificar DCB/RACF</td></tr>
+                    <tr><td class="mono">S222</td><td>Job Cancelled</td><td>Cancelado por operador</td><td>Verificar motivo</td></tr>
+                    <tr><td class="mono">S322</td><td>Time Limit</td><td>Tempo excedido</td><td>Otimizar / loop</td></tr>
+                    <tr><td class="mono">S806</td><td>Load Module Not Found</td><td>Programa não encontrado</td><td>Verificar STEPLIB</td></tr>
+                    <tr><td class="mono">S913</td><td>RACF Abend</td><td>Sem autorização</td><td>Solicitar acesso</td></tr>
+                    <tr><td class="mono">B37/D37/E37</td><td>Out of Space</td><td>Sem espaço</td><td>Aumentar SPACE</td></tr>
+                  </tbody></table></div>
+                  <div class="code"><div class="code-head"><span class="code-lang">Como ler um dump</span><button type="button" class="copy" data-copy>copiar</button></div><pre>1. HEADER — Informações do job
+2. ABEND CODE — Código do abend
+3. PSW — Endereço da instrução com problema
+4. GPR — Registradores
+5. STORAGE DUMP — Memória em hex/EBCDIC
+6. TRACEBACK — Pilha de chamadas
+
+Dica para S0C7:
+- localizar PSW
+- correlacionar com mapa de linkagem
+- identificar o parágrafo COBOL
+- inspecionar o campo em storage
+- X'40' (espaço) em campo PIC 9 costuma ser a causa</pre></div>
+                </div>
+              </article>
+
+              <article class="accordion" id="consultas-cheats">
+                <button type="button" class="acc-btn" aria-expanded="false"><span class="acc-index">9</span><span class="acc-head"><span class="acc-title">Referência rápida — cheat sheets</span><span class="acc-sub">Zowe, Git, JCL, COBOL, SQL DB2 e utilitários</span></span><span class="acc-chevron">⌄</span></button>
+                <div class="acc-panel guide-panel">
+                  <div class="code"><div class="code-head"><span class="code-lang">Cheat sheets</span><button type="button" class="copy" data-copy>copiar</button></div><pre>zowe zos-files list ds "HLQ.*"
+zowe zos-files view ds "MY.FILE"
+zowe zos-files upload file local.txt "MY.DS"
+zowe zos-jobs submit ds "MY.JCL(JOB)"
+zowe zos-jobs list js --owner MEUSUSR
+
+git status
+git add .
+git commit -m "mensagem"
+git push
+git checkout -b feature/X
+
+git restore arquivo
+git reset --hard HEAD~1
+
+DISP=(NEW,CATLG,DELETE)
+SPACE=(CYL,(5,2))
+DCB=(RECFM=FB,LRECL=80)
+COND=(8,LT,STEP010)
+
+MOVE valor TO campo
+COMPUTE resultado = val1 + val2 * val3
+EVALUATE campo
+READ arquivo AT END MOVE 'S' TO fim END-READ
+CALL 'PROGRAMA' USING var1 var2
+
+SELECT col1, col2 FROM tabela WHERE cond;
+INSERT INTO tabela (col1, col2) VALUES (:var1, :var2);
+UPDATE tabela SET col1 = :var1 WHERE chave = :chave;</pre></div>
+                </div>
+              </article>
+
+              <article class="accordion" id="consultas-glossario">
+                <button type="button" class="acc-btn" aria-expanded="false"><span class="acc-index">10</span><span class="acc-head"><span class="acc-title">Glossário</span><span class="acc-sub">Termos e siglas do mundo mainframe</span></span><span class="acc-chevron">⌄</span></button>
+                <div class="acc-panel guide-panel">
+                  <div class="table-wrap"><table><thead><tr><th>Termo</th><th>Significado</th></tr></thead><tbody>
+                    <tr><td><strong>ABEND</strong></td><td>Abnormal End</td></tr>
+                    <tr><td><strong>BLKSIZE</strong></td><td>Block Size</td></tr>
+                    <tr><td><strong>CATLG</strong></td><td>Catalogar dataset</td></tr>
+                    <tr><td><strong>CICS</strong></td><td>Monitor de transações online</td></tr>
+                    <tr><td><strong>DCB</strong></td><td>Data Control Block</td></tr>
+                    <tr><td><strong>DISP</strong></td><td>Disposition</td></tr>
+                    <tr><td><strong>DSN</strong></td><td>Data Set Name</td></tr>
+                    <tr><td><strong>GDG</strong></td><td>Generation Data Group</td></tr>
+                    <tr><td><strong>HLQ</strong></td><td>High Level Qualifier</td></tr>
+                    <tr><td><strong>ISPF</strong></td><td>Interface do z/OS</td></tr>
+                    <tr><td><strong>JCL</strong></td><td>Job Control Language</td></tr>
+                    <tr><td><strong>JES</strong></td><td>Job Entry Subsystem</td></tr>
+                    <tr><td><strong>KSDS</strong></td><td>VSAM indexado por chave</td></tr>
+                    <tr><td><strong>LRECL</strong></td><td>Logical Record Length</td></tr>
+                    <tr><td><strong>PDS / PDSE</strong></td><td>Dataset particionado</td></tr>
+                    <tr><td><strong>PS</strong></td><td>Physical Sequential</td></tr>
+                    <tr><td><strong>RACF</strong></td><td>Segurança z/OS</td></tr>
+                    <tr><td><strong>RC</strong></td><td>Return Code</td></tr>
+                    <tr><td><strong>SMF / RMF</strong></td><td>Auditoria e performance</td></tr>
+                    <tr><td><strong>SPOOL</strong></td><td>Área de outputs de jobs</td></tr>
+                    <tr><td><strong>STEPLIB</strong></td><td>Biblioteca do step</td></tr>
+                    <tr><td><strong>TSO</strong></td><td>Time Sharing Option</td></tr>
+                    <tr><td><strong>USS</strong></td><td>Unix System Services</td></tr>
+                    <tr><td><strong>VSAM</strong></td><td>Virtual Storage Access Method</td></tr>
+                    <tr><td><strong>VTOC</strong></td><td>Volume Table of Contents</td></tr>
+                    <tr><td><strong>z/OS</strong></td><td>Sistema operacional IBM</td></tr>
+                  </tbody></table></div>
+                </div>
+              </article>
+
+              <article class="accordion" id="consultas-cobol-bancos">
+                <button type="button" class="acc-btn" aria-expanded="false"><span class="acc-index">11</span><span class="acc-head"><span class="acc-title">COBOL — comandos mais usados em bancos</span><span class="acc-sub">Movimentação de dados, cálculos, fluxo, arquivos, DB2 e exemplo completo</span></span><span class="acc-chevron">⌄</span></button>
+                <div class="acc-panel guide-panel">
+                  <div class="code"><div class="code-head"><span class="code-lang">MOVE / COMPUTE / EVALUATE / DB2</span><button type="button" class="copy" data-copy>copiar</button></div><pre>MOVE WS-SALDO-ATUAL TO WS-SALDO-ANTERIOR
+MOVE ZEROS TO WS-CONTADOR
+MOVE CORRESPONDING WS-CLIENTE-ENTRADA TO WS-CLIENTE-SAIDA
+STRING WS-DDD DELIMITED BY SPACE '-' DELIMITED BY SIZE WS-FONE DELIMITED BY SPACE INTO WS-FONE-FORMATADO
+UNSTRING WS-LINHA-RETORNO DELIMITED BY ';' INTO WS-CAMPO1 WS-CAMPO2 WS-CAMPO3
+INSPECT WS-CAMPO TALLYING WS-CONTADOR FOR ALL SPACES
+
+ADD WS-VALOR-CREDITO TO WS-SALDO-CONTA
+SUBTRACT WS-VALOR-DEBITO FROM WS-SALDO-CONTA
+MULTIPLY WS-TAXA-JUROS BY WS-SALDO GIVING WS-VALOR-JUROS
+DIVIDE WS-TOTAL-DIVIDA BY WS-QTD-PARCELAS GIVING WS-VALOR-PARCELA
+COMPUTE WS-IOF = WS-VALOR-OPERACAO * WS-ALIQ-IOF * WS-DIAS-CORRIDOS
+
+IF WS-SALDO >= WS-VALOR-SAQUE
+    PERFORM ROT-APROVAR-SAQUE
+ELSE
+    PERFORM ROT-RECUSAR-SAQUE
+END-IF
+
+EVALUATE WS-TIPO-MOVIMENTO
+    WHEN 'PIX' PERFORM ROT-PROCESSA-PIX
+    WHEN 'TED' PERFORM ROT-PROCESSA-TED
+    WHEN OTHER PERFORM ROT-TIPO-INVALIDO
+END-EVALUATE
+
+OPEN INPUT  ARQ-MOVIMENTOS
+READ ARQ-MOVIMENTOS AT END MOVE 'S' TO WS-FIM-ARQUIVO END-READ
+WRITE REG-SAIDA FROM WS-REGISTRO-SAIDA
+REWRITE REG-CLIENTES FROM WS-CLIENTE-ATUALIZADO
+DELETE ARQ-CLIENTES-VSAM
+
+EXEC SQL SELECT NR_CONTA, NOME_CLIENTE, VL_SALDO INTO :WS-NR-CONTA, :WS-NOME-CLIENTE, :WS-VL-SALDO FROM DB2ADM.TB_CLIENTES WHERE NR_CONTA = :WS-CONTA-PESQ END-EXEC
+EXEC SQL INSERT INTO DB2ADM.TB_MOVIMENTOS (...) VALUES (...) END-EXEC
+EXEC SQL UPDATE DB2ADM.TB_CLIENTES SET VL_SALDO = VL_SALDO + :MV-VL_MOVIMENTO END-EXEC
+EXEC SQL COMMIT END-EXEC
+EXEC SQL ROLLBACK END-EXEC
+
+CALL 'PGMVALID' USING WS-DADOS-ENTRADA WS-CODIGO-RETORNO
+INITIALIZE WS-REGISTRO-SAIDA
+MOVE FUNCTION CURRENT-DATE TO WS-DATA-HORA-COMPLETA</pre></div>
+                  <div class="code"><div class="code-head"><span class="code-lang">COBOL — exemplo bancário típico</span><button type="button" class="copy" data-copy>copiar</button></div><pre>IDENTIFICATION DIVISION.
+ PROGRAM-ID. PGMSLDBAT.
+
+ENVIRONMENT DIVISION.
+ INPUT-OUTPUT SECTION.
+ FILE-CONTROL.
+     SELECT ARQ-MOVIMENTOS ASSIGN TO MOVTOS
+         ORGANIZATION IS SEQUENTIAL
+         ACCESS MODE  IS SEQUENTIAL
+         FILE STATUS  IS WS-STATUS-MOVTOS.
+
+DATA DIVISION.
+ FILE SECTION.
+ FD ARQ-MOVIMENTOS.
+ 01 REG-MOVIMENTO.
+    05 MV-NR-CONTA     PIC 9(10).
+    05 MV-TP-MOVIMENTO PIC X(02).
+    05 MV-VL-MOVIMENTO PIC 9(13)V99.
+    05 MV-DT-MOVIMENTO PIC 9(08).
+
+ EXEC SQL INCLUDE SQLCA END-EXEC.
+
+PROCEDURE DIVISION.
+ 0000-PRINCIPAL.
+     PERFORM 1000-INICIAR
+     PERFORM 2000-PROCESSAR UNTIL FIM-ARQUIVO
+     PERFORM 3000-FINALIZAR
+     STOP RUN.
+
+ 2000-PROCESSAR.
+     EVALUATE MV-TP-MOVIMENTO
+         WHEN 'CR' PERFORM 2100-PROCESSAR-CREDITO
+         WHEN 'DB' PERFORM 2200-PROCESSAR-DEBITO
+         WHEN OTHER ADD 1 TO WS-QTD-ERROS
+     END-EVALUATE.
+
+ 2100-PROCESSAR-CREDITO.
+     EXEC SQL
+         UPDATE DB2ADM.TB_CLIENTES
+            SET VL_SALDO = VL_SALDO + :MV-VL-MOVIMENTO,
+                DT_ULT_MOVTO = CURRENT DATE
+          WHERE NR_CONTA = :MV-NR-CONTA
+     END-EXEC.</pre></div>
+                  <div class="table-wrap"><table><thead><tr><th>Categoria</th><th>Comando</th><th>Uso principal em bancos</th></tr></thead><tbody>
+                    <tr><td><strong>Dados</strong></td><td><code>MOVE</code>, <code>MOVE CORRESPONDING</code>, <code>INITIALIZE</code>, <code>STRING</code>, <code>UNSTRING</code>, <code>INSPECT</code></td><td>Atribuição, limpeza e montagem de registros</td></tr>
+                    <tr><td><strong>Aritmética</strong></td><td><code>ADD</code>, <code>SUBTRACT</code>, <code>MULTIPLY</code>, <code>DIVIDE</code>, <code>COMPUTE</code></td><td>Saldo, juros, IOF, parcelas</td></tr>
+                    <tr><td><strong>Fluxo</strong></td><td><code>IF</code>, <code>EVALUATE</code>, <code>PERFORM</code>, <code>SET</code></td><td>Validações e laços</td></tr>
+                    <tr><td><strong>Arquivo</strong></td><td><code>OPEN</code>, <code>READ</code>, <code>WRITE</code>, <code>REWRITE</code>, <code>DELETE</code></td><td>Entrada, saída e VSAM</td></tr>
+                    <tr><td><strong>DB2</strong></td><td><code>EXEC SQL SELECT / INSERT / UPDATE / DELETE / COMMIT / ROLLBACK</code></td><td>Persistência transacional</td></tr>
+                    <tr><td><strong>Subprog</strong></td><td><code>CALL</code>, <code>GOBACK</code></td><td>Rotinas compartilhadas</td></tr>
+                    <tr><td><strong>Encerramento</strong></td><td><code>STOP RUN</code></td><td>Fim do programa principal</td></tr>
+                  </tbody></table></div>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          </section>
+        </div>
+      </section>
+
+      <section class="view" data-view="review">
+        <div class="crumb">EMUNAH-BANK-LAB <span>/ Revisão técnica / Checklist persistente</span></div>
+        <div class="hero">
+          <div class="hero-tag"><span class="dot"></span> revisão técnica</div>
+          <h2>Revisão <span>consolidada</span></h2>
+          <p>A revisão foi mantida como checklist de engenharia. Você pode marcar os itens como resolvidos e o estado fica salvo no navegador.</p>
+
+          <div class="review-summary">
+            <div class="status"><strong id="statTotal">0</strong><span>itens totais</span></div>
+            <div class="status"><strong id="statPending">0</strong><span>pendentes</span></div>
+            <div class="status"><strong id="statDone">0</strong><span>resolvidos</span></div>
+            <div class="status"><strong id="statPct">0%</strong><span>progresso</span></div>
+          </div>
+
+          <div class="progress">
+            <div class="progress-meta">
+              <span>Checklist da revisão técnica</span>
+              <span id="progressLabel">0 / 0 resolvidos</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="content">
+          
+          <section class="section active" id="rv-bugs" data-review-group="rv-bugs">
+            <div class="section-header">
+              <div class="eyebrow">A // Bugs críticos — resolução aplicada</div>
+              <h2 class="section-title">O que foi corrigido na cadeia principal</h2>
+              <p class="section-desc">Cada item abaixo mostra o problema original, a decisão de correção e o efeito prático esperado no lab.</p>
+            </div>
+
+            <article class="review-card info open" data-review-id="bug01">
+              <div class="review-head">
+                <span class="review-tag info">BUG-01</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">EBCOMP, EBLINK e EBBUILD deixaram de ser duplicados</h3>
+                  <div class="review-where">Build / JCL de compilação</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Problema:</strong> os três membros estavam conceitualmente sobrepostos, o que confundia o fluxo de build.</p>
+                <p><strong>Resolução aplicada:</strong> a documentação e o manual passaram a separar os papéis: <code>EBCOMP</code> compila, <code>EBLINK</code> link-edita e <code>EBBUILD</code> usa <code>IGYWCL</code> para compile + link em um único job.</p>
+                <div class="code">
+                  <div class="code-head"><span class="code-lang">JCL — divisão correta do build</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>EBCOMP  → IGYCRCTL  → gera objeto temporário
+EBLINK  → IEWBLINK  → gera módulo na LOADLIB
+EBBUILD → IGYWCL    → compile + link de uma vez</pre>
+                </div>
+                <p><strong>Resultado:</strong> o aprendizado ficou mais fiel ao processo real e o manual agora explica quando usar cada caminho.</p>
+              </div>
+            </article>
+
+            <article class="review-card open" data-review-id="bug02">
+              <div class="review-head">
+                <span class="review-tag danger">BUG-02</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">EBSEED foi separado de EBJLOAD</h3>
+                  <div class="review-where">Grade batch</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Problema:</strong> o nome <code>EBJLOAD</code> estava sendo usado para ideias diferentes: carga inicial e precheck diário.</p>
+                <p><strong>Resolução aplicada:</strong> a carga inicial ficou conceitualmente tratada como <code>EBSEED/EBJCLLD</code> e o <code>EBJLOAD</code> passou a representar o job da rotina diária que valida a existência do arquivo de entrada.</p>
+                <div class="code">
+                  <div class="code-head"><span class="code-lang">Fluxo corrigido</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>Setup inicial:
+  EBSEED (ou EBJCLLD) → popula CLIENTE.KSDS e CONTA.KSDS
+
+Ciclo diário:
+  EBJLOAD → verifica ARQ.ENTRADA.SEQ
+  EBJVALD → valida o lote
+  EBJPOST → aplica movimentos</pre>
+                </div>
+                <p><strong>Resultado:</strong> o mapa do processo ficou mais claro e sem colisão de nomes.</p>
+              </div>
+            </article>
+
+            <article class="review-card" data-review-id="bug03">
+              <div class="review-head">
+                <span class="review-tag danger">BUG-03</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">EBJVALD passou a usar VALIDOS e REJEITOS corretamente</h3>
+                  <div class="review-where">EBVALI01 / EBJVALD</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Problema:</strong> o job não refletia corretamente o contrato do COBOL para saída de válidos e rejeitos.</p>
+                <p><strong>Resolução aplicada:</strong> o JCL foi documentado com <code>VALIDOS</code> apontando para <code>Z77948.EMUNAH.ARQ.LANCTO.ESDS</code> e <code>REJEITOS</code> para o sequencial de rejeição.</p>
+                <div class="code">
+                  <div class="code-head"><span class="code-lang">JCL — EBJVALD corrigido</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//STEP1    EXEC PGM=EBVALI01
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//ENTRADA  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.SEQ,DISP=SHR
+//VALIDOS  DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITO.SEQ,DISP=MOD</pre>
+                </div>
+                <p><strong>Resultado:</strong> o fluxo de saída da validação ficou explícito e alinhado com a cadeia batch seguinte.</p>
+              </div>
+            </article>
+
+            <article class="review-card" data-review-id="bug04">
+              <div class="review-head">
+                <span class="review-tag danger">BUG-04</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">EBJPOST agora consome MOVTIN, não o arquivo bruto</h3>
+                  <div class="review-where">EBPOST01 / EBJPOST</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Problema:</strong> a postagem estava descrita de forma ambígua em relação à entrada do job.</p>
+                <p><strong>Resolução aplicada:</strong> o manual deixou explícito que o <code>EBPOST01</code> lê <code>MOVTIN</code>, e esse DD deve apontar para os registros válidos gravados em <code>LANCTO.ESDS</code>.</p>
+                <div class="code">
+                  <div class="code-head"><span class="code-lang">JCL — EBJPOST corrigido</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//STEP1   EXEC PGM=EBPOST01
+//STEPLIB DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//MOVTIN  DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//CLIENTE DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
+//CONTA   DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//AUDIT   DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD</pre>
+                </div>
+                <p><strong>Resultado:</strong> o site agora mostra o fluxo correto: entrada bruta → validação → válidos → postagem.</p>
+              </div>
+            </article>
+
+            <article class="review-card" data-review-id="bug05">
+              <div class="review-head">
+                <span class="review-tag danger">BUG-05</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">EBJCONC ganhou saída formal de conciliação</h3>
+                  <div class="review-where">EBCONC01 / EBJCONC</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Problema:</strong> a conciliação não estava claramente representada como saída operacional do processo.</p>
+                <p><strong>Resolução aplicada:</strong> foi incluído o conceito de <code>CONCOUT</code> e o dataset <code>Z77948.EMUNAH.ARQ.CONCIL.SEQ</code> entrou no mapa e no manual.</p>
+                <div class="code">
+                  <div class="code-head"><span class="code-lang">JCL — saída de conciliação</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>//STEP1   EXEC PGM=EBCONC01
+//STEPLIB DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//MOVTIN  DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//CONCOUT DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,DISP=MOD</pre>
+                </div>
+                <p><strong>Resultado:</strong> a etapa de conciliação ficou auditável e com saída documental própria.</p>
+              </div>
+            </article>
+
+            <article class="review-card" data-review-id="bug06">
+              <div class="review-head">
+                <span class="review-tag danger">BUG-06</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">Mapa de datasets foi corrigido e completado</h3>
+                  <div class="review-where">Documentação</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Problema:</strong> havia typo e lacunas em datasets críticos do fluxo.</p>
+                <p><strong>Resolução aplicada:</strong> o mapa passou a listar corretamente <code>LANCTO.ESDS</code>, <code>CONCIL.SEQ</code>, <code>BAK.CONTA.SEQ</code> e bibliotecas complementares como <code>HML.LOADLIB</code>.</p>
+                <ul>
+                  <li><code>Z77948.EMUNAH.ARQ.LANCTO.ESDS</code> — válidos</li>
+                  <li><code>Z77948.EMUNAH.ARQ.CONCIL.SEQ</code> — saída da conciliação</li>
+                  <li><code>Z77948.EMUNAH.BAK.CONTA.SEQ</code> — backup EOD</li>
+                  <li><code>Z77948.EMUNAH.HML.LOADLIB</code> — executáveis em HML</li>
+                </ul>
+                <p><strong>Resultado:</strong> a documentação ficou mais coerente com os jobs comentados do manual.</p>
+              </div>
+            </article>
+          </section>
+
+          <section class="section" id="rv-inc" data-review-group="rv-inc">
+            <div class="section-header">
+              <div class="eyebrow">B // Inconsistências — resolução aplicada</div>
+              <h2 class="section-title">O que foi ajustado na implementação do site</h2>
+              <p class="section-desc">Aqui estão as correções de estrutura, semântica e comportamento do front-end.</p>
+            </div>
+
+            <article class="review-card warn open" data-review-id="inc01">
+              <div class="review-head">
+                <span class="review-tag warn">INC-01</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">Navegação sem onclick inline</h3>
+                  <div class="review-where">HTML / JavaScript</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Problema:</strong> a navegação ficava acoplada ao HTML e dependia de handlers inline.</p>
+                <p><strong>Resolução aplicada:</strong> os elementos de navegação passaram a usar atributos <code>data-view</code>, <code>data-page</code> e <code>data-target</code>, com o comportamento ligado via <code>addEventListener</code>.</p>
+                <div class="code">
+                  <div class="code-head"><span class="code-lang">JS — navegação desacoplada</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>document.querySelectorAll('[data-nav-pane] .nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const page = btn.dataset.page;
+    const target = btn.dataset.target;
+    ...
+  });
+});</pre>
+                </div>
+                <p><strong>Resultado:</strong> o site ficou mais manutenível e pronto para evoluções futuras.</p>
+              </div>
+            </article>
+
+            <article class="review-card warn" data-review-id="inc02">
+              <div class="review-head">
+                <span class="review-tag warn">INC-02</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">Semântica e acessibilidade melhoradas</h3>
+                  <div class="review-where">Acessibilidade</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Problema:</strong> havia muitos elementos clicáveis sem semântica adequada.</p>
+                <p><strong>Resolução aplicada:</strong> ações passaram a usar <code>button</code>, accordions receberam <code>aria-expanded</code> e a navegação ganhou estados de foco visíveis.</p>
+                <ul>
+                  <li>botões reais em vez de links falsos</li>
+                  <li>estado aberto/fechado nos accordions</li>
+                  <li>melhor uso por teclado</li>
+                </ul>
+                <p><strong>Resultado:</strong> a interface ficou mais correta e mais robusta para navegação assistiva.</p>
+              </div>
+            </article>
+
+            <article class="review-card warn" data-review-id="inc03">
+              <div class="review-head">
+                <span class="review-tag warn">INC-03</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">Checklist persistente em localStorage</h3>
+                  <div class="review-where">JavaScript</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Problema:</strong> o estado “resolvido” sumia ao recarregar a página.</p>
+                <p><strong>Resolução aplicada:</strong> o review passou a salvar o conjunto de cartões resolvidos no navegador.</p>
+                <div class="code">
+                  <div class="code-head"><span class="code-lang">JS — persistência</span><button type="button" class="copy" data-copy>copiar</button></div>
+<pre>const STORAGE_KEY = 'emunah-bank-lab-review-state-v4';
+localStorage.setItem(STORAGE_KEY, JSON.stringify([...reviewState]));</pre>
+                </div>
+                <p><strong>Resultado:</strong> a revisão funciona como checklist real de acompanhamento.</p>
+              </div>
+            </article>
+
+            <article class="review-card warn" data-review-id="inc04">
+              <div class="review-head">
+                <span class="review-tag warn">INC-04</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">Contadores e badges ficaram dinâmicos</h3>
+                  <div class="review-where">JavaScript</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Problema:</strong> números fixos envelhecem mal e criam inconsistência visual.</p>
+                <p><strong>Resolução aplicada:</strong> totais, pendências, progresso e badges laterais passaram a ser calculados automaticamente a partir dos cartões existentes.</p>
+                <p><strong>Resultado:</strong> se você adicionar ou remover itens na revisão, o topo continua correto sem edição manual.</p>
+              </div>
+            </article>
+          </section>
+
+          <section class="section" id="rv-next" data-review-group="rv-next">
+            <div class="section-header">
+              <div class="eyebrow">C // Melhorias — resolução e implementação</div>
+              <h2 class="section-title">Incrementos incorporados ao site e ao manual</h2>
+              <p class="section-desc">Além de corrigir os pontos críticos, a revisão agora registra as melhorias implementadas e como elas entram no fluxo do lab.</p>
+            </div>
+
+            <article class="review-card info open" data-review-id="next01">
+              <div class="review-head">
+                <span class="review-tag info">MEL-01</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">Manual ampliado com fontes COBOL e JCL comentados</h3>
+                  <div class="review-where">Manual operacional</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Melhoria:</strong> o manual foi expandido com blocos reais de código fonte e comentários operacionais.</p>
+                <p><strong>Implementação:</strong> a seção de manual agora inclui programas COBOL como <code>EBCLLOAD</code>, <code>EBVALI01</code>, <code>EBPOST01</code> e JCLs como <code>EBBUILD</code>, <code>EBJVALD</code>, <code>EBJPOST</code> e <code>EBJEOD</code>.</p>
+                <p><strong>Resultado:</strong> o site deixou de ser apenas blueprint e passou a funcionar também como material de estudo.</p>
+              </div>
+            </article>
+
+            <article class="review-card info" data-review-id="next02">
+              <div class="review-head">
+                <span class="review-tag info">MEL-02</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">Créditos profissionais adicionados no topo</h3>
+                  <div class="review-where">Branding / Portfólio</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Melhoria:</strong> a identificação do autor foi incorporada ao site.</p>
+                <p><strong>Implementação:</strong> o topo passou a exibir <strong>Desenvolvido por Eliel Miranda</strong>, com links para LinkedIn e GitHub.</p>
+                <p><strong>Resultado:</strong> o material ficou mais pronto para ser usado como portfólio e apresentado em processos seletivos.</p>
+              </div>
+            </article>
+
+            <article class="review-card info" data-review-id="next03">
+              <div class="review-head">
+                <span class="review-tag info">MEL-03</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">Estrutura profissional separada em HTML, CSS e JS</h3>
+                  <div class="review-where">Arquitetura front-end</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Melhoria:</strong> a base deixou de depender de um único arquivo monolítico.</p>
+                <p><strong>Implementação:</strong> esta entrega passa a existir como <code>index.html</code>, <code>styles.css</code> e <code>app.js</code>, facilitando manutenção, versionamento e futuras melhorias.</p>
+                <p><strong>Resultado:</strong> o projeto fica mais profissional e mais fácil de evoluir.</p>
+              </div>
+            </article>
+
+            <article class="review-card info" data-review-id="next04">
+              <div class="review-head">
+                <span class="review-tag info">MEL-04</span>
+                <div class="review-wrap">
+                  <h3 class="review-title">Revisão técnica virou registro de solução, não só lista de problemas</h3>
+                  <div class="review-where">Conteúdo / UX</div>
+                </div>
+                <div class="review-actions">
+                  <button type="button" class="resolve" data-resolve>✓ resolver</button>
+                  <span class="acc-chevron">⌄</span>
+                </div>
+              </div>
+              <div class="review-panel">
+                <p><strong>Melhoria:</strong> a área de revisão técnica foi reescrita para mostrar <em>problema → resolução → resultado</em>.</p>
+                <p><strong>Implementação:</strong> bugs críticos, inconsistências e melhorias passaram a registrar a solução aplicada diretamente no conteúdo do site.</p>
+                <p><strong>Resultado:</strong> a revisão agora serve como histórico de engenharia e evidência de maturidade do projeto.</p>
+              </div>
+            </article>
+
+            <div class="footer-note">
+              <div class="small">revisão útil</div>
+              <h3>A revisão agora mostra correção, decisão e efeito prático</h3>
+              <p>Isso deixa o site mais coerente com a proposta do lab: não apenas apontar erros, mas registrar como eles foram tratados.</p>
+            </div>
+          </section>
+
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
