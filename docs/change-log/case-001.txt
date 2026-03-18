@@ -902,8 +902,67 @@ ANOTAÇÕES:
 
 
 
+
+
+
 O EBCLLOAD.CBL É UM ARQUIVO QUE SERVE PARA CARGA INICIAL DE CLIENTES E CONTAS. ELE LÊ UM SEQUENCIAL DE CLIENTES E UM DE CONTAS, VALIDA O STATUS DOS REGISTROS, GRAVA CLIENTES EM UM KSDS DE CONTAS, GRAVA CONTAS EM UM KSDS DE CONTAS, REGISTA UM RESUMO FINAL COM TOTAIS PROCESSADOS
 
+
+
+
+********************************************************************
+
+
+SOLUÇÃO:
+
+
+Agora ficou claro! O code-workspace do branch que funciona tem exatamente isso no settings:
+json"cobol-lsp.cpy-manager.paths-dsn": [
+    "Z77948.EMUNAH.DEV.COPY"
+],
+"cobol-lsp.cpy-manager.profiles": "zosmf",
+"cobol-lsp.cpy-manager.paths-local": [
+    "C:\\Users\\Eliel\\labs\\EMUNAH-BANK-LAB\\copybooks\\layouts"
+]
+Note o detalhe crucial: o paths-local usa o caminho absoluto, não relativo! Isso explica por que "copybooks/layouts" não funcionava.
+Atualize o EMUNAH-BANK-LAB.code-workspace do main para:
+json{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "zowe.ds.templates": [
+            {
+                "ATRIBUTOS-DS-SEQUENCIAIS-EMUNAH": {
+                    "alcunit": "TRK",
+                    "blksize": 6200,
+                    "dsorg": "PS",
+                    "primary": 5,
+                    "recfm": "FB",
+                    "lrecl": 100,
+                    "secondary": 2
+                }
+            }
+        ],
+        "cobol-lsp.cpy-manager.paths-dsn": [
+            "Z77948.EMUNAH.DEV.COPY"
+        ],
+        "cobol-lsp.cpy-manager.profiles": "zosmf",
+        "cobol-lsp.cpy-manager.paths-local": [
+            "C:\\Users\\Eliel\\labs\\EMUNAH-BANK-LAB\\copybooks\\layouts"
+        ]
+    }
+}
+
+
+
+
+
+
+
+**************************************************************************
 
 
 
