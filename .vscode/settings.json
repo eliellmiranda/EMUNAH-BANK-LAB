@@ -1,0 +1,15 @@
+{
+  "zopeneditor.zowe": {
+    "defaultCliProfile": "zosmf"
+  },
+  "zopeneditor.datasets.cobolDatasets": [
+    ".COBOL",
+    ".COPY",
+    "Z77948.EMUNAH.DEV.COBOL",
+    "Z77948.EMUNAH.DEV.COPY"
+  ],
+  "zopeneditor.datasets.jclDatasets": [
+    ".JCL",
+    "Z77948.EMUNAH.DEV.JCL"
+  ]
+}
