@@ -17,6 +17,13 @@
 					"secondary": 2
 				}
 			}
+		],
+		"cobol-lsp.cpy-manager.paths-dsn": [
+			"Z77948.EMUNAH.DEV.COPY"
+		],
+		"cobol-lsp.cpy-manager.profiles": "zosmf",
+		"cobol-lsp.cpy-manager.paths-local": [
+			"C:\\Users\\Eliel\\labs\\EMUNAH-BANK-LAB\\copybooks\\layouts"
 		]
 	}
 }
