@@ -1,15 +1,21 @@
 {
-  "zopeneditor.zowe": {
-    "defaultCliProfile": "zosmf"
-  },
-  "zopeneditor.datasets.cobolDatasets": [
-    ".COBOL",
-    ".COPY",
-    "Z77948.EMUNAH.DEV.COBOL",
+  "cobol-lsp.cpy-manager.paths-dsn": [
     "Z77948.EMUNAH.DEV.COPY"
   ],
-  "zopeneditor.datasets.jclDatasets": [
-    ".JCL",
-    "Z77948.EMUNAH.DEV.JCL"
-  ]
+  "cobol-lsp.cpy-manager.paths-local": [
+    "copybooks/layouts"
+  ],
+  "cobol-lsp.cpy-manager.copybook-extensions": [
+    ".cpy",
+    ""
+  ],
+  "cobol-lsp.cpy-manager.paths-uss": [],
+  "cobol-lsp.cpy-manager.profiles": "zosmf",
+  "cobol-lsp.cpy-manager.copybook-file-encoding": "IBM-1047",
+  "files.associations": {
+    "*.cpy": "cobol",
+    "*.CPY": "cobol",
+    "*.cbl": "cobol",
+    "*.CBL": "cobol"
+  }
 }
