@@ -4398,6 +4398,12 @@ Resultado: a revisão passa a mostrar o vínculo real entre o DDNAME do JCL e o 
 
 
 
+20/03 - sexta
+
+criei um jcl para recriar os datasets com os atributos exigidos
+
+
+
 
 
 
