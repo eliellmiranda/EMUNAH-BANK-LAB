@@ -4403,6 +4403,229 @@ Resultado: a revisão passa a mostrar o vínculo real entre o DDNAME do JCL e o 
 criei um jcl para recriar os datasets com os atributos exigidos
 
 
+IGZ0201W A file attribute mismatch was detected. File CLIENTES-IN in program EBCLLOAD had a record length of 80 and
+          the file specified in the ASSIGN clause had a record length of 63.
+ IGZ0201W A file attribute mismatch was detected. File CONTAS-IN in program EBCLLOAD had a record length of 100 and
+          the file specified in the ASSIGN clause had a record length of 41.
+ IGZ0201W A file attribute mismatch was detected. File AUDIT-OUT in program EBCLLOAD had a record length of 120 and
+          the file specified in the ASSIGN clause had a record length of 100.
+
+Vou confirmar a interpretação do aviso na documentação da IBM e já te devolver a causa prática no seu caso, porque a mensagem já aponta exatamente onde está o desalinhamento.
+
+Thought for 27s
+
+Esse aviso quer dizer que o tamanho do registro definido no COBOL não bate com o tamanho físico do dataset associado no ASSIGN/DD. Quando isso acontece, o OPEN falha. Para arquivos Format-F o tamanho deve bater exatamente; para VB, o tamanho máximo no programa deve ser 4 bytes menor que o atributo de comprimento do dataset.
+
+No seu caso, o EBCLLOAD está assim, na prática:
+
+CLIENTES-IN: programa espera 80, dataset tem 63
+CONTAS-IN: programa espera 100, dataset tem 41
+AUDIT-OUT: programa espera 120, dataset tem 100
+
+Ou seja: hoje o problema não é “genérico”; são três definições incompatíveis ao mesmo tempo.
+
+O que isso normalmente indica no laboratório:
+
+O FD/01 do COBOL está maior do que o layout real do arquivo, ou
+O dataset foi criado com LRECL errado, ou
+Você alterou fonte/copybook mas está executando um LOAD antigo.
+A IBM deixa claro que o runtime compara a definição do programa com o dataset real no OPEN; se não bater, o arquivo não abre.
+
+Pelo que aparece, o mais provável é:
+
+seu arquivo de clientes real tem layout de 63 bytes
+seu arquivo de contas real tem layout de 41 bytes
+seu arquivo de auditoria real tem 100 bytes
+
+mas o EBCLLOAD foi codificado com FDs de 80 / 100 / 120.
+
+Como corrigir
+
+Você precisa escolher um padrão único e alinhar programa + dataset.
+
+Opção A — ajustar o COBOL ao que os arquivos realmente são
+Se os datasets corretos são esses mesmos, então os FDs do EBCLLOAD precisam passar a usar:
+
+CLIENTES-IN = 63
+CONTAS-IN = 41
+AUDIT-OUT = 100
+
+e depois recompilar e linkeditar antes de rodar novamente.
+
+Opção B — ajustar os datasets ao que o programa espera
+Se o layout correto do seu projeto era mesmo:
+
+clientes = 80
+contas = 100
+auditoria = 120
+
+então recrie/altere os datasets com esses LRECLs e rode de novo.
+
+O que conferir agora
+
+Confira no fonte do EBCLLOAD:
+
+FD  CLIENTES-IN
+01  REG-CLIENTE-IN    PIC X(80).   *> ou soma equivalente
+
+FD  CONTAS-IN
+01  REG-CONTA-IN      PIC X(100).
+
+FD  AUDIT-OUT
+01  REG-AUDIT-OUT     PIC X(120).
+
+Depois confira no host, no dataset real, o RECFM e LRECL desses arquivos. Para arquivo fixo (F/FB), tem de casar exatamente com o COBOL. Para variável (V/VB), vale a regra dos 4 bytes.
+
+Atenção importante
+
+Mesmo que você já tenha corrigido o fonte, esse erro ainda aparece se o job estiver chamando um LOADLIB antigo. Então vale conferir também se:
+
+você recompilou o EBCLLOAD
+o member foi gravado no LOADLIB certo
+o STEPLIB do JCL aponta para a biblioteca certa
+
+Se você colar aqui o FD do EBCLLOAD e o JCL/DDs desses 3 arquivos, eu consigo te dizer exatamente qual lado deve ser corrigido e já te devolver a versão certa.
+
+Opção B — ajustar os datasets ao que o programa espera
+Se o layout correto do seu projeto era mesmo:
+
+clientes = 80
+contas = 100
+auditoria = 120
+
+então recrie/altere os datasets com esses LRECLs e rode de novo. 
+me ajude a recriar
+
+Estou montando a forma mais segura de recriar esses datasets no z/OS sem bagunçar o resto do lab: vou te deixar um JCL pronto para apagar e alocar novamente, já com os LRECL corretos.
+
+Já fechei o caminho: como LRECL não muda “em cima” do dataset, a saída prática é apagar e alocar de novo com os atributos certos, depois recarregar o conteúdo.
+
+Thought for 2m 8s
+
+Sim. Como o IGZ0201W exige que, para arquivos de formato fixo, o LRECL do dataset bata exatamente com o definido no programa, a correção é apagar e alocar de novo esses arquivos com os novos atributos. A IBM também indica que DELETE apaga datasets não-VSAM e que, para alocar dataset novo via JCL, o padrão é DISP=(NEW,CATLG,DELETE). Para FB, o BLKSIZE precisa ser múltiplo do LRECL.
+
+Antes de rodar: isso vai apagar o conteúdo atual desses 3 datasets. AUDIT.SEQ pode nascer vazio; já CLIENTES.SEQ e CONTAS.SEQ depois precisarão ser recarregados com registros compatíveis com 80 e 100 bytes, respectivamente.
+
+Use este JCL como base:
+
+//EBREALOC JOB ,'EMUNAH REALOC',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//*-----------------------------------------------------------------*
+//* APAGA E RECRIA DATASETS SEQUENCIAIS COM LRECL CORRETO           *
+//* CLIENTES  = 80                                                  *
+//* CONTAS    = 100                                                 *
+//* AUDITORIA = 120                                                 *
+//*-----------------------------------------------------------------*
+//DELSTEP  EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE Z77948.EMUNAH.SEED.CLIENTES.SEQ
+  SET MAXCC = 0
+  DELETE Z77948.EMUNAH.SEED.CONTAS.SEQ
+  SET MAXCC = 0
+  DELETE Z77948.EMUNAH.ARQ.AUDIT.SEQ
+  SET MAXCC = 0
+/*
+//ALLOC    EXEC PGM=IEFBR14
+//CLIENTES DD  DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             SPACE=(TRK,(1,1),RLSE),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)
+//CONTAS   DD  DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             SPACE=(TRK,(1,1),RLSE),
+//             DCB=(RECFM=FB,LRECL=100,BLKSIZE=1000)
+//AUDIT    DD  DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             SPACE=(TRK,(5,1),RLSE),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=1200)
+
+Esse SET MAXCC = 0 após cada DELETE é um jeito comum de deixar o job seguir mesmo se algum dataset ainda não existir. A própria IBM mostra esse padrão em exemplos com DELETE seguido de SET MAXCC=0.
+
+Depois disso, faça assim:
+
+Rode esse job.
+Confirme no dataset list que ficaram com:
+RECFM=FB
+LRECL=80, 100, 120
+Recarregue os seeds de CLIENTES.SEQ e CONTAS.SEQ.
+Rode o EBCLLOAD de novo.
+
+Um detalhe importante: se seus arquivos de seed atuais têm registros de 63 e 41 bytes, não adianta só copiá-los de volta para os datasets novos. O conteúdo também precisa ser ajustado para o novo layout de 80 e 100 bytes, senão o próximo erro será de dados/layout, não mais de alocação.
+
+Se quiser, eu posso montar agora o próximo JCL para repopular CLIENTES.SEQ e CONTAS.SEQ já no tamanho 80/100.
+
+no caso, eu ja tinha apagado esses 3 datasets.
+
+Perfeito — então fica mais simples. Como eles já foram apagados, o próximo passo é só alocar de novo, sem a etapa de DELETE. Vou te passar o JCL limpo para isso.
+
+Thought for 23s
+
+Ótimo — então não precisa mais do passo de DELETE. Agora é só alocar novamente os 3 datasets com DISP=(NEW,CATLG,DELETE), que é o padrão de JCL para criar datasets novos.
+
+Use este JCL:
+
+//EBALLOC  JOB ,'EMUNAH ALOC',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//*-----------------------------------------------------------------*
+//* RECRIA DATASETS SEQUENCIAIS JA APAGADOS                         *
+//*-----------------------------------------------------------------*
+//ALLOC    EXEC PGM=IEFBR14
+//CLIENTES DD  DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             SPACE=(TRK,(1,1),RLSE),
+//             DCB=(DSORG=PS,RECFM=FB,LRECL=80,BLKSIZE=800)
+//CONTAS   DD  DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             SPACE=(TRK,(1,1),RLSE),
+//             DCB=(DSORG=PS,RECFM=FB,LRECL=100,BLKSIZE=1000)
+//AUDIT    DD  DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             SPACE=(TRK,(5,1),RLSE),
+//             DCB=(DSORG=PS,RECFM=FB,LRECL=120,BLKSIZE=1200)
+
+Esse job faz:
+
+cria CLIENTES.SEQ com LRECL=80
+cria CONTAS.SEQ com LRECL=100
+cria AUDIT.SEQ com LRECL=120
+
+Para arquivos FB, o BLKSIZE deve ser compatível com o LRECL; em JCL de alocação isso é uma configuração normal do DCB.
+
+Depois de submeter, confira se ficaram assim:
+
+Z77948.EMUNAH.SEED.CLIENTES.SEQ → RECFM=FB, LRECL=80
+Z77948.EMUNAH.SEED.CONTAS.SEQ → RECFM=FB, LRECL=100
+Z77948.EMUNAH.ARQ.AUDIT.SEQ → RECFM=FB, LRECL=120
+
+Atenção para um ponto importante: depois de recriar, o EBCLLOAD só vai funcionar sem esse aviso se os dados gravados nesses arquivos também estiverem no novo layout. Antes eles estavam com 63, 41 e 100 bytes; agora você está padronizando para 80, 100 e 120. O problema de atributo some, mas o conteúdo dos seeds também precisa acompanhar esse novo tamanho. Isso é justamente o tipo de incompatibilidade que gera o IGZ0201W no OPEN.
+
+Se quiser, no próximo passo eu monto para você o JCL de carga ou os registros exemplo já preenchidos com 80 e 100 bytes para CLIENTES.SEQ e CONTAS.SEQ.
+
+FUNCIONOU!
+
+Boa! Então a causa estava mesmo no LRECL físico dos datasets.
+
+Agora seu cenário ficou assim:
+
+EBCLLOAD espera:
+CLIENTES-IN = 80
+CONTAS-IN = 100
+AUDIT-OUT = 120
+os datasets foram recriados com esses tamanhos
+o IGZ0201W foi eliminado
+
+O próximo passo ideal é:
+
+validar se o job terminou com RC=0000
+conferir se os arquivos/KSDS foram populados como esperado
+guardar isso como padrão oficial do lab:
+sempre alinhar FD do COBOL
+LRECL físico do dataset
+e layout real do registro
+
+Isso virou um ótimo aprendizado prático de mainframe:
+erro de programa nem sempre é lógica COBOL; às vezes é definição física de arquivo.
+
+
 
 
 
