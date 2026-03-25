@@ -1,36 +1,143 @@
-Visão Geral — Emunah Bank Lab
+# EMUNAH BANK LAB
 
+Ambiente pessoal de simulação bancária em **IBM z/OS**, criado para estudo prático de rotinas, arquitetura e troubleshooting em **mainframe**.
 
+O projeto reproduz, em escala controlada, elementos comuns de ambientes bancários legados que seguem operando cargas críticas em mainframe, combinando tecnologias clássicas do ecossistema z/OS com ferramentas modernas de automação e operação.
 
-O Emunah Bank Lab é um ambiente pessoal de simulação bancária mainframe, projetado para o estudo aprofundado de tecnologias legadas e modernas do ecossistema IBM z/OS. O laboratório replica, de forma controlada, os padrões operacionais encontrados em instituições financeiras de grande porte que ainda sustentam seus sistemas críticos em mainframe.
+---
 
+## Sobre o projeto
 
+O **Emunah Bank Lab** foi concebido como um laboratório de prática técnica voltado ao contexto de sistemas bancários de alta confiabilidade.
 
-Propósito
+A proposta é estudar, de forma aplicada, o funcionamento de aplicações e processos típicos desse ambiente, incluindo:
 
+- desenvolvimento de programas de negócio em **COBOL**;
+- execução e controle de rotinas **batch** com **JCL**;
+- manipulação de dados em **VSAM** e **DB2**;
+- automação operacional com **REXX**;
+- interação moderna com o ambiente por meio do **Zowe CLI**;
+- análise de falhas e investigação de **abends**.
 
+Mais do que um ambiente de estudo conceitual, este lab busca simular práticas reais de desenvolvimento, operação e suporte em plataformas **z/OS**.
 
-O lab tem como foco central o desenvolvimento de competências práticas em ambientes onde confiabilidade, performance e rastreabilidade são inegociáveis. Cada componente foi escolhido para refletir cenários reais: desde a escrita de programas de negócio em COBOL até a automação e investigação de falhas via linha de comando moderna com Zowe CLI.
+---
 
-Escopo Técnico
+## Objetivos
 
-CamadaTecnologiasSistema Operacionalz/OSLinguagensCOBOL, REXXControle de JobsJCLArmazenamentoVSAMBanco de DadosDB2Acesso RemotoTN3270 (emulação 3270)Tooling ModernoZowe CLI
+- Desenvolver experiência prática com tecnologias centrais do ecossistema **IBM z/OS**;
+- Reproduzir fluxos operacionais inspirados em ambientes bancários reais;
+- Fortalecer conhecimentos em desenvolvimento, processamento batch e suporte técnico;
+- Praticar investigação de falhas em cenários de produção simulada;
+- Integrar abordagens tradicionais de mainframe com ferramentas modernas de automação.
 
+---
 
+## Stack tecnológica
 
-Áreas de Prática
+| Camada | Tecnologia |
+|--------|------------|
+| Sistema Operacional | z/OS |
+| Linguagens | COBOL, REXX |
+| Processamento Batch | JCL |
+| Armazenamento | VSAM |
+| Banco de Dados | DB2 |
+| Acesso ao ambiente | TN3270 / emulação 3270 |
+| Tooling moderno | Zowe CLI |
 
+---
 
+## Áreas de prática
 
-Desenvolvimento COBOL — escrita, compilação e manutenção de programas batch e online, com foco em lógica de negócio bancária (saldos, transações, extrato).
+### COBOL
+Desenvolvimento e manutenção de programas com foco em regras de negócio bancárias, como:
 
-Processamento Batch com JCL — criação e depuração de jobs, controle de steps, condições de retorno e encadeamento de procedimentos.
+- controle de saldo;
+- movimentações financeiras;
+- processamento de extrato;
+- validações de dados e rotinas transacionais.
 
-Dados com VSAM e DB2 — modelagem e manipulação de datasets VSAM (KSDS, ESDS, RRDS) e consultas relacionais via DB2 com COBOL embarcado.
+### JCL
+Construção e depuração de jobs batch, incluindo:
 
-Automação com REXX — scripts utilitários para manipulação de datasets, validações e automação de tarefas administrativas no TSO/ISPF.
+- definição de steps;
+- organização de execuções;
+- controle de retorno;
+- análise de falhas e comportamento de jobs.
 
-Interface Moderna com Zowe CLI — submissão de jobs, transferência de datasets e consulta de logs sem depender exclusivamente do terminal 3270.
+### VSAM e DB2
+Modelagem e manipulação de dados em formatos amplamente utilizados no ambiente mainframe:
 
-Investigação de Falhas — análise de dumps, interpretação de abend codes (S0C7, S222, S806 etc.) e rastreamento de erros em ambientes produtivos simulados.
+- **VSAM KSDS**
+- **VSAM ESDS**
+- **VSAM RRDS**
+- consultas e integração com **DB2**
+- uso de **SQL embarcado em COBOL**
 
+### REXX
+Automação de tarefas utilitárias e administrativas, com foco em:
+
+- manipulação de datasets;
+- validações operacionais;
+- automação no **TSO/ISPF**;
+- apoio a rotinas recorrentes do ambiente.
+
+### Zowe CLI
+Uso de interface moderna para operações no mainframe, permitindo:
+
+- submissão de jobs;
+- consulta de spool e logs;
+- transferência de datasets;
+- execução de fluxos sem dependência exclusiva do terminal 3270.
+
+### Troubleshooting
+Investigação de falhas em cenários simulados de produção, incluindo:
+
+- leitura de dumps;
+- interpretação de abends como **S0C7**, **S222** e **S806**;
+- rastreamento de causa-raiz;
+- correlação entre erro, job, programa e dados.
+
+---
+
+## Cenários simulados
+
+Este laboratório é orientado à reprodução de situações comuns em ambientes bancários, como:
+
+- processamento batch de contas e transações;
+- atualização de arquivos e bases de dados;
+- execução encadeada de jobs;
+- falhas por erro de dado, ausência de load module ou cancelamento de execução;
+- consultas e validações operacionais via terminal e CLI.
+
+---
+
+## Competências trabalhadas
+
+- Desenvolvimento em **COBOL**
+- Organização de rotinas **batch**
+- Estruturação de jobs com **JCL**
+- Manipulação de arquivos **VSAM**
+- Integração com **DB2**
+- Automação com **REXX**
+- Operação com **Zowe CLI**
+- Diagnóstico e troubleshooting em **z/OS**
+
+---
+
+## Diferenciais do projeto
+
+O **Emunah Bank Lab** combina dois elementos importantes:
+
+1. **fidelidade ao ambiente mainframe tradicional**, com tecnologias amplamente usadas em instituições financeiras;
+2. **abordagem moderna de estudo e operação**, incorporando ferramentas atuais para automação, consulta e produtividade.
+
+Isso permite explorar tanto a base clássica do ecossistema z/OS quanto práticas mais atuais de interação com o ambiente.
+
+---
+
+## Finalidade
+
+Este projeto tem como objetivo servir como laboratório contínuo de aprendizado, documentação e evolução técnica em **mainframe bancário**, com ênfase em prática realista, disciplina operacional e aprofundamento técnico.
+
+---
