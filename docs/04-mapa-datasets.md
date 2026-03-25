@@ -1,93 +1,82 @@
-Bibilotecas DEV
+# Mapa de Datasets — Emunah Bank Lab
 
-- EMUNAH.DEV.COBOL
-- EMUNAH.DEV.COPY
-- EMUNAH.DEV.JCK
-- EMUNAH.DEV.REXX
-- EMUNAH.DEV.LOAD
+## Convenção de Nomenclatura
 
-Bibliotecas HML
+Todos os datasets seguem o padrão:
+```
+<HLQ>.<PROJETO>.<AMBIENTE>.<TIPO/FUNÇÃO>
+```
 
-- EMUNAH.HML.COBOL
-- EMUNAH.HML.JCL
-- EMUNAH.HML.LOAD
+- **HLQ:** `Z77948` (userid no zXplore)
+- **PROJETO:** `EMUNAH`
+- **AMBIENTE:** `DEV`, `HML`, `PRD` ou `ARQ` (arquivos de negócio)
 
-Bibliotecas PRD simuladas
+---
 
-- EMUNAH.PRD.JCL
-- EMUNAH.PRD.LOAD
-- EMUNAH.PRD.PARMLIB
+## Bibliotecas de Desenvolvimento (DEV)
 
-Arquivos de negócio
+| Dataset                      | Tipo    | Finalidade                              |
+|------------------------------|---------|-----------------------------------------|
+| `Z77948.EMUNAH.DEV.COBOL`    | PDS/PDSE | Fontes COBOL de desenvolvimento        |
+| `Z77948.EMUNAH.DEV.COPY`     | PDS/PDSE | Copybooks e layouts                    |
+| `Z77948.EMUNAH.DEV.JCL`      | PDS/PDSE | JCLs de compilação e execução em DEV   |
+| `Z77948.EMUNAH.DEV.REXX`     | PDS/PDSE | Scripts REXX e automações              |
+| `Z77948.EMUNAH.DEV.LOADLIB`  | PDS/PDSE | Executáveis gerados no build DEV       |
 
-- EMUNAH.ARQ.CLIENTE.KSDS
-- EMUNAH.ARQ.CONTA.KSDS
-- EMUNHA.ARQ.LANCTO.ESDS
-- EMUNAH.ARQ.SALDO.KSDS
-- EMUNAH.ARQ.ENTRADA.SEQ
-- EMUNAH.ARQ.REJEITO.SEQ
-- EMUNAH.ARQ.AUDIT.SEQ
-- EMUNAH.ARQ.EXTRATO.GDG
+---
 
+## Bibliotecas de Homologação (HML)
 
+| Dataset                      | Tipo    | Finalidade                              |
+|------------------------------|---------|-----------------------------------------|
+| `Z77948.EMUNAH.HML.COBOL`    | PDS/PDSE | Fontes promovidos de DEV para HML      |
+| `Z77948.EMUNAH.HML.JCL`      | PDS/PDSE | JCLs de execução em HML                |
+| `Z77948.EMUNAH.HML.LOADLIB`  | PDS/PDSE | Executáveis compilados em HML          |
 
+---
 
-REFEITO PELO CHATGPT:
+## Bibliotecas de Produção Simulada (PRD)
 
+| Dataset                      | Tipo    | Finalidade                              |
+|------------------------------|---------|-----------------------------------------|
+| `Z77948.EMUNAH.PRD.JCL`      | PDS/PDSE | JCLs de execução em PRD                |
+| `Z77948.EMUNAH.PRD.LOADLIB`  | PDS/PDSE | Executáveis de produção                |
+| `Z77948.EMUNAH.PRD.PARMLIB`  | PDS/PDSE | Parâmetros e membros de configuração   |
 
-| Dataset                                  | Tipo        | Organização             | DDNAME esperado                                                                         | Finalidade                                                                                                        | Criado por                                         | Usado por                                                                               |
-| ---------------------------------------- | ----------- | ----------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `Z77948.EMUNAH.DEV.COBOL`                | PDS/PDSE    | Biblioteca particionada | `SYSIN` (na compilação)                                                                 | Biblioteca de fontes COBOL de desenvolvimento                                                                     | Setup inicial / alocação manual / upload via Zowe  | Compilação (`EBCOMP`, `EBBUILD`), manutenção dos programas                              |
-| `Z77948.EMUNAH.DEV.COPY`                 | PDS/PDSE    | Biblioteca particionada | `SYSLIB` (na compilação)                                                                | Biblioteca de copybooks/layouts                                                                                   | Setup inicial / alocação manual / upload via Zowe  | Compilação dos COBOLs                                                                   |
-| `Z77948.EMUNAH.DEV.JCL`                  | PDS/PDSE    | Biblioteca particionada | N/A                                                                                     | Biblioteca de JCLs de desenvolvimento                                                                             | Setup inicial / alocação manual / upload via Zowe  | Submissão de jobs de compile, link e execução                                           |
-| `Z77948.EMUNAH.DEV.LOADLIB`              | PDS/PDSE    | Biblioteca particionada | `SYSLMOD` (link-edit) / `STEPLIB` ou `JOBLIB` (execução)                                | Biblioteca de executáveis em DEV                                                                                  | `EBLINK` / `EBBUILD`                               | Jobs batch em DEV                                                                       |
-| `Z77948.EMUNAH.DEV.REXX`                 | PDS/PDSE    | Biblioteca particionada | `SYSEXEC` ou `SYSPROC`                                                                  | Biblioteca de scripts/automação em REXX                                                                           | Setup inicial / alocação manual                    | Execução de utilitários e automações                                                    |
-| `Z77948.EMUNAH.HML.COBOL`                | PDS/PDSE    | Biblioteca particionada | `SYSIN` (se houver compilação em HML)                                                   | Biblioteca de fontes para homologação                                                                             | Promoção DEV→HML / alocação manual                 | Compilação e versionamento em HML                                                       |
-| `Z77948.EMUNAH.HML.JCL`                  | PDS/PDSE    | Biblioteca particionada | N/A                                                                                     | Biblioteca de JCLs de homologação                                                                                 | Promoção DEV→HML / alocação manual                 | Execução e testes em HML                                                                |
-| `Z77948.EMUNAH.PRD.JCL`                  | PDS/PDSE    | Biblioteca particionada | N/A                                                                                     | Biblioteca de JCLs de produção                                                                                    | Promoção HML→PRD / alocação manual                 | Execução operacional em PRD                                                             |
-| `Z77948.EMUNAH.PRD.LOADLIB`              | PDS/PDSE    | Biblioteca particionada | `STEPLIB` ou `JOBLIB`                                                                   | Biblioteca de executáveis de produção                                                                             | Promoção / link final em PRD                       | Jobs de produção                                                                        |
-| `Z77948.EMUNAH.PRD.PARMLIB`              | PDS/PDSE    | Biblioteca particionada | varia (`PARM`, `SYSIN`, include de PROC etc.)                                           | Parâmetros e membros de configuração de produção                                                                  | Setup operacional / alocação manual                | JCLs e rotinas de PRD                                                                   |
-| `Z77948.EMUNAH.SEED.CLIENTES.SEQ`        | PS          | Sequencial              | `CLIENTIN`                                                                              | Massa inicial de clientes                                                                                         | Upload via Zowe / seed local                       | `EBCLLOAD`                                                                              |
-| `Z77948.EMUNAH.SEED.CONTAS.SEQ`          | PS          | Sequencial              | `CONTAIN`                                                                               | Massa inicial de contas                                                                                           | Upload via Zowe / seed local                       | `EBCLLOAD`                                                                              |
-| `Z77948.EMUNAH.ARQ.ENTRADA.SEQ`          | PS          | Sequencial              | `ENTRADA` (validação) / `MOVTIN` (demais rotinas de movimento)                          | Entrada batch de lançamentos                                                                                      | Upload via Zowe ou geração anterior                | `EBVALI01`; possivelmente `EBPOST01`, `EBEXTR01`, `EBCONC01` se lerem direto da entrada |
-| `Z77948.EMUNAH.ARQ.REJEITO.SEQ`          | PS          | Sequencial              | `REJEITOS`                                                                              | Saída de registros rejeitados                                                                                     | `EBVALI01`                                         | Conferência operacional, reprocessamento                                                |
-| `Z77948.EMUNAH.ARQ.AUDIT.SEQ`            | PS          | Sequencial              | `AUDIT`                                                                                 | Trilha de auditoria, erros, duplicidades e mensagens de processamento                                             | Jobs batch que geram log                           | `EBCLLOAD`, `EBPOST01` e outras rotinas com auditoria                                   |
-| `Z77948.EMUNAH.ARQ.CLIENTE.KSDS`         | VSAM        | KSDS                    | `CLIENTE`                                                                               | Cadastro master de clientes                                                                                       | Job IDCAMS de alocação + carga inicial             | `EBCLLOAD` e futuras consultas                                                          |
-| `Z77948.EMUNAH.ARQ.CONTA.KSDS`           | VSAM        | KSDS                    | `CONTA`                                                                                 | Cadastro master de contas                                                                                         | Job IDCAMS de alocação + carga inicial             | `EBCLLOAD`, `EBPOST01`, `EBSALD01`                                                      |
-| `Z77948.EMUNAH.ARQ.LANCTO.ESDS`          | VSAM        | ESDS                    | `VALIDOS` (se for saída da validação) / `MOVTIN` (se for entrada das rotinas seguintes) | Arquivo operacional de lançamentos; muito provavelmente guarda os movimentos aprovados ou o histórico append-only | Job IDCAMS de alocação + rotina de validação/carga | Provavelmente `EBVALI01` grava; `EBPOST01`, `EBEXTR01`, `EBCONC01` leem                 |
-| `Z77948.EMUNAH.ARQ.SALDO.KSDS`           | VSAM        | KSDS                    | `SALDO`                                                                                 | Arquivo dedicado de saldos, se o desenho separar saldo do cadastro de contas                                      | Job IDCAMS de alocação + rotina de atualização     | `EBSALD01` ou outras rotinas de consulta, se o saldo ficar separado                     |
-| `Z77948.EMUNAH.ARQ.EXTRATO.GDG`          | GDG Base    | Geração de datasets     | `EXTROUT`                                                                               | Base GDG para saídas históricas de extrato                                                                        | IDCAMS DEFINE GDG                                  | `EBEXTR01`                                                                              |
-| `Z77948.EMUNAH.ARQ.EXTRATO.GDG.G0001V00` | GDG geração | Sequencial              | `EXTROUT`                                                                               | Primeira geração física do extrato                                                                                | `EBEXTR01` ou job de teste que gravou a geração    | Consulta, conferência e retenção histórica                                              |
+---
 
+## Arquivos de Seed (Carga Inicial)
 
+| Dataset                           | Tipo | DDNAME     | Finalidade                  |
+|-----------------------------------|------|------------|-----------------------------|
+| `Z77948.EMUNAH.SEED.CLIENTES.SEQ` | PS   | `CLIENTIN` | Massa inicial de clientes   |
+| `Z77948.EMUNAH.SEED.CONTAS.SEQ`   | PS   | `CONTAIN`  | Massa inicial de contas     |
 
+---
 
+## Arquivos de Negócio (ARQ)
 
-Observações de uso
-1. Bibliotecas de desenvolvimento
+| Dataset                            | Tipo      | Org.  | DDNAME    | Finalidade                                     |
+|------------------------------------|-----------|-------|-----------|------------------------------------------------|
+| `Z77948.EMUNAH.ARQ.CLIENTE.KSDS`   | VSAM      | KSDS  | `CLIENTE` | Cadastro master de clientes                    |
+| `Z77948.EMUNAH.ARQ.CONTA.KSDS`     | VSAM      | KSDS  | `CONTA`   | Cadastro master de contas                      |
+| `Z77948.EMUNAH.ARQ.SALDO.KSDS`     | VSAM      | KSDS  | `SALDO`   | Saldo consolidado por conta                    |
+| `Z77948.EMUNAH.ARQ.LANCTO.ESDS`    | VSAM      | ESDS  | `VALIDOS` | Lançamentos aprovados (append-only)            |
+| `Z77948.EMUNAH.ARQ.ENTRADA.SEQ`    | PS        | SEQ   | `ENTRADA` | Arquivo de entrada batch do dia                |
+| `Z77948.EMUNAH.ARQ.REJEITO.SEQ`    | PS        | SEQ   | `REJEITO` | Registros rejeitados na validação/aplicação    |
+| `Z77948.EMUNAH.ARQ.AUDIT.SEQ`      | PS        | SEQ   | `AUDIT`   | Trilha de auditoria e mensagens de log         |
+| `Z77948.EMUNAH.ARQ.EXTRATO.GDG`    | GDG Base  | —     | —         | Base GDG para histórico de extratos            |
 
-DEV.COBOL, DEV.JCL e DEV.COPY são bibliotecas de trabalho do projeto.
+---
 
-LOAD é a biblioteca de executáveis gerados no build.
+## Observações
 
-2. Entrada e seed
-
-SEED.CLIENTES e SEED.CONTAS servem para a carga inicial.
-
-ENTRADA.LCTD0 representa os movimentos do lote/dia.
-
-ENTRADA.SALDOIN existe para não deixar a rotina de saldo sem entrada definida.
-
-3. Arquivos operacionais
-
-KSDS.CLIENTE e KSDS.CONTA são os arquivos master do ambiente.
-
-Eles devem ser alocados antes da execução dos jobs que os usam.
-
-4. Saídas
-
-SAIDA.AUDIT concentra logs e mensagens.
-
-SAIDA.VALDOK e SAIDA.REJEIT separam os lançamentos válidos dos inválidos.
-
-SAIDA.EXTRATO, SAIDA.CONCIL e SAIDA.SALDOS são arquivos de resultado.
+- O arquivo `ARQ.LANCTO.ESDS` usa organização ESDS (sequential
+  append-only) por design — representa o histórico imutável de
+  movimentos do dia
+- `ARQ.EXTRATO.GDG` gera uma nova geração (`G000xV00`) a cada
+  execução do job `EBJEXTR`
+- Os arquivos KSDS devem ser alocados via IDCAMS antes da
+  primeira execução de qualquer job que os utilize
+- O prefixo `Z77948` corresponde ao userid do ambiente zXplore
+  e deve ser ajustado se o lab migrar para outro ambiente
