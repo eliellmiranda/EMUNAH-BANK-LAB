@@ -27,28 +27,28 @@ O nome *Emunah* (אֱמוּנָה) remete ao conceito hebraico de fidelidade e c
 ┌─────────────────────────────────────────────────────────────┐
 │                     CAMADA LOCAL                            │
 │  VS Code + Zowe Explorer + Git                              │
-│  .cbl  .jcl  .cpy  .rexx  /data  /docs                     │
+│  .cbl  .jcl  .cpy  .rexx  /data  /docs                      │
 └──────────────────────┬──────────────────────────────────────┘
                        │
               Zowe CLI / Explorer
           (upload, submit, spool, fetch)
                        │
 ┌──────────────────────▼──────────────────────────────────────┐
-│                  CAMADA REMOTA                               │
+│                  CAMADA REMOTA                              │
 │           IBM zXplore — z/OS                                │
 │                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐ │
-│  │  DEV        │  │  HML        │  │  PRD (simulado)     │ │
-│  │  .COBOL     │  │  .COBOL     │  │  .JCL               │ │
-│  │  .COPY      │  │  .JCL       │  │  .LOADLIB           │ │
-│  │  .JCL       │  │  .LOADLIB   │  │  .PARMLIB           │ │
-│  │  .REXX      │  └─────────────┘  └─────────────────────┘ │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
+│  │  DEV        │  │  HML        │  │  PRD (simulado)     │  │
+│  │  .COBOL     │  │  .COBOL     │  │  .JCL               │  │
+│  │  .COPY      │  │  .JCL       │  │  .LOADLIB           │  │
+│  │  .JCL       │  │  .LOADLIB   │  │  .PARMLIB           │  │
+│  │  .REXX      │  └─────────────┘  └─────────────────────┘  │
 │  │  .LOADLIB   │                                            │
 │  └─────────────┘                                            │
 │                                                             │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │  Arquivos de Negócio (ARQ)                           │   │
-│  │  CLIENTE.KSDS  CONTA.KSDS  SALDO.KSDS               │   │
+│  │  CLIENTE.KSDS  CONTA.KSDS  SALDO.KSDS                │   │
 │  │  LANCTO.ESDS   ENTRADA.SEQ  REJEITO.SEQ              │   │
 │  │  AUDIT.SEQ     EXTRATO.GDG                           │   │
 │  └──────────────────────────────────────────────────────┘   │
@@ -58,8 +58,8 @@ O nome *Emunah* (אֱמוּנָה) remete ao conceito hebraico de fidelidade e c
             (operação e diagnóstico)
                        │
 ┌──────────────────────▼──────────────────────────────────────┐
-│                CAMADA DE OPERAÇÃO                            │
-│         ISPF  │  SDSF  │  TSO  │  IDCAMS                   │
+│                CAMADA DE OPERAÇÃO                           │
+│         ISPF  │  SDSF  │  TSO  │  IDCAMS                    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
