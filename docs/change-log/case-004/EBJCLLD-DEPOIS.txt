@@ -1,0 +1,124 @@
+//* ===================================================================
+//* JOB: EBJCLLD
+//* CAMINHO LOCAL: jcl/batch/EBJCLLD.jcl
+//* HOST / PDS  : Z77948.EMUNAH.DEV.JCL(EBJCLLD)
+//* ===================================================================
+//* FINALIDADE:
+//* Executar a carga inicial dos arquivos master do laboratorio
+//* EMUNAH a partir dos arquivos seed sequenciais.
+//*
+//* FLUXO ESPERADO:
+//* 1. STEP0 - Apagar e redefinir os KSDS de clientes e contas
+//*    via IDCAMS, garantindo que a carga comece em arquivo vazio.
+//* 2. STEP1 - Executar o programa EBCLLOAD para ler os arquivos
+//*    sequenciais e gravar nos KSDS recem-definidos.
+//*
+//* PRE-REQUISITOS:
+//* - O programa EBCLLOAD deve estar compilado e disponivel na
+//*   LOADLIB (executar EBCOMP antes se houve alteracao no fonte).
+//* - Os arquivos seed (CLIENTES.SEQ e CONTAS.SEQ) devem existir
+//*   e estar populados com dados validos.
+//*
+//* RESULTADO ESPERADO:
+//* - STEP0 CC=0000 (DELETE/DEFINE executado com sucesso)
+//* - STEP1 CC=0000 (carga executada, verificar resumo no SYSOUT)
+//* - Resumo no spool deve mostrar gravados > 0
+//* ===================================================================
+//EBJCLLD  JOB ,'EMUNAH CARGA',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//*
+//* EBJCLLD:
+//*   Nome do job no JES2.
+//* 'EMUNAH CARGA':
+//*   Descricao para identificacao no spool.
+//* CLASS=A:
+//*   Classe de execucao conforme regime do ambiente.
+//* MSGCLASS=X:
+//*   Classe de saida para mensagens do job.
+//* MSGLEVEL=(1,1):
+//*   Exibe instrucoes JCL e mensagens de cada step.
+//*
+//* ===================================================================
+//* STEP0 - LIMPAR E REDEFINIR OS KSDS
+//* ===================================================================
+//* Apaga e redefine os KSDS de clientes e contas para garantir
+//* que a carga inicial seja feita em arquivo vazio.
+//*
+//* O SET MAXCC=0 apos cada DELETE evita que o job pare com RC=8
+//* na primeira execucao, quando o dataset ainda nao existe.
+//*
+//* Os parametros do DEFINE devem corresponder exatamente ao que
+//* o programa EBCLLOAD espera:
+//*   CLIENTE.KSDS: KEYS(5 0)   = chave de 5 bytes na posicao 0
+//*                 RECORDSIZE(80 80) = registro fixo de 80 bytes
+//*   CONTA.KSDS:   KEYS(12 0)  = chave de 12 bytes na posicao 0
+//*                 RECORDSIZE(100 100) = registro fixo de 100 bytes
+//* ===================================================================
+//STEP0    EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//* Saida do IDCAMS com resultado de cada comando.
+//SYSIN    DD *
+  DELETE Z77948.EMUNAH.ARQ.CLIENTE.KSDS -
+         CLUSTER PURGE
+  SET MAXCC=0
+  DEFINE CLUSTER                          -
+         (NAME(Z77948.EMUNAH.ARQ.CLIENTE.KSDS) -
+          KEYS(5 0)                        -
+          RECORDSIZE(80 80)                -
+          TRACKS(5 5)                      -
+          SHAREOPTIONS(2 3)                -
+          INDEXED)                         -
+         DATA                              -
+         (NAME(Z77948.EMUNAH.ARQ.CLIENTE.KSDS.DATA)) -
+         INDEX                             -
+         (NAME(Z77948.EMUNAH.ARQ.CLIENTE.KSDS.INDEX))
+  DELETE Z77948.EMUNAH.ARQ.CONTA.KSDS -
+         CLUSTER PURGE
+  SET MAXCC=0
+  DEFINE CLUSTER                          -
+         (NAME(Z77948.EMUNAH.ARQ.CONTA.KSDS) -
+          KEYS(12 0)                       -
+          RECORDSIZE(100 100)              -
+          TRACKS(5 5)                      -
+          SHAREOPTIONS(2 3)                -
+          INDEXED)                         -
+         DATA                              -
+         (NAME(Z77948.EMUNAH.ARQ.CONTA.KSDS.DATA)) -
+         INDEX                             -
+         (NAME(Z77948.EMUNAH.ARQ.CONTA.KSDS.INDEX))
+/*
+//* ===================================================================
+//* STEP1 - CARGA INICIAL
+//* ===================================================================
+//* Executa o programa EBCLLOAD que le os arquivos sequenciais
+//* seed e grava nos KSDS recem-definidos pelo STEP0.
+//*
+//* O programa abre os KSDS como OUTPUT (carga em arquivo vazio)
+//* e os arquivos sequenciais como INPUT (somente leitura).
+//*
+//* Os KSDS usam DISP=OLD para garantir acesso exclusivo durante
+//* a gravacao. DISP=SHR em KSDS com gravacao pode causar falha
+//* silenciosa (registros nao gravados sem erro aparente).
+//* ===================================================================
+//STEP1    EXEC PGM=EBCLLOAD
+//* Programa de carga inicial de clientes e contas.
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//* Biblioteca onde esta o modulo executavel EBCLLOAD.
+//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ,DISP=SHR
+//* Arquivo sequencial de entrada com os registros de clientes.
+//* DISP=SHR: leitura compartilhada.
+//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ,DISP=SHR
+//* Arquivo sequencial de entrada com os registros de contas.
+//* DISP=SHR: leitura compartilhada.
+//CLIENTE  DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=OLD
+//* KSDS de clientes: acesso exclusivo para gravacao.
+//* O programa abre como OUTPUT e grava sequencialmente.
+//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=OLD
+//* KSDS de contas: acesso exclusivo para gravacao.
+//* O programa abre como OUTPUT e grava sequencialmente.
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//* Arquivo de auditoria da carga.
+//* DISP=MOD: grava no final sem apagar registros anteriores.
+//SYSOUT   DD SYSOUT=*
+//* Saida geral do programa (DISPLAY do COBOL).
+//SYSPRINT DD SYSOUT=*
+//* Saida detalhada de impressao e diagnostico.
