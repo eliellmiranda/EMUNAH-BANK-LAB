@@ -13,7 +13,8 @@
             "properties": {
                 "account": "FB3",
                 "codePage": "1047",
-                "logonProcedure": "IZUFPROC"
+                "logonProcedure": "IZUFPROC",
+                "columns": 80
             },
             "secure": []
         },
