@@ -265,4 +265,4 @@ zowe jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJLOAD)"
 
 ---
 
-> *"Emunah (אֱמוּנָה) — fidelidade, confiança. A mesma qualidade que sustenta décadas de operação ininterrupta no mainframe."*
+> *"Emunah (אֱמוּנָה) — fidelidade, confiança. A mesma qualidade que sustenta décadas de operação ininterrupta no mainframe"*
