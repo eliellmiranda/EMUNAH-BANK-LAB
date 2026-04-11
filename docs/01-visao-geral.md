@@ -8,9 +8,9 @@ O projeto reproduz, em escala controlada, elementos comuns de ambientes bancári
 
 ## Sobre o projeto
 
-O **Emunah Bank Lab** foi concebido como um laboratório de prática técnica voltado ao contexto de sistemas bancários de alta confiabilidade.
+O **Emunah Bank Lab** é um laboratório de prática técnica mainframe em contexto bancário.
 
-A proposta é estudar, de forma aplicada, o funcionamento de aplicações e processos típicos desse ambiente, incluindo:
+A proposta é estudar, de forma prática, o funcionamento de aplicações e processos típicos desse ambiente, incluindo:
 
 - desenvolvimento de programas de negócio em **COBOL**;
 - execução e controle de rotinas **batch** com **JCL**;
@@ -19,7 +19,7 @@ A proposta é estudar, de forma aplicada, o funcionamento de aplicações e proc
 - interação moderna com o ambiente por meio do **Zowe CLI**;
 - análise de falhas e investigação de **abends**.
 
-Mais do que um ambiente de estudo conceitual, este lab busca simular práticas reais de desenvolvimento, operação e suporte em plataformas **z/OS**.
+Este laboratório busca simular práticas reais de desenvolvimento, operação e suporte em **z/OS**.
 
 ---
 
