@@ -2,7 +2,7 @@
 
 Ambiente pessoal de simulação bancária em **IBM z/OS**, criado para estudo prático de rotinas, arquitetura e troubleshooting em **mainframe**.
 
-O projeto reproduz, em escala controlada, elementos comuns de ambientes bancários legados que seguem operando cargas críticas em mainframe, combinando tecnologias clássicas do ecossistema z/OS com ferramentas modernas de automação e operação.
+O projeto reproduz, em escala controlada, elementos comuns de ambientes bancários legados que operam cargas críticas em mainframe, combinando tecnologias clássicas do ecossistema z/OS com ferramentas modernas de automação e operação.
 
 ---
 
