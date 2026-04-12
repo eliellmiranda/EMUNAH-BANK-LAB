@@ -1,0 +1,24 @@
+* [33mc65b87b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mDATASETS-E-MEMBROS-PREENCHIDOS[m[33m)[m Update lancamentos_d0.txt
+*   [33m99e595d[m Merge branch 'DATASETS-E-MEMBROS-PREENCHIDOS' of https://github.com/eliellmiranda/EMUNAH-BANK-LAB into DATASETS-E-MEMBROS-PREENCHIDOS
+[32m|[m[33m\[m  
+[32m|[m * [33m9cd2951[m[33m ([m[1;31morigin/HEAD[m[33m, [m[1;31morigin/DATASETS-E-MEMBROS-PREENCHIDOS[m[33m)[m Update 01-visao-geral.md
+[32m|[m * [33m91dca22[m Update 01-visao-geral.md
+* [33m|[m [33m2392cf6[m Update lancamentos_d0.txt
+[33m|[m[33m/[m  
+* [33m8d5266b[m Delete DIARIO DE IMPLANTACAO.txt
+* [33m5300137[m Limpeza de arquivos
+* [33maea911e[m docs: atualiza README com foco em batch e online
+* [33mb400b94[m Create CASE-004-ESTUDO.pdf
+* [33mbdccf32[m Create CASE-004-CLIENTES-ANTES-E-DEPOIS.docx
+* [33m02ab7c2[m Create(case-004)
+* [33m66bff96[m Update zowe.config.json
+* [33mc0ddfb7[m add(documentation)
+* [33m293f2ad[m Update clientes.txt
+* [33m1904e8b[m Create hgit log --oneline
+* [33mdb73961[m Update settings.json
+* [33m12d2eb7[m Update contas.txt
+*   [33mf507c73[m Merge branch 'main' into DATASETS-E-MEMBROS-PREENCHIDOS
+[34m|[m[35m\[m  
+* [35m\[m   [33m770a42e[m Merge branch 'DATASETS-E-MEMBROS-PREENCHIDOS' of https://github.com/eliellmiranda/EMUNAH-BANK-LAB into DATASETS-E-MEMBROS-PREENCHIDOS
+[36m|[m[1;31m\[m [35m\[m  
+[36m|[m * [35m|[m [33mc0e1492[m Create ferramentas_mainframe.md
