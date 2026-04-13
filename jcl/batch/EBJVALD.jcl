@@ -20,13 +20,12 @@
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
 //* Arquivo VSAM KSDS de contas usado na rotina de saldo.
 //SALDIN   DD DSN=Z77948.EMUNAH.ARQ.SALDO.SEQ,DISP=SHR
-//* Arquivo de entrada ou apoio para processamento de saldo.
-//* Ajustar conforme a regra real implementada no programa.
-//*SALDOUT  DD DSN=<HQL>.EMUNAH.ARQ.SALDO.OUT.SEQ,
-//*             DISP=(NEW,CATLG,DELETE),
-//*             UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//*             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
-//* DD SALDOUT desativado - arquivo de saida nao utilizado no momento.
+//* Arquivo de entrada com contas a consultar.
+//SALDOUT  DD DSN=Z77948.EMUNAH.ARQ.SALDO.OUT.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//* Arquivo de saida com resultado da consulta de saldos.
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
 //* Arquivo sequencial de auditoria do processamento.
 //SYSOUT   DD SYSOUT=*
