@@ -1,0 +1,17 @@
+********************************************************************
+* MEMBRO   : EBAUDITP                                              *
+* BIBLIOTECA: Z77948.EMUNAH.PRD.PARMLIB                            *
+* FUNCAO   : PARAMETROS DE AUDITORIA E CONTROLE                    *
+*                                                                  *
+* O QUE ESTE MEMBRO FAZ:                                           *
+* - Centraliza opcoes relacionadas a trilha de auditoria           *
+* - Define o nivel de detalhamento desejado                        *
+* - Permite controlar retencao e conteudo do log                   *
+********************************************************************
+AUDIT-ATIVO=S
+AUDIT-DETALHADO=S
+MANTER-HISTORICO-DIAS=030
+REGISTRAR-SUCESSO=S
+REGISTRAR-REJEICAO=S
+REGISTRAR-SALDO-ANTES=S
+REGISTRAR-SALDO-DEPOIS=S
