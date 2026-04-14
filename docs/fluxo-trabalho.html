@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emunah Bank Lab — Mapa de Fluxo de Trabalho</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #060e1a;
+      color: #e3f2fd;
+      font-family: 'Courier New', monospace;
+      padding: 24px;
+      min-height: 100vh;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    header h1 {
+      font-size: 18px;
+      color: #90caf9;
+      letter-spacing: 2px;
+      border-bottom: 1px solid #1565c0;
+      padding-bottom: 8px;
+      margin-bottom: 6px;
+    }
+    header p {
+      font-size: 10px;
+      color: #37474f;
+    }
+    /* ── LEGEND ── */
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    .leg {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      color: #90a4ae;
+    }
+    .leg-box {
+      width: 14px; height: 14px;
+      border-radius: 2px;
+      border: 1.5px solid;
+      flex-shrink: 0;
+    }
+
+    /* ── DIAGRAM CONTAINER ── */
+    .diagram {
+      display: grid;
+      grid-template-columns: 195px 260px 195px;
+      grid-template-rows: auto;
+      gap: 0;
+      max-width: 680px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* ── SECTION HEADERS ── */
+    .section-label {
+      grid-column: 1 / -1;
+      background: #0a1220;
+      border: 1px dashed;
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      margin: 10px 0 6px;
+      text-align: center;
+    }
+    .section-label.setup { border-color: #7c4dff; color: #b39ddb; }
+    .section-label.batch { border-color: #1565c0; color: #64b5f6; }
+    .section-label.shared { border-color: #37474f; color: #78909c; }
+
+    /* ── JOB BOX ── */
+    .job {
+      border-radius: 6px;
+      border: 2px solid;
+      padding: 7px 10px;
+      text-align: center;
+      margin: 3px auto;
+      width: 220px;
+      position: relative;
+    }
+    .job .jname {
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .job .prog {
+      font-size: 11px;
+      margin-top: 1px;
+    }
+    .job .desc {
+      font-size: 8.5px;
+      margin-top: 2px;
+      color: #546e7a;
+    }
+    .job.util  { background: #12083a; border-color: #7c4dff; }
+    .job.util .jname { color: #e3f2fd; }
+    .job.util .prog  { color: #ce93d8; }
+    .job.daily { background: #071828; border-color: #1565c0; }
+    .job.daily .jname { color: #e3f2fd; }
+    .job.daily .prog  { color: #4fc3f7; }
+    .job.stub  { background: #150e00; border-color: #f57f17; border-style: dashed; }
+    .job.stub .jname { color: #ffe082; }
+    .job.stub .prog  { color: #ffb74d; }
+    .job.eod   { background: #0d1200; border-color: #827717; }
+    .job.eod .jname  { color: #f9a825; }
+    .job.eod .prog   { color: #827717; }
+
+    /* ── DATASET ── */
+    .ds {
+      border-radius: 4px;
+      border: 1.5px solid;
+      padding: 5px 8px;
+      text-align: center;
+      margin: 3px auto;
+      width: 175px;
+      font-size: 9.5px;
+    }
+    .ds .dname { font-weight: bold; }
+    .ds .dmeta { font-size: 8px; margin-top: 2px; }
+    /* VSAM KSDS */
+    .ds.ksds { background: #062012; border-color: #00c853; }
+    .ds.ksds .dname { color: #69f0ae; }
+    .ds.ksds .dmeta { color: #2e7d32; }
+    /* VSAM ESDS */
+    .ds.esds { background: #130028; border-color: #aa00ff; }
+    .ds.esds .dname { color: #ea80fc; }
+    .ds.esds .dmeta { color: #6a1b9a; }
+    /* SEQ / PS */
+    .ds.seq  { background: #0d1620; border-color: #455a64; }
+    .ds.seq  .dname { color: #b0bec5; }
+    .ds.seq  .dmeta { color: #37474f; }
+    /* GDG */
+    .ds.gdg  { background: #1a0e00; border-color: #e65100; }
+    .ds.gdg  .dname { color: #ffcc80; }
+    .ds.gdg  .dmeta { color: #bf360c; }
+    /* PDS */
+    .ds.pds  { background: #0d1a2a; border-color: #1976d2; }
+    .ds.pds  .dname { color: #82b1ff; }
+    .ds.pds  .dmeta { color: #1565c0; }
+    /* Audit (shared) */
+    .ds.audit{ background: #0e0e1a; border-color: #5c6bc0; border-style: dashed; }
+    .ds.audit .dname { color: #9fa8da; }
+    .ds.audit .dmeta { color: #37474f; }
+
+    /* ── FLOW AREA ── */
+    .flow-row {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 195px 260px 195px;
+      align-items: center;
+      margin: 2px 0;
+    }
+    .flow-left  { display: flex; flex-direction: column; align-items: flex-end; padding-right: 8px; gap: 3px; }
+    .flow-center{ display: flex; flex-direction: column; align-items: center; }
+    .flow-right { display: flex; flex-direction: column; align-items: flex-start; padding-left: 8px; gap: 3px; }
+
+    /* ── ARROWS ── */
+    .arrow-down {
+      width: 2px;
+      height: 24px;
+      background: #1976d2;
+      margin: 0 auto;
+      position: relative;
+    }
+    .arrow-down::after {
+      content: '';
+      position: absolute;
+      bottom: -5px; left: -4px;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 6px solid #1976d2;
+    }
+    .arrow-down.soft { background: #37474f; }
+    .arrow-down.soft::after { border-top-color: #37474f; }
+
+    .arrow-right {
+      display: flex;
+      align-items: center;
+      font-size: 9px;
+      color: #37474f;
+      gap: 3px;
+    }
+    .arrow-right::before {
+      content: '';
+      width: 28px; height: 1px;
+      background: #1565c0;
+      flex-shrink: 0;
+    }
+    .arrow-right::after {
+      content: '▶';
+      color: #1565c0;
+      font-size: 7px;
+    }
+    .arrow-left {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      font-size: 9px;
+      color: #37474f;
+      gap: 3px;
+    }
+    .arrow-left::after {
+      content: '';
+      width: 28px; height: 1px;
+      background: #1565c0;
+      flex-shrink: 0;
+    }
+    .arrow-left::before {
+      content: '◀';
+      color: #1565c0;
+      font-size: 7px;
+    }
+    .arrow-dashed {
+      border-top: 1px dashed #37474f;
+      width: 28px;
+      flex-shrink: 0;
+    }
+
+    /* RC label */
+    .rc-label {
+      font-size: 8px;
+      color: #2e7d32;
+      text-align: center;
+      margin: -2px 0 2px;
+    }
+    /* notes */
+    .note {
+      font-size: 8px;
+      color: #37474f;
+      text-align: center;
+      padding: 1px 4px;
+    }
+    .note.warn { color: #e65100; }
+    .note.ok   { color: #2e7d32; }
+
+    /* ── SEPARATOR ── */
+    .separator {
+      grid-column: 1 / -1;
+      border: none;
+      border-top: 1px dashed #1565c0;
+      margin: 14px 0 6px;
+    }
+
+    footer {
+      max-width: 680px;
+      margin: 24px auto 0;
+      font-size: 8.5px;
+      color: #263238;
+      border-top: 1px solid #0d1f30;
+      padding-top: 8px;
+    }
+    footer span { color: #37474f; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>EMUNAH BANK LAB — MAPA DE FLUXO DE TRABALHO</h1>
+  <p>JCLs · Membros COBOL · Datasets · Ambiente DEV · HLQ: Z77948.EMUNAH.*</p>
+</header>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="leg"><div class="leg-box" style="background:#062012;border-color:#00c853"></div>VSAM KSDS</div>
+  <div class="leg"><div class="leg-box" style="background:#130028;border-color:#aa00ff"></div>VSAM ESDS</div>
+  <div class="leg"><div class="leg-box" style="background:#0d1620;border-color:#455a64"></div>SEQ / PS</div>
+  <div class="leg"><div class="leg-box" style="background:#1a0e00;border-color:#e65100"></div>GDG</div>
+  <div class="leg"><div class="leg-box" style="background:#071828;border-color:#1565c0"></div>JCL Batch</div>
+  <div class="leg"><div class="leg-box" style="background:#12083a;border-color:#7c4dff"></div>Setup / Util</div>
+  <div class="leg"><div class="leg-box" style="background:#150e00;border-color:#f57f17;border-style:dashed"></div>Planejado</div>
+</div>
+
+<div class="diagram">
+
+  <!-- ══════════ SETUP SECTION ══════════ -->
+  <div class="section-label setup">⚙  SETUP — CARGA INICIAL (ONE-TIME)  ·  EBJCLLD</div>
+
+  <div class="flow-row">
+    <div class="flow-left">
+      <div class="ds seq">
+        <div class="dname">SEED.CLIENTES.SEQ</div>
+        <div class="dmeta">CLIENTIN · PS</div>
+      </div>
+      <div class="ds seq">
+        <div class="dname">SEED.CONTAS.SEQ</div>
+        <div class="dmeta">CONTAIN · PS</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end;font-size:8px;color:#37474f;">
+        <span>lê clientes e contas</span>
+        <span style="color:#7c4dff">▶</span>
+      </div>
+    </div>
+    <div class="flow-center">
+      <div class="job util">
+        <div class="jname">EBJCLLD</div>
+        <div class="prog">EBCLLOAD</div>
+        <div class="desc">Carga Inicial de Clientes e Contas</div>
+      </div>
+      <div class="note">STEPLIB: DEV.LOADLIB · AUDIT: DISP=MOD</div>
+    </div>
+    <div class="flow-right">
+      <div class="ds ksds">
+        <div class="dname">ARQ.CLIENTE.KSDS</div>
+        <div class="dmeta">CLIENTE · VSAM KSDS</div>
+      </div>
+      <div class="ds ksds">
+        <div class="dname">ARQ.CONTA.KSDS</div>
+        <div class="dmeta">CONTA · VSAM KSDS</div>
+      </div>
+      <div class="note ok">↑ masters persistentes — reutilizados na grade diária</div>
+    </div>
+  </div>
+
+  <hr class="separator">
+
+  <!-- ══════════ DAILY BATCH ══════════ -->
+  <div class="section-label batch">▶  GRADE BATCH DIÁRIA — PIPELINE DE PROCESSAMENTO</div>
+
+  <!-- ── EBJLOAD ── -->
+  <div class="flow-row">
+    <div class="flow-left">
+      <div class="ds seq">
+        <div class="dname">ARQ.ENTRADA.SEQ</div>
+        <div class="dmeta">ENTRADA · PS</div>
+      </div>
+      <div class="arrow-right">LISTCAT</div>
+    </div>
+    <div class="flow-center">
+      <div class="job util">
+        <div class="jname">EBJLOAD</div>
+        <div class="prog">IDCAMS</div>
+        <div class="desc">Pré-verificação — ENTRADA.SEQ existe?</div>
+      </div>
+    </div>
+    <div class="flow-right">
+    </div>
+  </div>
+  <div class="rc-label">RC=0 → prosseguir  ·  RC=12 → bloqueio da cadeia</div>
+  <div class="flow-row"><div class="flow-left"></div><div class="flow-center"><div class="arrow-down"></div></div><div class="flow-right"></div></div>
+
+  <!-- ── EBJVALD ── -->
+  <div class="flow-row">
+    <div class="flow-left">
+      <div class="note" style="color:#455a64">lê ARQ.ENTRADA.SEQ</div>
+      <div class="arrow-right" style="font-size:8px;color:#37474f"></div>
+    </div>
+    <div class="flow-center">
+      <div class="job daily">
+        <div class="jname">EBJVALD</div>
+        <div class="prog">EBVALI01</div>
+        <div class="desc">Validação de Lançamentos</div>
+      </div>
+    </div>
+    <div class="flow-right">
+      <div class="ds esds">
+        <div class="dname">ARQ.LANCTO.ESDS</div>
+        <div class="dmeta">VALIDOS · VSAM ESDS · append-only</div>
+      </div>
+      <div class="ds seq">
+        <div class="dname">ARQ.REJEITO.SEQ</div>
+        <div class="dmeta">REJEITO · PS</div>
+      </div>
+    </div>
+  </div>
+  <div class="flow-row"><div class="flow-left"></div><div class="flow-center"><div class="arrow-down"></div></div><div class="flow-right"></div></div>
+
+  <!-- ── EBJPOST ── -->
+  <div class="flow-row">
+    <div class="flow-left">
+      <div class="ds ksds" style="border-style:dashed">
+        <div class="dname">ARQ.CLIENTE.KSDS</div>
+        <div class="dmeta">CLIENTE · (setup) ↑</div>
+      </div>
+      <div class="ds ksds" style="border-style:dashed">
+        <div class="dname">ARQ.CONTA.KSDS</div>
+        <div class="dmeta">CONTA · (setup) ↑</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end;font-size:8px;color:#37474f;">
+        <span>lê masters</span>
+        <span style="color:#1565c0">▶</span>
+      </div>
+      <div class="note" style="color:#455a64;text-align:right;">+ MOVTIN de LANCTO.ESDS ↗</div>
+    </div>
+    <div class="flow-center">
+      <div class="job daily">
+        <div class="jname">EBJPOST</div>
+        <div class="prog">EBPOST01</div>
+        <div class="desc">Postagem · atualiza saldo (REWRITE in-place)</div>
+      </div>
+    </div>
+    <div class="flow-right">
+      <div class="note ok" style="text-align:left">↑ CONTA.KSDS atualizado</div>
+      <div class="note" style="color:#455a64;text-align:left">saldo = saldo ± lançamento</div>
+    </div>
+  </div>
+  <div class="flow-row"><div class="flow-left"></div><div class="flow-center"><div class="arrow-down"></div></div><div class="flow-right"></div></div>
+
+  <!-- ── EBJSALD ── -->
+  <div class="flow-row">
+    <div class="flow-left">
+      <div class="ds seq">
+        <div class="dname">ARQ.SALDO.SEQ</div>
+        <div class="dmeta">SALDIN · PS</div>
+      </div>
+      <div class="arrow-right">SALDIN</div>
+      <div class="note" style="color:#455a64;text-align:right;">também lê CONTA.KSDS ↑</div>
+    </div>
+    <div class="flow-center">
+      <div class="job daily">
+        <div class="jname">EBJSALD</div>
+        <div class="prog">EBSALD01</div>
+        <div class="desc">Consulta e Consolidação de Saldo</div>
+      </div>
+    </div>
+    <div class="flow-right">
+      <div class="ds seq">
+        <div class="dname">ARQ.SALDO.OUT.SEQ</div>
+        <div class="dmeta">SALDOUT · PS · NEW,CATLG</div>
+      </div>
+    </div>
+  </div>
+  <div class="flow-row"><div class="flow-left"></div><div class="flow-center"><div class="arrow-down"></div></div><div class="flow-right"></div></div>
+
+  <!-- ── EBJEXTR ── -->
+  <div class="flow-row">
+    <div class="flow-left">
+      <div class="note" style="color:#455a64;text-align:right;">lê CONTA.KSDS + LANCTO.ESDS</div>
+    </div>
+    <div class="flow-center">
+      <div class="job stub">
+        <div class="jname">⚠  EBJEXTR</div>
+        <div class="prog">EBEXTR01  —  stub IEFBR14</div>
+        <div class="desc">Extrato · planejado · DDs definitivos a implementar</div>
+      </div>
+    </div>
+    <div class="flow-right">
+      <div class="ds gdg">
+        <div class="dname">ARQ.EXTRATO.GDG</div>
+        <div class="dmeta">GDG Base · G000xV00 por execução</div>
+      </div>
+      <div class="note warn">⚠ stub: saída não gerada até implementação</div>
+    </div>
+  </div>
+  <div class="flow-row"><div class="flow-left"></div><div class="flow-center"><div class="arrow-down"></div></div><div class="flow-right"></div></div>
+
+  <!-- ── EBJCONC ── -->
+  <div class="flow-row">
+    <div class="flow-left">
+      <div class="note" style="color:#455a64;text-align:right;">lê ARQ.LANCTO.ESDS (MOVTIN) ↗</div>
+    </div>
+    <div class="flow-center">
+      <div class="job daily">
+        <div class="jname">EBJCONC</div>
+        <div class="prog">EBCONC01</div>
+        <div class="desc">Conciliação do Dia</div>
+      </div>
+    </div>
+    <div class="flow-right">
+      <div class="ds seq">
+        <div class="dname">ARQ.CONCIL.SEQ</div>
+        <div class="dmeta">CONCOUT · PS · DISP=MOD</div>
+      </div>
+    </div>
+  </div>
+  <div class="flow-row"><div class="flow-left"></div><div class="flow-center"><div class="arrow-down"></div></div><div class="flow-right"></div></div>
+
+  <!-- ── EBJEOD ── -->
+  <div class="flow-row">
+    <div class="flow-left"></div>
+    <div class="flow-center">
+      <div class="job eod">
+        <div class="jname">EBJEOD</div>
+        <div class="prog">Encerramento do Dia — EOD</div>
+        <div class="desc">End of Day Processing</div>
+      </div>
+    </div>
+    <div class="flow-right"></div>
+  </div>
+
+  <hr class="separator">
+
+  <!-- ══════════ SHARED DATASETS ══════════ -->
+  <div class="section-label shared">◈  DATASETS COMPARTILHADOS — Leitura / Escrita por múltiplos jobs</div>
+
+  <div class="flow-row" style="margin-top:6px">
+    <div class="flow-left">
+      <div class="ds audit">
+        <div class="dname">ARQ.AUDIT.SEQ</div>
+        <div class="dmeta">AUDIT · PS · DISP=MOD</div>
+        <div class="dmeta" style="color:#3949ab;margin-top:2px;">← EBJCLLD · EBJVALD · EBJPOST · EBJSALD</div>
+      </div>
+    </div>
+    <div class="flow-center">
+      <div class="note" style="color:#3949ab;font-size:9px;padding:6px;">
+        Trilha de auditoria acumulada.<br>
+        DISP=MOD garante append sem sobrescrever.<br>
+        Todos os jobs batch gravam aqui.
+      </div>
+    </div>
+    <div class="flow-right">
+      <div class="ds esds">
+        <div class="dname">ARQ.LANCTO.ESDS</div>
+        <div class="dmeta">VSAM ESDS · append-only</div>
+        <div class="dmeta" style="color:#6a1b9a;margin-top:2px;">← EBJVALD (write) → EBJPOST · EBJEXTR · EBJCONC (read)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-row" style="margin-top:6px">
+    <div class="flow-left">
+      <div class="ds ksds">
+        <div class="dname">ARQ.CLIENTE.KSDS</div>
+        <div class="dmeta">VSAM KSDS · master imutável</div>
+        <div class="dmeta" style="color:#1b5e20;margin-top:2px;">← EBJCLLD (write) → EBJPOST (read)</div>
+      </div>
+    </div>
+    <div class="flow-center"></div>
+    <div class="flow-right">
+      <div class="ds ksds">
+        <div class="dname">ARQ.CONTA.KSDS</div>
+        <div class="dmeta">VSAM KSDS · saldo atualizado em batch</div>
+        <div class="dmeta" style="color:#1b5e20;margin-top:2px;">← EBJCLLD (write) → EBJPOST (r/w) · EBJSALD · EBJEXTR (read)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ LOADLIB ══════════ -->
+  <div class="flow-row" style="margin-top:10px">
+    <div class="flow-left"></div>
+    <div class="flow-center">
+      <div class="ds pds">
+        <div class="dname">DEV.LOADLIB</div>
+        <div class="dmeta">PDS · STEPLIB em todos os jobs</div>
+        <div class="dmeta" style="color:#1565c0;margin-top:2px;">EBCLLOAD · EBVALI01 · EBPOST01 · EBSALD01 · EBCONC01</div>
+      </div>
+    </div>
+    <div class="flow-right"></div>
+  </div>
+
+</div><!-- /diagram -->
+
+<footer>
+  <span>* Datasets tracejados (- -) = referências herdadas do setup ou reutilizadas entre fases.</span><br>
+  <span>* ⚠ EBJEXTR usa IEFBR14 (stub). EBEXTR01 e DDs definitivos pendentes de implementação.</span><br>
+  <span>* HLQ: Z77948  ·  Projeto: EMUNAH  ·  Ambiente: DEV  ·  Emunah Bank Lab</span>
+</footer>
+
+</body>
+</html>
