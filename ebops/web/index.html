@@ -42,7 +42,7 @@ a { color: var(--blue); text-decoration: none; }
   z-index: 100;
 }
 .header h1 {
-  font-size: 16px;
+  font-size: 18px;
   color: var(--green);
   letter-spacing: 1px;
 }
@@ -57,7 +57,7 @@ a { color: var(--blue); text-decoration: none; }
   background: var(--bg3);
   color: var(--text);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   transition: all .15s;
 }
@@ -70,7 +70,7 @@ a { color: var(--blue); text-decoration: none; }
 .btn-blue:hover { background: var(--blue); color: var(--bg); }
 .btn-yellow { border-color: var(--yellow); color: var(--yellow); }
 .btn-yellow:hover { background: var(--yellow); color: var(--bg); }
-.btn-sm { padding: 3px 8px; font-size: 11px; }
+.btn-sm { padding: 3px 8px; font-size: 13px; }
 
 /* ── Tabs ── */
 .tabs {
@@ -82,7 +82,7 @@ a { color: var(--blue); text-decoration: none; }
 }
 .tab {
   padding: 10px 18px;
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text2);
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -110,7 +110,7 @@ a { color: var(--blue); text-decoration: none; }
   margin-bottom: 12px;
 }
 .card h3 {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--green);
   margin-bottom: 10px;
   text-transform: uppercase;
@@ -132,12 +132,12 @@ a { color: var(--blue); text-decoration: none; }
   text-align: center;
 }
 .stat .value {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: bold;
   color: var(--green);
 }
 .stat .label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text2);
   margin-top: 4px;
   text-transform: uppercase;
@@ -147,17 +147,18 @@ a { color: var(--blue); text-decoration: none; }
 .batch-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 14px;
 }
 .batch-table th {
   text-align: left;
   padding: 8px 10px;
   color: var(--text2);
   border-bottom: 1px solid var(--border);
-  font-size: 11px;
+  font-size: 13px;
   text-transform: uppercase;
 }
 .batch-table td {
+  font-size: 14px;
   padding: 6px 10px;
   border-bottom: 1px solid rgba(48,54,61,.5);
 }
@@ -184,7 +185,7 @@ a { color: var(--blue); text-decoration: none; }
 .kanban-col-header {
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   display: flex;
   justify-content: space-between;
@@ -194,7 +195,7 @@ a { color: var(--blue); text-decoration: none; }
   background: var(--bg3);
   padding: 2px 8px;
   border-radius: 10px;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text2);
 }
 .kanban-col-body { padding: 8px; }
@@ -210,18 +211,18 @@ a { color: var(--blue); text-decoration: none; }
 }
 .ticket-card:hover { border-color: var(--text2); }
 .ticket-card .ticket-id {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--cyan);
   margin-bottom: 4px;
 }
 .ticket-card .ticket-title {
-  font-size: 12px;
+  font-size: 14px;
   margin-bottom: 6px;
   line-height: 1.4;
 }
 .ticket-tags { display: flex; gap: 4px; flex-wrap: wrap; }
 .tag {
-  font-size: 10px;
+  font-size: 14px;
   padding: 1px 6px;
   border-radius: 3px;
   border: 1px solid;
@@ -246,9 +247,9 @@ a { color: var(--blue); text-decoration: none; }
   border-radius: 6px;
   padding: 12px;
 }
-.inj-card .inj-id { color: var(--orange); font-size: 11px; font-weight: bold; }
-.inj-card .inj-title { font-size: 12px; margin: 4px 0; }
-.inj-card .inj-detail { font-size: 11px; color: var(--text2); margin: 2px 0; }
+.inj-card .inj-id { color: var(--orange); font-size: 13px; font-weight: bold; }
+.inj-card .inj-title { font-size: 14px; margin: 4px 0; }
+.inj-card .inj-detail { font-size: 13px; color: var(--text2); margin: 2px 0; }
 
 /* ── Active injections ── */
 .active-inj {
@@ -290,7 +291,7 @@ a { color: var(--blue); text-decoration: none; }
   margin-bottom: 14px;
 }
 .modal label {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text2);
   text-transform: uppercase;
   display: block;
@@ -305,7 +306,7 @@ a { color: var(--blue); text-decoration: none; }
   border-radius: 4px;
   color: var(--text);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 14px;
   padding: 8px;
   resize: vertical;
 }
@@ -320,7 +321,7 @@ a { color: var(--blue); text-decoration: none; }
   border: 1px solid var(--border);
   color: var(--text);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 14px;
   padding: 6px 8px;
   border-radius: 4px;
   width: 100%;
@@ -339,7 +340,7 @@ a { color: var(--blue); text-decoration: none; }
 .toast {
   padding: 10px 16px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 14px;
   animation: toast-in .3s;
   border: 1px solid;
 }
@@ -361,7 +362,7 @@ a { color: var(--blue); text-decoration: none; }
   border-radius: 4px;
   color: var(--text);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 14px;
   padding: 6px 10px;
   flex: 1;
   max-width: 300px;
@@ -463,7 +464,7 @@ a { color: var(--blue); text-decoration: none; }
   <div id="sec-injecoes" class="section">
     <div class="card">
       <h3>Injeções Ativas</h3>
-      <div id="active-inj-list"><p style="color:var(--text2);font-size:12px;">Nenhuma injeção ativa.</p></div>
+      <div id="active-inj-list"><p style="color:var(--text2);font-size:14px;">Nenhuma injeção ativa.</p></div>
     </div>
     <div class="card">
       <h3>Catálogo de Injeções</h3>
@@ -475,7 +476,7 @@ a { color: var(--blue); text-decoration: none; }
   <div id="sec-historico" class="section">
     <div class="card">
       <h3>Injeções Revertidas</h3>
-      <div id="history-list"><p style="color:var(--text2);font-size:12px;">Nenhum registro.</p></div>
+      <div id="history-list"><p style="color:var(--text2);font-size:14px;">Nenhum registro.</p></div>
     </div>
   </div>
 
@@ -486,17 +487,17 @@ a { color: var(--blue); text-decoration: none; }
   <div class="modal">
     <h2 id="modal-ticket-title"></h2>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-      <div><label>ID</label><div id="md-id" style="font-size:13px;color:var(--cyan);"></div></div>
-      <div><label>Dia</label><div id="md-dia" style="font-size:13px;"></div></div>
-      <div><label>Categoria</label><div id="md-cat" style="font-size:13px;"></div></div>
-      <div><label>Severidade</label><div id="md-sev" style="font-size:13px;"></div></div>
-      <div><label>Dificuldade</label><div id="md-dif" style="font-size:13px;"></div></div>
-      <div><label>Tempo</label><div id="md-tempo" style="font-size:13px;"></div></div>
-      <div><label>Ferramenta</label><div id="md-fer" style="font-size:13px;"></div></div>
-      <div><label>Injeção</label><div id="md-inj" style="font-size:13px;"></div></div>
+      <div><label>ID</label><div id="md-id" style="font-size:15px;color:var(--cyan);"></div></div>
+      <div><label>Dia</label><div id="md-dia" style="font-size:15px;"></div></div>
+      <div><label>Categoria</label><div id="md-cat" style="font-size:15px;"></div></div>
+      <div><label>Severidade</label><div id="md-sev" style="font-size:15px;"></div></div>
+      <div><label>Dificuldade</label><div id="md-dif" style="font-size:15px;"></div></div>
+      <div><label>Tempo</label><div id="md-tempo" style="font-size:15px;"></div></div>
+      <div><label>Ferramenta</label><div id="md-fer" style="font-size:15px;"></div></div>
+      <div><label>Injeção</label><div id="md-inj" style="font-size:15px;"></div></div>
     </div>
     <label>Descrição</label>
-    <div id="md-desc" style="font-size:12px;color:var(--text);background:var(--bg);padding:8px;border-radius:4px;white-space:pre-wrap;"></div>
+    <div id="md-desc" style="font-size:14px;color:var(--text);background:var(--bg);padding:8px;border-radius:4px;white-space:pre-wrap;"></div>
     <label>Status</label>
     <select id="md-status" onchange="moveTicketFromModal()">
       <option value="backlog">Backlog</option>
@@ -517,11 +518,11 @@ a { color: var(--blue); text-decoration: none; }
 <div class="modal-overlay" id="modal-inject-result">
   <div class="modal">
     <h2>Injeção Aplicada</h2>
-    <label>ID</label><div id="mir-id" style="font-size:13px;color:var(--orange);"></div>
-    <label>Título</label><div id="mir-title" style="font-size:13px;"></div>
-    <label>Arquivos Afetados</label><div id="mir-files" style="font-size:12px;color:var(--text2);"></div>
-    <label>Sintoma Observável</label><div id="mir-sintoma" style="font-size:12px;color:var(--yellow);"></div>
-    <label>Dica</label><div id="mir-dica" style="font-size:12px;color:var(--cyan);"></div>
+    <label>ID</label><div id="mir-id" style="font-size:15px;color:var(--orange);"></div>
+    <label>Título</label><div id="mir-title" style="font-size:15px;"></div>
+    <label>Arquivos Afetados</label><div id="mir-files" style="font-size:14px;color:var(--text2);"></div>
+    <label>Sintoma Observável</label><div id="mir-sintoma" style="font-size:14px;color:var(--yellow);"></div>
+    <label>Dica</label><div id="mir-dica" style="font-size:14px;color:var(--cyan);"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('modal-inject-result')">OK</button>
     </div>
@@ -757,7 +758,7 @@ async function loadActiveInjections() {
     const active = await api('/api/injections/active');
     const div = document.getElementById('active-inj-list');
     if (active.length === 0) {
-      div.innerHTML = '<p style="color:var(--text2);font-size:12px;">Nenhuma injeção ativa.</p>';
+      div.innerHTML = '<p style="color:var(--text2);font-size:14px;">Nenhuma injeção ativa.</p>';
       return;
     }
     div.innerHTML = active.map(a => `
@@ -815,7 +816,7 @@ async function loadHistory() {
     const hist = await api('/api/history');
     const div = document.getElementById('history-list');
     if (hist.length === 0) {
-      div.innerHTML = '<p style="color:var(--text2);font-size:12px;">Nenhum registro.</p>';
+      div.innerHTML = '<p style="color:var(--text2);font-size:14px;">Nenhum registro.</p>';
       return;
     }
     div.innerHTML = '<table class="batch-table"><thead><tr><th>ID</th><th>Título</th><th>Arquivos</th><th>Timestamp</th></tr></thead><tbody>' +
@@ -844,7 +845,7 @@ async function gerarDia() {
       <div style="margin-top:4px;">`;
     for (const t of res.tickets) {
       const icon = CAT_ICONS[t.categoria] || '📋';
-      html += `<div style="background:var(--bg3);padding:8px;border-radius:4px;margin-bottom:4px;font-size:12px;">
+      html += `<div style="background:var(--bg3);padding:8px;border-radius:4px;margin-bottom:4px;font-size:14px;">
         <span style="color:var(--cyan);">${t.ticket_id}</span> ${icon} ${t.titulo}
         <span class="tag tag-sev-${t.severidade}" style="margin-left:4px;">${t.severidade.toUpperCase()}</span>
       </div>`;
@@ -854,7 +855,7 @@ async function gerarDia() {
     if (res.injectable && res.injectable.length > 0) {
       html += `<label>Injeções Disponíveis</label><div style="margin-top:4px;">`;
       for (const inj of res.injectable) {
-        html += `<div style="background:rgba(240,136,62,.1);border:1px solid rgba(240,136,62,.3);padding:8px;border-radius:4px;margin-bottom:4px;font-size:12px;">
+        html += `<div style="background:rgba(240,136,62,.1);border:1px solid rgba(240,136,62,.3);padding:8px;border-radius:4px;margin-bottom:4px;font-size:14px;">
           <span style="color:var(--orange);font-weight:bold;">${inj.inj_id}</span> — ${inj.ticket}
           <button class="btn btn-sm btn-yellow" style="margin-left:8px;" onclick="injectDefect('${inj.inj_id}');closeModal('modal-dia');">Injetar</button>
         </div>`;
@@ -865,7 +866,7 @@ async function gerarDia() {
     // Batch summary
     const batchFailed = res.batch.some(j => j.status === 'error');
     html += `<div style="margin-top:12px;"><label>Batch</label>
-      <div style="font-size:12px;margin-top:4px;color:${batchFailed?'var(--red)':'var(--green)'};">
+      <div style="font-size:14px;margin-top:4px;color:${batchFailed?'var(--red)':'var(--green)'};">
         ${batchFailed ? '⚠ Falha no batch — verifique a grade' : '✓ Batch concluído com sucesso'}
       </div></div>`;
 
