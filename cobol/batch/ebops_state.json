@@ -2,101 +2,150 @@
   "tickets": [
     {
       "ticket_id": "EB-001-01",
-      "template_id": "CHG-003",
-      "titulo": "Análise de impacto — CPCNT001",
-      "categoria": "change",
+      "template_id": "DEV-017",
+      "titulo": "JCL parametrizado com COND",
+      "categoria": "desenvolvimento",
       "severidade": "media",
       "dificuldade": "pleno",
-      "tempo": "30min",
-      "ferramenta": "VS Code / grep",
-      "descricao": "Mapear todos os programas e JCLs impactados por alteração.",
+      "tempo": "60min",
+      "ferramenta": "JCL / PARM",
+      "descricao": "EBBATCHP com 5 STEPs, COND para dependência, PARM para data.",
       "tags": [
-        "análise de impacto",
-        "copybook"
-      ],
-      "inj": "INJ-015",
-      "status": "backlog",
-      "dia": 1,
-      "notas": "",
-      "criado_em": "2026-04-15T19:56:54.786245"
-    },
-    {
-      "ticket_id": "EB-001-02",
-      "template_id": "DEV-018",
-      "titulo": "PROC catalogada para compilação",
-      "categoria": "desenvolvimento",
-      "severidade": "baixa",
-      "dificuldade": "pleno",
-      "tempo": "45min",
-      "ferramenta": "JCL / PROC",
-      "descricao": "EBPRCOMP com &PGMNAME e &ENV. Padroniza compilação.",
-      "tags": [
-        "PROC",
-        "compilação",
-        "JCL"
+        "JCL",
+        "COND",
+        "PARM"
       ],
       "inj": "",
       "status": "backlog",
       "dia": 1,
       "notas": "",
-      "criado_em": "2026-04-15T19:56:54.786280"
+      "criado_em": "2026-04-15T20:13:42.665562"
     },
     {
-      "ticket_id": "EB-001-03",
-      "template_id": "INC-014",
-      "titulo": "JCL ERROR — sintaxe inválida no EXEC",
-      "categoria": "incidente",
+      "ticket_id": "EB-001-02",
+      "template_id": "DEV-020",
+      "titulo": "Smoke test EBSMKH01",
+      "categoria": "desenvolvimento",
       "severidade": "media",
       "dificuldade": "junior",
-      "tempo": "10min",
-      "ferramenta": "SDSF / JCL",
-      "descricao": "EBJVALD nem executou. JCL ERROR com IEF631I.",
+      "tempo": "50min",
+      "ferramenta": "COBOL / JCL",
+      "descricao": "Abre VSAM, verifica FILE STATUS, conta registros, retorna RC.",
       "tags": [
-        "JCL ERROR",
-        "sintaxe"
+        "smoke test",
+        "healthcheck"
       ],
-      "inj": "INJ-009",
+      "inj": "",
       "status": "backlog",
       "dia": 1,
       "notas": "",
-      "criado_em": "2026-04-15T19:56:54.786298"
+      "criado_em": "2026-04-15T20:13:42.665576"
+    },
+    {
+      "ticket_id": "EB-001-03",
+      "template_id": "INC-018",
+      "titulo": "VSAM I/O ERROR em ESDS",
+      "categoria": "incidente",
+      "severidade": "alta",
+      "dificuldade": "pleno",
+      "tempo": "45min",
+      "ferramenta": "IDCAMS / VSAM",
+      "descricao": "Performance degradada e I/O error no ARQ.LANCTO.ESDS.",
+      "tags": [
+        "VSAM",
+        "ESDS",
+        "I/O"
+      ],
+      "inj": "",
+      "status": "backlog",
+      "dia": 1,
+      "notas": "",
+      "criado_em": "2026-04-15T20:13:42.665583"
+    },
+    {
+      "ticket_id": "EB-002-01",
+      "template_id": "INC-017",
+      "titulo": "Timestamp de auditoria gravando zeros",
+      "categoria": "incidente",
+      "severidade": "media",
+      "dificuldade": "junior",
+      "tempo": "25min",
+      "ferramenta": "COBOL / File Manager",
+      "descricao": "ACCEPT FROM DATE gerando zeros. PIC X em vez de PIC 9?",
+      "tags": [
+        "ACCEPT",
+        "timestamp",
+        "auditoria"
+      ],
+      "inj": "INJ-023",
+      "status": "backlog",
+      "dia": 2,
+      "notas": "",
+      "criado_em": "2026-04-15T20:13:57.499494"
+    },
+    {
+      "ticket_id": "EB-002-02",
+      "template_id": "DEV-005",
+      "titulo": "Flag de conta bloqueada",
+      "categoria": "desenvolvimento",
+      "severidade": "media",
+      "dificuldade": "pleno",
+      "tempo": "90min",
+      "ferramenta": "COBOL / Copybook",
+      "descricao": "CNT-STATUS: A/B/E. EBPOST01 rejeita se ≠ 'A'.",
+      "tags": [
+        "conta",
+        "status",
+        "copybook"
+      ],
+      "inj": "",
+      "status": "backlog",
+      "dia": 2,
+      "notas": "",
+      "criado_em": "2026-04-15T20:13:57.499526"
+    },
+    {
+      "ticket_id": "EB-002-03",
+      "template_id": "OPS-009",
+      "titulo": "Documento de SLA da cadeia batch",
+      "categoria": "operação",
+      "severidade": "baixa",
+      "dificuldade": "pleno",
+      "tempo": "40min",
+      "ferramenta": "Documentação",
+      "descricao": "SLA por job: horário, duração máxima, RC aceitável.",
+      "tags": [
+        "SLA",
+        "ITIL",
+        "operação"
+      ],
+      "inj": "",
+      "status": "backlog",
+      "dia": 2,
+      "notas": "",
+      "criado_em": "2026-04-15T20:13:57.499541"
     }
   ],
   "custom_templates": [],
-  "day": 2,
-  "injections_active": [],
-  "history": [
-    {
-      "id": "INJ-003",
-      "titulo": "EBVALI01 sem FILE STATUS no OPEN",
-      "arquivos": [
-        "EBVALI01.cbl"
-      ],
-      "timestamp": "2026-04-15T19:58:07.145185"
-    },
+  "day": 3,
+  "injections_active": [
     {
       "id": "INJ-023",
       "titulo": "EBPOST01 — ACCEPT com PIC errado",
       "arquivos": [
         "EBPOST01.cbl"
       ],
-      "timestamp": "2026-04-15T19:58:29.623585"
-    },
+      "timestamp": "2026-04-15T20:17:10.297039"
+    }
+  ],
+  "history": [
     {
-      "id": "INJ-001",
-      "titulo": "EBVALI01 rejeita créditos válidos",
+      "id": "INJ-023",
+      "titulo": "EBPOST01 — ACCEPT com PIC errado",
       "arquivos": [
-        "EBVALI01.cbl"
+        "EBPOST01.cbl"
       ],
-      "timestamp": "2026-04-15T19:58:50.325447"
-    },
-    {
-      "id": "INJ-002",
-      "titulo": "EBVALI01 aceita valor zero",
-      "arquivos": [
-        "EBVALI01.cbl"
-      ],
-      "timestamp": "2026-04-15T19:58:53.385319"
+      "timestamp": "2026-04-15T20:14:12.634984"
     }
   ]
 }
