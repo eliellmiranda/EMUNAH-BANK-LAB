@@ -1,0 +1,90 @@
+{
+  "tickets": [
+    {
+      "ticket_id": "EB-001-01",
+      "template_id": "DEV-003",
+      "titulo": "Novo tipo de lançamento: TED",
+      "categoria": "desenvolvimento",
+      "severidade": "media",
+      "dificuldade": "pleno",
+      "tempo": "120min",
+      "ferramenta": "COBOL / JCL",
+      "descricao": "Adicionar tipo 'T' (TED). Valor R$1-R$10M, horário 06-17h.",
+      "tags": [
+        "TED",
+        "regra de negócio"
+      ],
+      "inj": "",
+      "status": "backlog",
+      "dia": 1,
+      "notas": "",
+      "criado_em": "2026-04-15T13:54:46.542451"
+    },
+    {
+      "ticket_id": "EB-001-02",
+      "template_id": "OPS-007",
+      "titulo": "Simular saldo-inconsistente e investigar",
+      "categoria": "operação",
+      "severidade": "alta",
+      "dificuldade": "pleno",
+      "tempo": "45min",
+      "ferramenta": "File Manager",
+      "descricao": "Alterar saldo no VSAM, rodar EBJCONC, localizar divergência.",
+      "tags": [
+        "conciliação",
+        "investigação",
+        "cenário"
+      ],
+      "inj": "INJ-027",
+      "status": "backlog",
+      "dia": 1,
+      "notas": "",
+      "criado_em": "2026-04-15T13:54:46.542826"
+    },
+    {
+      "ticket_id": "EB-002-01",
+      "template_id": "DEV-015",
+      "titulo": "Programa EBLIMCR — limite de crédito",
+      "categoria": "desenvolvimento",
+      "severidade": "media",
+      "dificuldade": "junior",
+      "tempo": "60min",
+      "ferramenta": "COBOL / VSAM",
+      "descricao": "Verificar se saldo+débitos não ultrapassa limite. Relatório de risco.",
+      "tags": [
+        "limite de crédito",
+        "relatório"
+      ],
+      "inj": "",
+      "status": "backlog",
+      "dia": 2,
+      "notas": "",
+      "criado_em": "2026-04-15T13:55:02.414169"
+    },
+    {
+      "ticket_id": "EB-002-02",
+      "template_id": "DEV-014",
+      "titulo": "Validação de Pix no EBVALI01",
+      "categoria": "desenvolvimento",
+      "severidade": "media",
+      "dificuldade": "pleno",
+      "tempo": "90min",
+      "ferramenta": "COBOL",
+      "descricao": "Tipo 'P' com regras BACEN: limites dia/noite, chave obrigatória.",
+      "tags": [
+        "Pix",
+        "BACEN",
+        "validação"
+      ],
+      "inj": "",
+      "status": "backlog",
+      "dia": 2,
+      "notas": "",
+      "criado_em": "2026-04-15T13:55:02.414205"
+    }
+  ],
+  "custom_templates": [],
+  "day": 3,
+  "injections_active": [],
+  "history": []
+}
