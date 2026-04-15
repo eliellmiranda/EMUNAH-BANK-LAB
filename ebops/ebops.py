@@ -348,6 +348,33 @@ def _rf(p):
 def _wf(p,c):
     with open(p,'w',encoding='utf-8') as f: f.write(c)
 
+def _root(d):
+    """Sobe dois níveis de cobol/batch para a raiz do repositório."""
+    return os.path.dirname(os.path.dirname(d))
+def _jcl(d):
+    j = os.path.join(_root(d), 'jcl', 'batch')
+    return j if os.path.isdir(j) else d
+def _copy(d):
+    c = os.path.join(_root(d), 'copybooks', 'layouts')
+    return c if os.path.isdir(c) else d
+def _data_in(d):
+    e = os.path.join(_root(d), 'data', 'entrada')
+    return e if os.path.isdir(e) else d
+def _data_seed(d):
+    s = os.path.join(_root(d), 'data', 'seed')
+    return s if os.path.isdir(s) else d
+def _resolve_file(proj, filename):
+    """Procura filename em cobol/batch, jcl/batch, copybooks/layouts, data/entrada, data/seed."""
+    for candidate in [
+        os.path.join(proj, filename),
+        os.path.join(_jcl(proj), filename),
+        os.path.join(_copy(proj), filename),
+        os.path.join(_data_in(proj), filename),
+        os.path.join(_data_seed(proj), filename),
+    ]:
+        if os.path.isfile(candidate): return candidate
+    return None
+
 MUTATIONS = {}
 def mut(name):
     def decorator(fn):
@@ -431,23 +458,23 @@ def _(d):
 
 @mut("INJ-007")
 def _(d):
-    p=os.path.join(d,"EBJVALD.jcl"); s=_rf(p)
+    p=os.path.join(_jcl(d),"EBJVALD.jcl"); s=_rf(p)
     _wf(p, s.replace("DEV.LOADLIB","HML.LOADLIB"))
 
 @mut("INJ-008")
 def _(d):
-    p=os.path.join(d,"EBJPOST.jcl"); s=_rf(p)
+    p=os.path.join(_jcl(d),"EBJPOST.jcl"); s=_rf(p)
     _wf(p, s.replace("ARQ.AUDIT.SEQ,DISP=MOD","ARQ.AUDIT.SEQ,DISP=SHR"))
 
 @mut("INJ-009")
 def _(d):
-    p=os.path.join(d,"EBJVALD.jcl"); s=_rf(p)
+    p=os.path.join(_jcl(d),"EBJVALD.jcl"); s=_rf(p)
     lines=[l for l in s.split('\n') if '//REJEITOS' not in l and not ('rejeitados' in l.lower() and l.startswith('//*'))]
     _wf(p,'\n'.join(lines))
 
 @mut("INJ-010")
 def _(d):
-    p=os.path.join(d,"EBJPOST.jcl"); s=_rf(p)
+    p=os.path.join(_jcl(d),"EBJPOST.jcl"); s=_rf(p)
     _wf(p, s.replace("ARQ.LANCTO.ESDS","ARQ.LANCAMENTO.ESDS"))
 
 @mut("INJ-011")
@@ -483,12 +510,12 @@ def _(d):
 
 @mut("INJ-015")
 def _(d):
-    p=os.path.join(d,"CPLCT001.cpy"); s=_rf(p)
+    p=os.path.join(_copy(d),"CPLCT001.cpy"); s=_rf(p)
     _wf(p, re.sub(r'(LCT-TIPO\s+PIC\s+X\()01(\))',r'\g<1>02\2',s))
 
 @mut("INJ-016")
 def _(d):
-    p=os.path.join(d,"CPCNT001.cpy"); s=_rf(p)
+    p=os.path.join(_copy(d),"CPCNT001.cpy"); s=_rf(p)
     _wf(p, re.sub(r'(CNT-SALDO\s+PIC\s+)S(9)',r'\g<1>\2',s,count=1))
 
 @mut("INJ-017")
@@ -499,12 +526,12 @@ def _(d): MUTATIONS["INJ-007"](d); MUTATIONS["INJ-015"](d)
 
 @mut("INJ-019")
 def _(d):
-    p=os.path.join(d,"lancamentos_d0.txt"); b=p+".bak"
+    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); b=p+".bak"
     if os.path.exists(p): os.rename(p, b)
 
 @mut("INJ-020")
 def _(d):
-    p=os.path.join(d,"EBJSALD.jcl"); s=_rf(p)
+    p=os.path.join(_jcl(d),"EBJSALD.jcl"); s=_rf(p)
     _wf(p, s.replace("CLASS=A,MSGCLASS=X","CLASS=A,MSGCLASS=X,TYPRUN=HOLD"))
 
 @mut("INJ-021")
@@ -516,7 +543,7 @@ def _(d):
 
 @mut("INJ-022")
 def _(d):
-    p=os.path.join(d,"EBJPOST.jcl"); s=_rf(p)
+    p=os.path.join(_jcl(d),"EBJPOST.jcl"); s=_rf(p)
     _wf(p, s.replace("EXEC PGM=EBPOST01","EXEC PGM=EBPOST01,REGION=1K"))
 
 @mut("INJ-023")
@@ -528,7 +555,7 @@ def _(d):
 
 @mut("INJ-024")
 def _(d):
-    p=os.path.join(d,"lancamentos_d0.txt"); lines=_rf(p).split('\n')
+    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); lines=_rf(p).split('\n')
     for i in [0,3,6]:
         if i<len(lines) and len(lines[i])>=63:
             l=list(lines[i])
@@ -541,18 +568,18 @@ def _(d):
 
 @mut("INJ-025")
 def _(d):
-    p=os.path.join(d,"EBJCONC.jcl"); s=_rf(p)
+    p=os.path.join(_jcl(d),"EBJCONC.jcl"); s=_rf(p)
     _wf(p, s.replace("ARQ.LANCTO.ESDS","ARQ.ENTRADA.SEQ"))
 
 @mut("INJ-026")
 def _(d):
-    p=os.path.join(d,"EBJSALD.jcl"); s=_rf(p)
+    p=os.path.join(_jcl(d),"EBJSALD.jcl"); s=_rf(p)
     lines=[l for l in s.split('\n') if 'SALDOUT' not in l and 'SALDO-OUT' not in l]
     _wf(p,'\n'.join(lines))
 
 @mut("INJ-027")
 def _(d):
-    p=os.path.join(d,"contas.txt"); lines=_rf(p).split('\n')
+    p=os.path.join(_data_seed(d),"contas.txt"); lines=_rf(p).split('\n')
     for i in [0,2]:
         if i<len(lines) and len(lines[i])>=40:
             l=list(lines[i]); l[30]='X'; l[31]='X'; l[32]='X'; lines[i]=''.join(l)
@@ -560,7 +587,7 @@ def _(d):
 
 @mut("INJ-028")
 def _(d):
-    p=os.path.join(d,"EBJPOST.jcl"); s=_rf(p)
+    p=os.path.join(_jcl(d),"EBJPOST.jcl"); s=_rf(p)
     lines=[l for l in s.split('\n') if '//CLIENTE' not in l and not('clientes' in l.lower() and l.startswith('//*'))]
     _wf(p,'\n'.join(lines))
 
@@ -572,14 +599,14 @@ def _(d):
 
 @mut("INJ-030")
 def _(d):
-    p=os.path.join(d,"EBJCLLD.jcl"); s=_rf(p)
+    p=os.path.join(_jcl(d),"EBJCLLD.jcl"); s=_rf(p)
     s=s.replace("//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ","//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ")
     s=s.replace("//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ","//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ")
     _wf(p,s)
 
 @mut("INJ-031")
 def _(d):
-    p=os.path.join(d,"lancamentos_d0.txt"); lines=_rf(p).split('\n')
+    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); lines=_rf(p).split('\n')
     for i in range(len(lines)):
         if len(lines[i])>=21:
             l=list(lines[i]); l[20]='C'; lines[i]=''.join(l)
@@ -651,7 +678,7 @@ def do_inject(proj, inj_id, state, confirm=True):
     if inj_id in [a["id"] for a in state["injections_active"]]:
         print(f"  {C.YL}{inj_id} já está ativo.{C.R}"); return False
     for f in inj["arqs"]:
-        if not os.path.isfile(os.path.join(proj, f)):
+        if not _resolve_file(proj, f):
             print(f"  {C.RD}Arquivo não encontrado: {f}{C.R}"); return False
     print(f"\n  {C.YL}{C.B}Injeção: {inj_id}{C.R} — {inj['t']}")
     print(f"  {C.D}Arquivos: {', '.join(inj['arqs'])}{C.R}")
@@ -977,7 +1004,7 @@ def main():
     elif args[0] == 'where':
         print(f"\n  {C.GR}✓ Projeto:{C.R} {C.B}{proj}{C.R}")
         for f in ["EBVALI01.cbl","EBPOST01.cbl","EBJVALD.jcl","EBJPOST.jcl","CPLCT001.cpy","CPCNT001.cpy","lancamentos_d0.txt"]:
-            ok = os.path.isfile(os.path.join(proj,f))
+            ok = bool(_resolve_file(proj, f))
             print(f"    {C.GR+'✓' if ok else C.RD+'✗'}{C.R} {f}")
         print()
     elif args[0] == 'reset':
