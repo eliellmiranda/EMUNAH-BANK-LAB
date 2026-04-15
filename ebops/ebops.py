@@ -101,7 +101,7 @@ def load_state(proj):
     default = {"tickets":[],"custom_templates":[],"day":1,"injections_active":[],"history":[]}
     if os.path.isfile(p):
         try:
-            with open(p) as f: data = json.load(f)
+            with open(p, encoding='utf-8') as f: data = json.load(f)
             for k,v in default.items():
                 if k not in data: data[k] = v
             return data
@@ -109,7 +109,7 @@ def load_state(proj):
     return default
 
 def save_state(proj, state):
-    with open(os.path.join(proj, STATE_FILE), 'w') as f:
+    with open(os.path.join(proj, STATE_FILE), 'w', encoding='utf-8') as f:
         json.dump(state, f, indent=2, ensure_ascii=False)
 
 # ═════════════════════════════════════════════════════════════
