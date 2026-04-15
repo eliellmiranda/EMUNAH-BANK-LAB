@@ -22,6 +22,7 @@ from ebops import (
 )
 
 app = Flask(__name__, static_folder='web', static_url_path='')
+app.config['JSON_AS_ASCII'] = False
 CORS(app)
 
 # ─── Estado global ───────────────────────────────────────────
