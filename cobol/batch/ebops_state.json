@@ -128,16 +128,7 @@
   ],
   "custom_templates": [],
   "day": 3,
-  "injections_active": [
-    {
-      "id": "INJ-023",
-      "titulo": "EBPOST01 — ACCEPT com PIC errado",
-      "arquivos": [
-        "EBPOST01.cbl"
-      ],
-      "timestamp": "2026-04-15T20:17:10.297039"
-    }
-  ],
+  "injections_active": [],
   "history": [
     {
       "id": "INJ-023",
@@ -146,6 +137,22 @@
         "EBPOST01.cbl"
       ],
       "timestamp": "2026-04-15T20:14:12.634984"
+    },
+    {
+      "id": "INJ-023",
+      "titulo": "EBPOST01 — ACCEPT com PIC errado",
+      "arquivos": [
+        "EBPOST01.cbl"
+      ],
+      "timestamp": "2026-04-15T20:17:10.297039"
+    },
+    {
+      "id": "INJ-023",
+      "titulo": "EBPOST01 — ACCEPT com PIC errado",
+      "arquivos": [
+        "EBPOST01.cbl"
+      ],
+      "timestamp": "2026-04-15T20:22:32.476320"
     }
   ]
 }
