@@ -1,0 +1,21 @@
+====================================================================================================================================
+RELATORIO DE FECHAMENTO DIARIO - EMUNAH BANK LAB
+DATA: 20250415  HORA: xxxxxxxx
+------------------------------------------------------------------------------------------------------------------------------------
+TOTAL DE CONTAS NO CADASTRO   :         40
+  CONTAS ATIVAS               :         40
+  CONTAS INATIVAS             :          0
+  CONTAS BLOQUEADAS           :          0
+------------------------------------------------------------------------------------------------------------------------------------
+TOTAL GERAL DE SALDOS         :     xxx.xxx.xxx.xxx,xx
+TOTAL GERAL DE LIMITES        :     xxx.xxx.xxx.xxx,xx
+REGISTROS DE CONCILIACAO       :         11
+------------------------------------------------------------------------------------------------------------------------------------
+FECHAMENTO CONCLUIDO COM SUCESSO
+====================================================================================================================================
+
+--- Criterios de sucesso ---
+- 40 contas no cadastro (20 clientes x 2 contas)
+- Todas ativas (status A)
+- Registros de conciliacao = 11 (10 movimentos + 1 linha de totais)
+- Fechamento sem divergencias (RC=0)
