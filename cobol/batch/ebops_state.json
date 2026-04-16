@@ -61,10 +61,52 @@
       "dia": 1,
       "notas": "",
       "criado_em": "2026-04-15T21:20:12.232526"
+    },
+    {
+      "ticket_id": "EB-002-01",
+      "template_id": "OPS-009",
+      "titulo": "Documento de SLA da cadeia batch",
+      "categoria": "operação",
+      "severidade": "baixa",
+      "dificuldade": "pleno",
+      "tempo": "40min",
+      "ferramenta": "Documentação",
+      "descricao": "SLA por job: horário, duração máxima, RC aceitável.",
+      "tags": [
+        "SLA",
+        "ITIL",
+        "operação"
+      ],
+      "inj": "",
+      "status": "backlog",
+      "dia": 2,
+      "notas": "",
+      "criado_em": "2026-04-15T22:58:58.929002"
+    },
+    {
+      "ticket_id": "EB-002-02",
+      "template_id": "INC-018",
+      "titulo": "VSAM I/O ERROR em ESDS",
+      "categoria": "incidente",
+      "severidade": "alta",
+      "dificuldade": "pleno",
+      "tempo": "45min",
+      "ferramenta": "IDCAMS / VSAM",
+      "descricao": "Performance degradada e I/O error no ARQ.LANCTO.ESDS.",
+      "tags": [
+        "VSAM",
+        "ESDS",
+        "I/O"
+      ],
+      "inj": "",
+      "status": "backlog",
+      "dia": 2,
+      "notas": "",
+      "criado_em": "2026-04-15T22:58:58.929034"
     }
   ],
   "custom_templates": [],
-  "day": 2,
+  "day": 3,
   "injections_active": [],
   "history": [
     {
