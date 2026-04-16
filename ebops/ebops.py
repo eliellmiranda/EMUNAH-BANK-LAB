@@ -479,7 +479,7 @@ def _(d):
 
 @mut("INJ-011")
 def _(d):
-    p=os.path.join(d,"lancamentos_d0.txt"); lines=_rf(p).split('\n')
+    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); lines=_rf(p).split('\n')
     for i in [1,4]:
         if i<len(lines) and len(lines[i])>=34:
             l=list(lines[i]); l[21]='A'; l[22]='B'; l[23]='C'; lines[i]=''.join(l)
@@ -487,7 +487,7 @@ def _(d):
 
 @mut("INJ-012")
 def _(d):
-    p=os.path.join(d,"lancamentos_d0.txt"); lines=_rf(p).split('\n')
+    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); lines=_rf(p).split('\n')
     for i in [2,6]:
         if i<len(lines) and len(lines[i])>=21:
             l=list(lines[i]); l[20]='X'; lines[i]=''.join(l)
@@ -495,14 +495,14 @@ def _(d):
 
 @mut("INJ-013")
 def _(d):
-    p=os.path.join(d,"lancamentos_d0.txt"); lines=_rf(p).split('\n')
+    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); lines=_rf(p).split('\n')
     for i in [3,7]:
         if i<len(lines) and len(lines[i])>80: lines[i]=lines[i][:80]
     _wf(p,'\n'.join(lines))
 
 @mut("INJ-014")
 def _(d):
-    p=os.path.join(d,"lancamentos_d0.txt"); lines=_rf(p).split('\n')
+    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); lines=_rf(p).split('\n')
     for i in [0,5]:
         if i<len(lines) and len(lines[i])>=12:
             l=list(lines[i]); l[4:12]=list('99999999'); lines[i]=''.join(l)
@@ -716,9 +716,12 @@ def do_revert(proj, state, inj_id=None):
     print(f"  {C.B}Arquivos:{C.R} {', '.join(sorted(files))}\n")
     r = input(f"  {C.B}Confirmar git checkout? (s/N): {C.R}").strip().lower()
     if r != 's': return
+    repo_root = _root(proj)
     for f in files:
         try:
-            res = subprocess.run(["git","checkout","--",f], cwd=proj, capture_output=True, text=True)
+            full = _resolve_file(proj, f)
+            rel = os.path.relpath(full, repo_root) if full else f
+            res = subprocess.run(["git","checkout","--",rel], cwd=repo_root, capture_output=True, text=True)
             print(f"    {C.GR}✓{C.R} {f}" if res.returncode==0 else f"    {C.RD}✗{C.R} {f} — {res.stderr.strip()}")
         except: print(f"    {C.RD}✗{C.R} Git não encontrado")
     ids_to_remove = {a["id"] for a in target}
