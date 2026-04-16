@@ -375,10 +375,27 @@ def _resolve_file(proj, filename):
         if os.path.isfile(candidate): return candidate
     return None
 
+def _expected_path(proj, filename):
+    """Retorna o caminho esperado mesmo que o arquivo não exista (ex: renomeado pelo INJ-019)."""
+    existing = _resolve_file(proj, filename)
+    if existing: return existing
+    ext = os.path.splitext(filename)[1].lower()
+    if ext == '.jcl': return os.path.join(_jcl(proj), filename)
+    if ext == '.cpy': return os.path.join(_copy(proj), filename)
+    if filename == 'lancamentos_d0.txt': return os.path.join(_data_in(proj), filename)
+    if filename == 'contas.txt': return os.path.join(_data_seed(proj), filename)
+    return os.path.join(proj, filename)
+
 MUTATIONS = {}
 def mut(name):
     def decorator(fn):
         MUTATIONS[name] = fn; return fn
+    return decorator
+
+REVERTS = {}
+def rev(name):
+    def decorator(fn):
+        REVERTS[name] = fn; return fn
     return decorator
 
 @mut("INJ-001")
@@ -528,6 +545,11 @@ def _(d): MUTATIONS["INJ-007"](d); MUTATIONS["INJ-015"](d)
 def _(d):
     p=os.path.join(_data_in(d),"lancamentos_d0.txt"); b=p+".bak"
     if os.path.exists(p): os.rename(p, b)
+
+@rev("INJ-019")
+def _(d):
+    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); b=p+".bak"
+    if not os.path.exists(p) and os.path.exists(b): os.rename(b, p)
 
 @mut("INJ-020")
 def _(d):
@@ -717,10 +739,15 @@ def do_revert(proj, state, inj_id=None):
     r = input(f"  {C.B}Confirmar git checkout? (s/N): {C.R}").strip().lower()
     if r != 's': return
     repo_root = _root(proj)
+    # Executa reverts customizados antes do git checkout
+    for a in target:
+        fn = REVERTS.get(a["id"])
+        if fn:
+            try: fn(proj)
+            except: pass
     for f in files:
         try:
-            full = _resolve_file(proj, f)
-            rel = os.path.relpath(full, repo_root) if full else f
+            rel = os.path.relpath(_expected_path(proj, f), repo_root)
             res = subprocess.run(["git","checkout","--",rel], cwd=repo_root, capture_output=True, text=True)
             print(f"    {C.GR}✓{C.R} {f}" if res.returncode==0 else f"    {C.RD}✗{C.R} {f} — {res.stderr.strip()}")
         except: print(f"    {C.RD}✗{C.R} Git não encontrado")
