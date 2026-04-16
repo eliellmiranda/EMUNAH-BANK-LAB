@@ -17,9 +17,9 @@ from flask_cors import CORS
 # Importa dados e funções do ebops original
 sys.path.insert(0, os.path.dirname(__file__))
 from ebops import (
-    TEMPLATES, INJECTIONS, INJ_MAP, MUTATIONS, GRADE,
+    TEMPLATES, INJECTIONS, INJ_MAP, MUTATIONS, REVERTS, GRADE,
     STATUS_LABELS, find_project, load_state, save_state,
-    _resolve_file, _root
+    _resolve_file, _expected_path, _root
 )
 
 app = Flask(__name__, static_folder='web', static_url_path='')
@@ -278,12 +278,18 @@ def api_revert():
         for f in a.get("arquivos", []):
             files.add(f)
 
+    # Executa reverts customizados antes do git checkout
+    for a in target:
+        fn = REVERTS.get(a["id"])
+        if fn:
+            try: fn(proj)
+            except: pass
+
     repo_root = _root(proj)
     results = []
     for f in sorted(files):
         try:
-            full = _resolve_file(proj, f)
-            rel = os.path.relpath(full, repo_root) if full else f
+            rel = os.path.relpath(_expected_path(proj, f), repo_root)
             res = subprocess.run(["git", "checkout", "--", rel], cwd=repo_root,
                                  capture_output=True, text=True)
             results.append({"file": f, "ok": res.returncode == 0,
@@ -319,8 +325,7 @@ def api_reset():
     repo_root = _root(proj)
     for f in files:
         try:
-            full = _resolve_file(proj, f)
-            rel = os.path.relpath(full, repo_root) if full else f
+            rel = os.path.relpath(_expected_path(proj, f), repo_root)
             subprocess.run(["git", "checkout", "--", rel], cwd=repo_root, capture_output=True)
         except:
             pass
