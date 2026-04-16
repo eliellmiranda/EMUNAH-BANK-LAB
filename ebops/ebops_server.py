@@ -18,7 +18,8 @@ from flask_cors import CORS
 sys.path.insert(0, os.path.dirname(__file__))
 from ebops import (
     TEMPLATES, INJECTIONS, INJ_MAP, MUTATIONS, GRADE,
-    STATUS_LABELS, find_project, load_state, save_state
+    STATUS_LABELS, find_project, load_state, save_state,
+    _resolve_file, _root
 )
 
 app = Flask(__name__, static_folder='web', static_url_path='')
@@ -221,7 +222,7 @@ def api_inject():
         return jsonify({"error": f"{inj_id} já está ativo"}), 409
 
     for f in inj["arqs"]:
-        if not os.path.isfile(os.path.join(proj, f)):
+        if not _resolve_file(proj, f):
             return jsonify({"error": f"Arquivo não encontrado: {f}"}), 404
 
     fn = MUTATIONS.get(inj_id)
@@ -277,10 +278,13 @@ def api_revert():
         for f in a.get("arquivos", []):
             files.add(f)
 
+    repo_root = _root(proj)
     results = []
     for f in sorted(files):
         try:
-            res = subprocess.run(["git", "checkout", "--", f], cwd=proj,
+            full = _resolve_file(proj, f)
+            rel = os.path.relpath(full, repo_root) if full else f
+            res = subprocess.run(["git", "checkout", "--", rel], cwd=repo_root,
                                  capture_output=True, text=True)
             results.append({"file": f, "ok": res.returncode == 0,
                             "msg": res.stderr.strip() if res.returncode != 0 else ""})
@@ -312,9 +316,12 @@ def api_reset():
     for a in active:
         for f in a.get("arquivos", []):
             files.add(f)
+    repo_root = _root(proj)
     for f in files:
         try:
-            subprocess.run(["git", "checkout", "--", f], cwd=proj, capture_output=True)
+            full = _resolve_file(proj, f)
+            rel = os.path.relpath(full, repo_root) if full else f
+            subprocess.run(["git", "checkout", "--", rel], cwd=repo_root, capture_output=True)
         except:
             pass
 
