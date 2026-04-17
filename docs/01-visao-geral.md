@@ -44,6 +44,7 @@ Este laboratório busca simular práticas reais de desenvolvimento, operação e
 | Banco de Dados | DB2 |
 | Acesso ao ambiente | TN3270 / emulação 3270 |
 | Tooling moderno | Zowe CLI |
+| Simulação operacional | EBOPS (Python) |
 
 ---
 
@@ -90,6 +91,9 @@ Uso de interface moderna para operações no mainframe, permitindo:
 - transferência de datasets;
 - execução de fluxos sem dependência exclusiva do terminal 3270.
 
+### EBOPS — Simulador de Operações
+O EBOPS (Emunah Bank Operations Simulator) adiciona uma camada de simulação de dia de trabalho bancário, gerando automaticamente tickets, incidentes e tarefas operacionais que reproduzem o que um profissional mainframe encontra ao abrir o computador. Inclui simulação de Control-M, Jira/ServiceNow, Changeman, File Manager e Fault Analyzer, com interface web local e um motor de injeção de falhas controladas no ambiente do lab.
+
 ### Troubleshooting
 Investigação de falhas em cenários simulados de produção, incluindo:
 
@@ -122,6 +126,7 @@ Este laboratório é orientado à reprodução de situações comuns em ambiente
 - Automação com **REXX**
 - Operação com **Zowe CLI**
 - Diagnóstico e troubleshooting em **z/OS**
+- Simulação de operações bancárias com **EBOPS**
 
 ---
 
