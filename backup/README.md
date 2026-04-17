@@ -17,7 +17,7 @@ Utilitário de backup completo do laboratório mainframe Emunah. Baixa para a m�
 | VSAM | `ARQ.CLIENTE.KSDS`, `ARQ.CONTA.KSDS`, `ARQ.SALDO.KSDS`, `ARQ.LANCTO.ESDS` (via REPRO) |
 | GDG | `ARQ.EXTRATO.GDG` (N últimas gerações) |
 
-Todos prefixados por `<HLQ>.EMUNAH` (default `Z77948.EMUNAH`).
+Todos prefixados por `<HLQ>.EMUNAH` (default `<HLQ>.EMUNAH`).
 
 ---
 
@@ -59,10 +59,10 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 Unblock-File -Path .\eb-backup.ps1
 
 # 3. Sobe o JCL EBJBKUP para o mainframe
-zowe zos-files upload file-to-data-set ".\EBJBKUP.jcl" "Z77948.EMUNAH.DEV.JCL(EBJBKUP)"
+zowe zos-files upload file-to-data-set ".\EBJBKUP.jcl" "<HLQ>.EMUNAH.DEV.JCL(EBJBKUP)"
 
 # 4. Valida o JCL executando uma vez manualmente
-zowe jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJBKUP)" --wait-for-output
+zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJBKUP)" --wait-for-output
 ```
 
 O passo 4 deve retornar `CC 0000`. Se retornar qualquer outro código, diagnosticar o EBJBKUP antes de continuar.
@@ -77,12 +77,12 @@ O passo 4 deve retornar `CC 0000`. Se retornar qualquer outro código, diagnosti
 .\eb-backup.ps1
 ```
 
-Usa os defaults: HLQ `Z77948`, projeto `EMUNAH`, 2 gerações do GDG, backup VSAM habilitado.
+Usa os defaults: HLQ `<HLQ>`, projeto `EMUNAH`, 2 gerações do GDG, backup VSAM habilitado.
 
 ### Execução com parâmetros
 
 ```powershell
-.\eb-backup.ps1 -Hlq Z77948 -Project EMUNAH -GdgGenerations 3
+.\eb-backup.ps1 -Hlq <HLQ> -Project EMUNAH -GdgGenerations 3
 ```
 
 ### Backup rápido (sem VSAM)
@@ -97,7 +97,7 @@ Usa os defaults: HLQ `Z77948`, projeto `EMUNAH`, 2 gerações do GDG, backup VSA
 
 | Parâmetro | Default | Descrição |
 |---|---|---|
-| `-Hlq` | `Z77948` | High-Level Qualifier do mainframe |
+| `-Hlq` | `<HLQ>` | High-Level Qualifier do mainframe |
 | `-Project` | `EMUNAH` | Qualifier do projeto |
 | `-GdgGenerations` | `2` | Quantas gerações do GDG baixar, da mais recente para a mais antiga |
 | `-SkipVsam` | `false` | Se presente, não submete o EBJBKUP e pula os flats VSAM |
@@ -112,15 +112,15 @@ Cada execução cria uma pasta timestampada:
 ```
 20260417_184743/
 ├── pds/
-│   ├── Z77948_EMUNAH_DEV_COBOL/     (membros como .cbl)
-│   ├── Z77948_EMUNAH_DEV_COPY/      (membros como .cpy)
-│   ├── Z77948_EMUNAH_DEV_JCL/       (membros como .jcl)
-│   ├── Z77948_EMUNAH_DEV_REXX/      (membros como .rexx)
-│   ├── Z77948_EMUNAH_DEV_LOADLIB/   (binário, sem extensão)
-│   ├── Z77948_EMUNAH_HML_COBOL/     (membros como .cbl)
-│   ├── Z77948_EMUNAH_HML_JCL/       (membros como .jcl)
-│   ├── Z77948_EMUNAH_PRD_JCL/       (membros como .jcl)
-│   └── Z77948_EMUNAH_PRD_PARMLIB/   (membros como .parm)
+│   ├── <HLQ>_EMUNAH_DEV_COBOL/     (membros como .cbl)
+│   ├── <HLQ>_EMUNAH_DEV_COPY/      (membros como .cpy)
+│   ├── <HLQ>_EMUNAH_DEV_JCL/       (membros como .jcl)
+│   ├── <HLQ>_EMUNAH_DEV_REXX/      (membros como .rexx)
+│   ├── <HLQ>_EMUNAH_DEV_LOADLIB/   (binário, sem extensão)
+│   ├── <HLQ>_EMUNAH_HML_COBOL/     (membros como .cbl)
+│   ├── <HLQ>_EMUNAH_HML_JCL/       (membros como .jcl)
+│   ├── <HLQ>_EMUNAH_PRD_JCL/       (membros como .jcl)
+│   └── <HLQ>_EMUNAH_PRD_PARMLIB/   (membros como .parm)
 ├── arq/
 │   ├── seq/
 │   │   ├── ARQ_ENTRADA_SEQ.txt
@@ -176,10 +176,10 @@ Lista estruturada de cada item tentado, com status `SUCCESS`, `FAIL` ou `SKIP`. 
 
 ```json
 {
-  "item": "Z77948.EMUNAH.DEV.COBOL",
+  "item": "<HLQ>.EMUNAH.DEV.COBOL",
   "status": "SUCCESS",
   "detail": "membros baixados: 7",
-  "outputPath": "C:\\...\\pds\\Z77948_EMUNAH_DEV_COBOL",
+  "outputPath": "C:\\...\\pds\\<HLQ>_EMUNAH_DEV_COBOL",
   "timestamp": "2026-04-17T19:03:59-03:00"
 }
 ```
@@ -274,14 +274,14 @@ O backup atual é unidirecional: baixa do mainframe para local. Restauração é
 Subir o conteúdo local de volta ao mainframe:
 
 ```powershell
-zowe zos-files upload dir-to-uss ".\pds\Z77948_EMUNAH_DEV_COBOL" "/tmp/restore"
+zowe zos-files upload dir-to-uss ".\pds\<HLQ>_EMUNAH_DEV_COBOL" "/tmp/restore"
 # depois mover ao PDS via JCL IEBCOPY
 ```
 
 Método simples membro a membro:
 
 ```powershell
-zowe zos-files upload file-to-data-set ".\pds\Z77948_EMUNAH_DEV_COBOL\EBPOST01.cbl" "<HLQ>.EMUNAH.DEV.COBOL(EBPOST01)"
+zowe zos-files upload file-to-data-set ".\pds\<HLQ>_EMUNAH_DEV_COBOL\EBPOST01.cbl" "<HLQ>.EMUNAH.DEV.COBOL(EBPOST01)"
 ```
 
 ### Arquivos sequenciais
