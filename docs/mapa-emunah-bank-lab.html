@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAPA - EMUNAH BANK LAB</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Ctext y=%2750%27 x=%272%27 font-size=%2752%27%3E%F0%9F%97%BA%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════
+   CSS VARIABLES — dark (default) & light
+═══════════════════════════════════════════ */
+:root {
+  --bg-page:#0f1117; --bg-card:#161b22; --bg-deep:#0d1117;
+  --bg-hdr:linear-gradient(135deg,#0d1b2e 0%,#0d47a1 60%,#1565c0 100%);
+  --border:#30363d; --text:#e1e4e8; --text-m:#8b949e; --text-d:#6e7681;
+  --acc:#58a6ff; --acc-bg:#1f6feb22; --acc-bd:#1f6feb;
+  --tab-txt:#8b949e; --tab-a-bg:#1f6feb22; --tab-a-bd:#1f6feb; --tab-a-txt:#58a6ff;
+  --tab-h-bg:#21262d; --tab-h-bd:#30363d; --tab-h-txt:#e1e4e8;
+  --jcl-bg:#3a2800;  --jcl-txt:#ffd680; --jcl-bd:#9e6a03;
+  --pgm-bg:#1c3a1c;  --pgm-txt:#aff5b4; --pgm-bd:#238636;
+  --ksds-bg:#2d1254; --ksds-txt:#dbb8ff;--ksds-bd:#6e40c9;
+  --esds-bg:#1a2c44; --esds-txt:#79c0ff;--esds-bd:#388bfd;
+  --seq-bg:#2d2200;  --seq-txt:#e3b341; --seq-bd:#9e6a03;
+  --aud-bg:#0e2818;  --aud-txt:#56d364; --aud-bd:#238636;
+  --db2-bg:#0e2d2d;  --db2-txt:#39c5cf; --db2-bd:#0e6a73;
+  --cpy-bg:#1a2c44;  --cpy-txt:#58a6ff; --cpy-bd:#1f6feb;
+  --th-bg:#1c2128;   --td-hov:#1c2128;
+  --rc0-bg:#0d2818; --rc0-txt:#3fb950; --rc0-bd:#238636;
+  --rc4-bg:#2d2200; --rc4-txt:#e3b341; --rc4-bd:#9e6a03;
+  --rc8-bg:#2d0e0e; --rc8-txt:#f85149; --rc8-bd:#8b1a1a;
+  --tog-bg:#21262d; --tog-bd:#30363d; --tog-txt:#e1e4e8;
+  --util-bg:#161b22; --util-txt:#8b949e; --util-bd:#30363d;
+}
+[data-theme="light"] {
+  --bg-page:#f6f8fa; --bg-card:#ffffff; --bg-deep:#f0f2f5;
+  --bg-hdr:linear-gradient(135deg,#1565c0 0%,#1976d2 60%,#42a5f5 100%);
+  --border:#d0d7de; --text:#1f2328; --text-m:#57606a; --text-d:#8c959f;
+  --acc:#0969da; --acc-bg:#0969da15; --acc-bd:#0969da;
+  --tab-txt:#57606a; --tab-a-bg:#0969da15; --tab-a-bd:#0969da; --tab-a-txt:#0969da;
+  --tab-h-bg:#f6f8fa; --tab-h-bd:#d0d7de; --tab-h-txt:#1f2328;
+  --jcl-bg:#fff8e1;  --jcl-txt:#7d4e00; --jcl-bd:#d4a00a;
+  --pgm-bg:#e6f4ea;  --pgm-txt:#116329; --pgm-bd:#2da44e;
+  --ksds-bg:#f3eeff; --ksds-txt:#5a3e8a;--ksds-bd:#8957e5;
+  --esds-bg:#ddf4ff; --esds-txt:#0550ae;--esds-bd:#0969da;
+  --seq-bg:#fff3cd;  --seq-txt:#7d4e00; --seq-bd:#d4a00a;
+  --aud-bg:#e6f4ea;  --aud-txt:#116329; --aud-bd:#2da44e;
+  --db2-bg:#e0f7f9;  --db2-txt:#007b83; --db2-bd:#0097a7;
+  --cpy-bg:#ddf4ff;  --cpy-txt:#0550ae; --cpy-bd:#0969da;
+  --th-bg:#f6f8fa;   --td-hov:#f6f8fa;
+  --rc0-bg:#e6f4ea; --rc0-txt:#116329; --rc0-bd:#2da44e;
+  --rc4-bg:#fff3cd; --rc4-txt:#7d4e00; --rc4-bd:#d4a00a;
+  --rc8-bg:#ffebe9; --rc8-txt:#a40e26; --rc8-bd:#cf222e;
+  --tog-bg:#ffffff;  --tog-bd:#d0d7de; --tog-txt:#1f2328;
+  --util-bg:#f6f8fa; --util-txt:#57606a; --util-bd:#d0d7de;
+}
+
+/* ═══ Base ═══ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg-page);color:var(--text);min-height:100vh;transition:background .2s,color .2s}
+
+/* ═══ Header ═══ */
+.hdr{background:var(--bg-hdr);padding:16px 28px;display:flex;align-items:center;gap:14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.hdr-text{flex:1}
+.hdr h1{font-size:20px;font-weight:700;color:#fff}
+.hdr p{color:rgba(255,255,255,.75);margin-top:3px;font-size:13px}
+.toggle-btn{background:var(--tog-bg);border:1px solid var(--tog-bd);color:var(--tog-txt);border-radius:20px;padding:6px 14px;cursor:pointer;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:opacity .15s;flex-shrink:0}
+.toggle-btn:hover{opacity:.8}
+
+/* ═══ Tabs ═══ */
+.tabs{display:flex;gap:4px;padding:10px 28px;background:var(--bg-card);border-bottom:1px solid var(--border);overflow-x:auto}
+.tab{padding:6px 15px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;border:1px solid transparent;white-space:nowrap;color:var(--tab-txt);transition:all .15s}
+.tab.active{background:var(--tab-a-bg);border-color:var(--tab-a-bd);color:var(--tab-a-txt)}
+.tab:hover:not(.active){background:var(--tab-h-bg);border-color:var(--tab-h-bd);color:var(--tab-h-txt)}
+
+/* ═══ Content ═══ */
+.content{padding:24px 28px;max-width:1440px;margin:0 auto}
+.section{display:none}.section.active{display:block}
+h2.pt{font-size:17px;color:var(--acc);margin-bottom:16px;font-weight:600}
+h3.sl{font-size:11px;color:var(--text-d);text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px;font-weight:600}
+
+/* ═══ Cards ═══ */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px}
+.ct{color:var(--acc);font-family:'Courier New',monospace;font-size:14px;font-weight:700;margin-bottom:8px}
+.cd{color:var(--text-m);font-size:13px;line-height:1.5;margin-bottom:10px}
+
+/* ═══ Grids ═══ */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px}
+
+/* ═══ Badges ═══ */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin:2px 2px 2px 0;font-family:'Courier New',monospace;border:1px solid}
+.b-pgm{background:var(--pgm-bg);color:var(--pgm-txt);border-color:var(--pgm-bd)}
+.b-jcl{background:var(--jcl-bg);color:var(--jcl-txt);border-color:var(--jcl-bd)}
+.b-cpy{background:var(--cpy-bg);color:var(--cpy-txt);border-color:var(--cpy-bd)}
+.b-ksds{background:var(--ksds-bg);color:var(--ksds-txt);border-color:var(--ksds-bd)}
+.b-esds{background:var(--esds-bg);color:var(--esds-txt);border-color:var(--esds-bd)}
+.b-seq{background:var(--seq-bg);color:var(--seq-txt);border-color:var(--seq-bd)}
+.b-aud{background:var(--aud-bg);color:var(--aud-txt);border-color:var(--aud-bd)}
+.b-db2{background:var(--db2-bg);color:var(--db2-txt);border-color:var(--db2-bd)}
+.b-rc0{background:var(--rc0-bg);color:var(--rc0-txt);border-color:var(--rc0-bd)}
+.b-rc4{background:var(--rc4-bg);color:var(--rc4-txt);border-color:var(--rc4-bd)}
+.b-rc8{background:var(--rc8-bg);color:var(--rc8-txt);border-color:var(--rc8-bd)}
+
+/* ═══ Info rows ═══ */
+.ir{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.il{font-size:10px;color:var(--text-d);text-transform:uppercase;letter-spacing:.6px;margin-bottom:1px;margin-top:9px}
+
+/* ═══ Tables ═══ */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--th-bg);padding:8px 12px;text-align:left;color:var(--text-m);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--td-hov)}
+td code{font-family:'Courier New',monospace;color:var(--acc);font-size:12px}
+
+/* ═══ Mermaid wrapper ═══ */
+.mw{background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;padding:18px;overflow-x:auto;margin-bottom:18px}
+.mw .mermaid{min-width:500px;display:flex;justify-content:center}
+.mw .mermaid svg{max-width:100%;height:auto !important}
+/* Tamanhos mínimos por diagrama — sobe estes valores se ficar pequeno */
+#m-copy svg{min-height:1250px !important}
+#m-univ svg{min-height:1850px !important}
+#m-amb svg{min-height:750px !important}
+#m-db2 svg{min-height:600px !important}
+#m-datasets svg{min-height:550px !important}
+
+/* ═══ Flow items ═══ */
+.fi{display:flex;align-items:flex-start;gap:12px;padding:10px 12px;background:var(--bg-deep);border-radius:6px;margin-bottom:5px;border-left:3px solid var(--acc-bd)}
+.fn{background:var(--acc-bd);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.fb .name{font-family:'Courier New',monospace;font-size:13px;font-weight:600;color:var(--text)}
+.fb .desc{font-size:12px;color:var(--text-m);margin-top:2px}
+
+/* ═══ Alert boxes ═══ */
+.ai{background:var(--db2-bg);border:1px solid var(--db2-bd);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--db2-txt);margin-bottom:16px;line-height:1.6}
+.aw{background:var(--seq-bg);border:1px solid var(--seq-bd);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--seq-txt);margin-bottom:16px;line-height:1.6}
+
+/* ═══ Legend ═══ */
+.leg{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}
+
+/* ══════════════════════════════════════════
+   CADEIA BATCH — HTML diagram
+══════════════════════════════════════════ */
+.chain{display:flex;flex-direction:column;gap:0}
+
+.cstep{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 18px}
+.cstep.util{border-style:dashed}
+.cstep.ondemand{border-left:3px solid var(--seq-bd)}
+
+.shdr{display:flex;align-items:center;gap:9px;margin-bottom:11px;flex-wrap:wrap}
+.snum{background:var(--acc-bd);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.snum.od{background:var(--seq-bd)}
+.stime{background:var(--acc-bg);color:var(--acc);border:1px solid var(--acc-bd);border-radius:4px;padding:2px 8px;font-size:11px;font-family:'Courier New',monospace;font-weight:700}
+.stime.od{background:var(--seq-bg);color:var(--seq-txt);border-color:var(--seq-bd)}
+.sname{font-size:14px;font-weight:600;color:var(--text)}
+
+.sbody{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;margin-bottom:10px}
+.irow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.njcl{background:var(--jcl-bg);color:var(--jcl-txt);border:1px solid var(--jcl-bd);border-radius:4px;padding:7px 13px;font-family:'Courier New',monospace;font-size:13px;font-weight:700}
+.njcl .tag{font-size:9px;font-weight:600;opacity:.65;display:block;text-transform:uppercase;letter-spacing:.5px;margin-bottom:1px}
+
+.parrow{color:var(--text-d);font-size:12px;font-weight:700;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.parrow::after{content:'→';font-size:16px;margin-left:2px}
+
+.npgm{background:var(--pgm-bg);color:var(--pgm-txt);border:1px solid var(--pgm-bd);border-radius:4px;padding:8px 13px}
+.pname{display:block;font-family:'Courier New',monospace;font-size:14px;font-weight:700}
+.pdesc{display:block;font-size:12px;opacity:.8;margin-top:3px;line-height:1.4}
+
+.nutil{background:var(--util-bg);color:var(--util-txt);border:1px solid var(--util-bd);border-radius:4px;padding:6px 11px;font-size:12px;font-style:italic}
+
+.sds{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding-top:9px;border-top:1px solid var(--border)}
+.dop{font-size:10px;color:var(--text-d);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.dsep{color:var(--text-d);font-size:14px}
+.dt{display:inline-block;padding:2px 8px;border-radius:9px;font-size:11px;font-family:'Courier New',monospace;font-weight:600;border:1px solid}
+.dt.ksds{background:var(--ksds-bg);color:var(--ksds-txt);border-color:var(--ksds-bd)}
+.dt.esds{background:var(--esds-bg);color:var(--esds-txt);border-color:var(--esds-bd)}
+.dt.seq {background:var(--seq-bg); color:var(--seq-txt); border-color:var(--seq-bd)}
+.dt.aud {background:var(--aud-bg); color:var(--aud-txt); border-color:var(--aud-bd)}
+.dt.pds {background:var(--util-bg);color:var(--util-txt);border-color:var(--util-bd)}
+
+.carr{text-align:center;font-size:22px;color:var(--text-d);padding:5px 0;line-height:1;user-select:none}
+.carr span{font-size:11px;vertical-align:middle;margin-left:5px;color:var(--text-m)}
+
+.odiv{margin:16px 0;display:flex;align-items:center;gap:10px}
+.odiv div{flex:1;height:1px;background:var(--border)}
+.odiv span{font-size:12px;color:var(--text-d);white-space:nowrap}
+
+
+.univ-wrap{background:var(--bg-deep);border:1px solid var(--border);border-radius:8px;padding:18px;overflow:auto;margin-bottom:18px}
+.univ-wrap svg{display:block;min-width:1700px;width:1700px;height:auto}
+.univ-title{font-size:17px;font-weight:700;letter-spacing:.2px}
+.univ-node{font-size:17px;font-weight:700}
+.univ-edge-label{font-size:17px;font-weight:700}
+
+/* ═══ Responsive ═══ */
+@media(max-width:900px){.g2,.g3,.pg{grid-template-columns:1fr}.content{padding:14px}.hdr{padding:12px 14px}.tabs{padding:8px 14px}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-text">
+    <h1>EMUNAH Bank Lab</h1>
+    <p>Mapa do Laboratório &mdash; COBOL &bull; JCL &bull; VSAM &bull; DB2 &bull; CICS</p>
+  </div>
+  <button class="toggle-btn" id="togBtn" onclick="toggleTheme()">
+    <span id="togIcon">☀️</span><span id="togLbl">Tema Claro</span>
+  </button>
+</div>
+
+<div class="tabs">
+  <div class="tab active"  onclick="showTab('cadeia',    this)">Cadeia Batch</div>
+  <div class="tab"         onclick="showTab('programas', this)">Programas COBOL</div>
+  <div class="tab"         onclick="showTab('datasets',  this)">Datasets &amp; VSAM</div>
+  <div class="tab"         onclick="showTab('copybooks', this)">Copybooks</div>
+  <div class="tab"         onclick="showTab('ambiente',  this)">Ambiente &amp; PDSs</div>
+  <div class="tab"         onclick="showTab('db2',       this)">DB2</div>
+  <div class="tab"         onclick="showTab('universo',  this)">Universo Geral</div>
+</div>
+
+<div class="content">
+
+<!-- ══════════════════════════════════════════
+     TAB 1 — CADEIA BATCH (HTML diagram)
+══════════════════════════════════════════ -->
+<div id="cadeia" class="section active">
+<h2 class="pt">Cadeia de Processamento Batch Diário</h2>
+
+<div class="g2" style="margin-bottom:18px">
+
+  <!-- LEFT: chain diagram -->
+  <div>
+    <div class="chain">
+
+      <div style="text-align:center;padding:8px 0;font-size:13px;color:var(--text-m)">☀️ Início do dia</div>
+
+      <!-- PRÉ-VERIFICAÇÃO -->
+      <div class="cstep util">
+        <div class="shdr">
+          <div class="stime">~06:00</div>
+          <div class="sname">Pré-verificação do Ambiente</div>
+        </div>
+        <div class="sbody" style="flex-direction:column;gap:6px">
+          <div class="irow">
+            <div class="njcl"><span class="tag">JCL</span>EBJPRECK</div>
+            <div class="nutil">IDCAMS &mdash; verifica ×5: LOADLIB, COPY, ENTRADA, CLIENTE, CONTA</div>
+          </div>
+          <div class="irow">
+            <div class="njcl"><span class="tag">JCL</span>EBJLOAD</div>
+            <div class="nutil">IDCAMS &mdash; checa ENTRADA.SEQ &nbsp;<span class="badge b-rc8" style="font-size:10px">RC=12 se ausente</span></div>
+          </div>
+        </div>
+        <div class="sds">
+          <span class="dop">checa</span>
+          <span class="dt pds">DEV.LOADLIB</span><span class="dt pds">DEV.COPY</span>
+          <span class="dt seq">ENTRADA.SEQ</span><span class="dt ksds">CLIENTE.KSDS</span><span class="dt ksds">CONTA.KSDS</span>
+        </div>
+      </div>
+
+      <div class="carr">↓<span>RC=0</span></div>
+
+      <!-- STEP 1 -->
+      <div class="cstep">
+        <div class="shdr">
+          <div class="snum">1</div><div class="stime">~07:00</div>
+          <div class="sname">Validação de Movimentos</div>
+        </div>
+        <div class="sbody">
+          <div class="irow">
+            <div class="njcl"><span class="tag">JCL</span>EBJVALD</div>
+            <div class="parrow">PGM=</div>
+            <div class="npgm">
+              <span class="pname">EBVALI01</span>
+              <span class="pdesc">Valida movimentos C/D<br>Agência, conta, valor, data, tipo</span>
+            </div>
+          </div>
+        </div>
+        <div class="sds">
+          <span class="dop">lê</span><span class="dt seq">ENTRADA.SEQ</span>
+          <span class="dsep">→</span>
+          <span class="dop">grava</span>
+          <span class="dt esds">LANCTO.ESDS (válidos)</span>
+          <span class="dt seq">REJEITOS.SEQ</span>
+          <span class="dt aud">AUDIT.SEQ</span>
+        </div>
+      </div>
+
+      <div class="carr">↓</div>
+
+      <!-- STEP 2 -->
+      <div class="cstep">
+        <div class="shdr">
+          <div class="snum">2</div><div class="stime">~07:30</div>
+          <div class="sname">Postagem de Saldos</div>
+        </div>
+        <div class="sbody">
+          <div class="irow">
+            <div class="njcl"><span class="tag">JCL</span>EBJPOST</div>
+            <div class="parrow">PGM=</div>
+            <div class="npgm">
+              <span class="pname">EBPOST01</span>
+              <span class="pdesc">Posta movimentos validados<br>Atualiza saldo/limite em CONTA.KSDS<br><small style="opacity:.7">COPY: CPCNT001</small></span>
+            </div>
+          </div>
+        </div>
+        <div class="sds">
+          <span class="dop">lê</span><span class="dt esds">LANCTO.ESDS</span><span class="dt ksds">CLIENTE.KSDS</span>
+          <span class="dsep">·</span>
+          <span class="dop">r/w</span><span class="dt ksds">CONTA.KSDS ↑ saldo</span>
+          <span class="dsep">·</span>
+          <span class="dop">grava</span><span class="dt aud">AUDIT.SEQ</span>
+        </div>
+      </div>
+
+      <div class="carr">↓</div>
+
+      <!-- STEP 3 -->
+      <div class="cstep">
+        <div class="shdr">
+          <div class="snum">3</div><div class="stime">~08:00</div>
+          <div class="sname">Relatório de Saldos</div>
+        </div>
+        <div class="sbody">
+          <div class="irow">
+            <div class="njcl"><span class="tag">JCL</span>EBJSALD</div>
+            <div class="parrow">PGM=</div>
+            <div class="npgm">
+              <span class="pname">EBSALD01</span>
+              <span class="pdesc">Gera relatório de saldos<br><small style="opacity:.7">COPY: CPCNT001, CPSLD001</small></span>
+            </div>
+          </div>
+        </div>
+        <div class="sds">
+          <span class="dop">lê</span><span class="dt ksds">CONTA.KSDS</span><span class="dt seq">SALDIN.SEQ</span>
+          <span class="dsep">→</span>
+          <span class="dop">grava</span><span class="dt seq">SALDOUT.SEQ</span><span class="dt aud">AUDIT.SEQ</span>
+        </div>
+      </div>
+
+      <div class="carr">↓</div>
+
+      <!-- STEP 4 -->
+      <div class="cstep">
+        <div class="shdr">
+          <div class="snum">4</div><div class="stime">~09:00</div>
+          <div class="sname">Geração de Extrato</div>
+        </div>
+        <div class="sbody">
+          <div class="irow">
+            <div class="njcl"><span class="tag">JCL</span>EBJEXTR</div>
+            <div class="parrow">PGM=</div>
+            <div class="npgm">
+              <span class="pname">EBEXTR01</span>
+              <span class="pdesc">Gera extrato formatado<br>Header + detalhe + totais</span>
+            </div>
+          </div>
+        </div>
+        <div class="sds">
+          <span class="dop">lê</span><span class="dt esds">LANCTO.ESDS</span>
+          <span class="dsep">→</span>
+          <span class="dop">grava</span><span class="dt seq">EXTRATO.GDG (132B)</span>
+        </div>
+      </div>
+
+      <div class="carr">↓</div>
+
+      <!-- STEP 5 -->
+      <div class="cstep">
+        <div class="shdr">
+          <div class="snum">5</div><div class="stime">~09:30</div>
+          <div class="sname">Conciliação de Movimentos</div>
+        </div>
+        <div class="sbody">
+          <div class="irow">
+            <div class="njcl"><span class="tag">JCL</span>EBJCONC</div>
+            <div class="parrow">PGM=</div>
+            <div class="npgm">
+              <span class="pname">EBCONC01</span>
+              <span class="pdesc">Reconcilia movimentos<br>Valida tipos, gera totais C/D</span>
+            </div>
+          </div>
+        </div>
+        <div class="sds">
+          <span class="dop">lê</span><span class="dt esds">LANCTO.ESDS</span>
+          <span class="dsep">→</span>
+          <span class="dop">grava</span><span class="dt seq">CONCIL.SEQ</span>
+        </div>
+      </div>
+
+      <div class="carr">↓</div>
+
+      <!-- STEP 6 -->
+      <div class="cstep">
+        <div class="shdr">
+          <div class="snum">6</div><div class="stime">~10:00</div>
+          <div class="sname">Fechamento de Fim de Dia (EOD)</div>
+        </div>
+        <div class="sbody">
+          <div class="irow">
+            <div class="njcl"><span class="tag">JCL</span>EBJEOD</div>
+            <div class="parrow">PGM=</div>
+            <div class="npgm">
+              <span class="pname">EBJEOD01</span>
+              <span class="pdesc">Totaliza todas as contas (saldo+limite)<br>Gera relatório de fechamento<br><small style="opacity:.7">COPY: CPCNT001</small></span>
+            </div>
+          </div>
+        </div>
+        <div class="sds">
+          <span class="dop">lê</span><span class="dt seq">CONCIL.SEQ</span><span class="dt ksds">CONTA.KSDS</span>
+          <span class="dsep">→</span>
+          <span class="dop">grava</span><span class="dt seq">FECHTO.SEQ</span><span class="dt aud">AUDIT.SEQ</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:8px 0;font-size:13px;color:var(--text-m)">🌙 Fechamento do dia</div>
+
+      <!-- On-demand separator -->
+      <div class="odiv"><div></div><span>execução on-demand</span><div></div></div>
+
+      <!-- ON-DEMAND -->
+      <div class="cstep ondemand">
+        <div class="shdr">
+          <div class="snum od">★</div>
+          <div class="stime od">on-demand</div>
+          <div class="sname">Reprocessamento de Rejeições</div>
+        </div>
+        <div class="sbody">
+          <div class="irow">
+            <div class="njcl"><span class="tag">JCL</span>EBJREPR</div>
+            <div class="parrow">PGM=</div>
+            <div class="npgm">
+              <span class="pname">EBREPR01</span>
+              <span class="pdesc">Revalida registros rejeitados<br>Recuperáveis → LANCTO.ESDS<br>Permanentes → REJOUT.SEQ</span>
+            </div>
+          </div>
+        </div>
+        <div class="sds">
+          <span class="dop">lê</span><span class="dt seq">REJEITOS.SEQ</span>
+          <span class="dsep">→</span>
+          <span class="dop">grava</span>
+          <span class="dt esds">LANCTO.OUT</span>
+          <span class="dt seq">REJOUT.SEQ</span>
+          <span class="dt aud">AUDIT.SEQ</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT: RC table + legend -->
+  <div>
+    <div class="card">
+      <div class="ct">Return Codes por Programa</div>
+      <table>
+        <tr><th>Programa</th><th>RC=0</th><th>RC=4</th><th>RC=8</th></tr>
+        <tr><td><code>EBVALI01</code></td><td><span class="badge b-rc0">OK</span></td><td><span class="badge b-rc4">Rejeições</span></td><td><span class="badge b-rc8">I/O Error</span></td></tr>
+        <tr><td><code>EBPOST01</code></td><td><span class="badge b-rc0">OK</span></td><td><span class="badge b-rc4">Avisos</span></td><td><span class="badge b-rc8">I/O Error</span></td></tr>
+        <tr><td><code>EBCONC01</code></td><td><span class="badge b-rc0">OK</span></td><td><span class="badge b-rc4">Rejeições</span></td><td><span class="badge b-rc8">I/O Error</span></td></tr>
+        <tr><td><code>EBJEOD01</code></td><td><span class="badge b-rc0">OK</span></td><td style="color:var(--text-d)">—</td><td><span class="badge b-rc8">I/O Error</span></td></tr>
+        <tr><td><code>EBREPR01</code></td><td><span class="badge b-rc0">OK</span></td><td><span class="badge b-rc4">Permanentes</span></td><td><span class="badge b-rc8">I/O Error</span></td></tr>
+        <tr><td><code>EBJLOAD</code></td><td><span class="badge b-rc0">Arq. existe</span></td><td style="color:var(--text-d)">—</td><td><span class="badge b-rc8">RC=12 ausente</span></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="ct">Legenda</div>
+      <div class="leg">
+        <span class="badge b-jcl">JCL Job</span>
+        <span class="badge b-pgm">Programa COBOL</span>
+        <span class="badge b-ksds">VSAM KSDS</span>
+        <span class="badge b-esds">VSAM ESDS</span>
+        <span class="badge b-seq">Sequencial / GDG</span>
+        <span class="badge b-aud">AUDIT Trail</span>
+      </div>
+      <div style="margin-top:14px;font-size:12px;color:var(--text-m);line-height:1.6">
+        <strong style="color:var(--text)">AUDIT.SEQ</strong> é gravado com <code>DISP=MOD</code> (append) por todos os programas.<br>
+        <strong style="color:var(--text)">EXTRATO.GDG</strong> usa Generation Data Group para histórico de gerações.<br>
+        <strong style="color:var(--text)">EBJREPR</strong> injeta registros recuperados de volta no <code>LANCTO.ESDS</code>.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">Carga Inicial (EBCLLOAD)</div>
+      <div class="cd">Executado antes da operação diária para popular as masters.</div>
+      <div class="irow" style="flex-wrap:wrap">
+        <div class="njcl" style="font-size:12px"><span class="tag">JCL</span>EBJCLLD</div>
+        <div class="parrow">PGM=</div>
+        <div class="npgm" style="font-size:12px">
+          <span class="pname" style="font-size:13px">EBCLLOAD</span>
+          <span class="pdesc">Carga de CLIENTIN.SEQ → CLIENTE.KSDS<br>Carga de CONTAIN.SEQ → CONTA.KSDS<br><small>COPY: CPCLI001, CPCNT001</small></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /g2 -->
+</div><!-- /cadeia -->
+
+<!-- ══════════════════════════════════════════
+     TAB 2 — PROGRAMAS COBOL
+══════════════════════════════════════════ -->
+<div id="programas" class="section">
+<h2 class="pt">Programas COBOL</h2>
+
+<h3 class="sl">Batch (cobol/batch/)</h3>
+<div class="pg">
+
+  <div class="card">
+    <div class="ct">EBCLLOAD</div>
+    <div class="cd">Carga inicial de clientes e contas a partir de arquivos sequenciais no VSAM KSDS. Valida status (A/I/B), rejeita duplicatas.</div>
+    <div class="il">Entrada</div><div class="ir"><span class="badge b-seq">CLIENTIN.SEQ</span><span class="badge b-seq">CONTAIN.SEQ</span></div>
+    <div class="il">Saída</div><div class="ir"><span class="badge b-ksds">CLIENTE.KSDS</span><span class="badge b-ksds">CONTA.KSDS</span><span class="badge b-aud">AUDIT.SEQ</span></div>
+    <div class="il">Copybooks</div><div class="ir"><span class="badge b-cpy">CPCLI001</span><span class="badge b-cpy">CPCNT001</span></div>
+    <div class="il">JCL</div><div class="ir"><span class="badge b-jcl">EBJCLLD</span></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">EBVALI01</div>
+    <div class="cd">Valida registros de movimentos. Verifica tipo (C/D), agência, conta, valor, data. Separa válidos de rejeitados.</div>
+    <div class="il">Entrada</div><div class="ir"><span class="badge b-seq">ENTRADA.SEQ</span></div>
+    <div class="il">Saída</div><div class="ir"><span class="badge b-esds">LANCTO.ESDS</span><span class="badge b-seq">REJEITOS.SEQ</span><span class="badge b-aud">AUDIT.SEQ</span></div>
+    <div class="il">Return Codes</div><div class="ir"><span class="badge b-rc0">RC=0 OK</span><span class="badge b-rc4">RC=4 Rejeições</span><span class="badge b-rc8">RC=8 I/O</span></div>
+    <div class="il">JCL</div><div class="ir"><span class="badge b-jcl">EBJVALD</span></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">EBPOST01</div>
+    <div class="cd">Posta movimentos validados na master de contas. Atualiza saldos (débito/crédito). Loga no audit.</div>
+    <div class="il">Entrada</div><div class="ir"><span class="badge b-esds">LANCTO.ESDS</span></div>
+    <div class="il">Atualiza</div><div class="ir"><span class="badge b-ksds">CONTA.KSDS</span><span class="badge b-aud">AUDIT.SEQ</span></div>
+    <div class="il">Copybooks</div><div class="ir"><span class="badge b-cpy">CPCNT001</span></div>
+    <div class="il">JCL</div><div class="ir"><span class="badge b-jcl">EBJPOST</span></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">EBSALD01</div>
+    <div class="cd">Consulta e relatório de saldos de contas. Lê a master de contas e gera relatório formatado.</div>
+    <div class="il">Entrada</div><div class="ir"><span class="badge b-ksds">CONTA.KSDS</span><span class="badge b-seq">SALDIN.SEQ</span></div>
+    <div class="il">Saída</div><div class="ir"><span class="badge b-seq">SALDOUT.SEQ</span><span class="badge b-aud">AUDIT.SEQ</span></div>
+    <div class="il">Copybooks</div><div class="ir"><span class="badge b-cpy">CPCNT001</span><span class="badge b-cpy">CPSLD001</span></div>
+    <div class="il">JCL</div><div class="ir"><span class="badge b-jcl">EBJSALD</span></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">EBEXTR01</div>
+    <div class="cd">Gera extrato formatado com header, linhas de detalhe e totais. Usa GDG para manter histórico de gerações.</div>
+    <div class="il">Entrada</div><div class="ir"><span class="badge b-esds">LANCTO.ESDS</span></div>
+    <div class="il">Saída</div><div class="ir"><span class="badge b-seq">EXTRATO.GDG (132B)</span></div>
+    <div class="il">JCL</div><div class="ir"><span class="badge b-jcl">EBJEXTR</span></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">EBCONC01</div>
+    <div class="cd">Reconcilia movimentos. Valida tipos, gera output de conciliação com totais para o fechamento do dia.</div>
+    <div class="il">Entrada</div><div class="ir"><span class="badge b-esds">LANCTO.ESDS</span></div>
+    <div class="il">Saída</div><div class="ir"><span class="badge b-seq">CONCIL.SEQ</span></div>
+    <div class="il">Return Codes</div><div class="ir"><span class="badge b-rc0">RC=0</span><span class="badge b-rc4">RC=4 Rejeições</span><span class="badge b-rc8">RC=8 I/O</span></div>
+    <div class="il">JCL</div><div class="ir"><span class="badge b-jcl">EBJCONC</span></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">EBJEOD01</div>
+    <div class="cd">Fechamento EOD. Lê conciliação, totaliza contas (saldo/limite), gera relatório de fechamento e audit.</div>
+    <div class="il">Entrada</div><div class="ir"><span class="badge b-seq">CONCIL.SEQ</span><span class="badge b-ksds">CONTA.KSDS</span></div>
+    <div class="il">Saída</div><div class="ir"><span class="badge b-seq">FECHTO.SEQ</span><span class="badge b-aud">AUDIT.SEQ</span></div>
+    <div class="il">Copybooks</div><div class="ir"><span class="badge b-cpy">CPCNT001</span></div>
+    <div class="il">JCL</div><div class="ir"><span class="badge b-jcl">EBJEOD</span></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">EBREPR01</div>
+    <div class="cd">Reprocessa movimentos rejeitados. Revalida registros, separando recuperáveis de rejeições permanentes.</div>
+    <div class="il">Entrada</div><div class="ir"><span class="badge b-seq">REJEITOS.SEQ</span></div>
+    <div class="il">Saída</div><div class="ir"><span class="badge b-esds">LANCTO.OUT</span><span class="badge b-seq">REJOUT.SEQ</span><span class="badge b-aud">AUDIT.SEQ</span></div>
+    <div class="il">JCL</div><div class="ir"><span class="badge b-jcl">EBJREPR</span></div>
+  </div>
+
+  <div class="card">
+    <div class="ct">EBCOMM01</div>
+    <div class="cd">Biblioteca de rotinas comuns. Fornece procedimentos reutilizáveis via CALL. Ainda não invocado pelos programas batch atuais.</div>
+    <div class="il">Tipo</div><div class="ir"><span class="badge b-pgm">Subprograma (biblioteca)</span></div>
+    <div class="il">Invocação</div><div class="ir"><code style="color:var(--text-m);font-size:12px">CALL 'EBCOMM01' (nenhum programa chama atualmente)</code></div>
+  </div>
+
+</div>
+
+<h3 class="sl">Online / CICS (cobol/online/)</h3>
+<div class="g3">
+  <div class="card">
+    <div class="ct">EBCSEXT</div>
+    <div class="cd">Consulta extrato via tela BMS. Navega VSAM ESDS, filtra movimentos, exibe resultados paginados.</div>
+    <div class="ir"><span class="badge b-cpy">EBMEXT (BMS)</span><span class="badge b-esds">LANCTO.ESDS</span></div>
+  </div>
+  <div class="card">
+    <div class="ct">EBCSSLD</div>
+    <div class="cd">Consulta saldo via tela BMS. Exibe saldo atual da conta.</div>
+    <div class="ir"><span class="badge b-cpy">EBMSLD (BMS)</span><span class="badge b-ksds">CONTA.KSDS</span></div>
+  </div>
+  <div class="card">
+    <div class="ct">EBCSTRF</div>
+    <div class="cd">Transação de transferência/movimentação de fundos CICS.</div>
+    <div class="ir"><span class="badge b-cpy">EBMTRF (BMS)</span><span class="badge b-ksds">CONTA.KSDS</span></div>
+  </div>
+</div>
+
+<h3 class="sl">HML — Homologação (cobol/hml/)</h3>
+<div class="g3">
+  <div class="card">
+    <div class="ct">EBSMKH01</div>
+    <div class="cd">Smoke test para ambiente HML. Exibe ID do ambiente, data/hora, confirma status operacional. Sempre RC=0.</div>
+    <div class="ir"><span class="badge b-rc0">RC=0</span><span class="badge b-jcl">EBJSMKH</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 3 — DATASETS & VSAM
+══════════════════════════════════════════ -->
+<div id="datasets" class="section">
+<h2 class="pt">Datasets &amp; Arquivos VSAM</h2>
+
+<div class="mw">
+<div class="mermaid" id="m-datasets">
+graph LR
+  subgraph KSDS["VSAM KSDS - Indexado"]
+    CLI[("CLIENTE.KSDS<br/>80B - chave ID_CLIENTE")]
+    CNT[("CONTA.KSDS<br/>100B - chave AGENCIA+CONTA")]
+  end
+  subgraph ESDS["VSAM ESDS - Entry-Sequential"]
+    LCT[("LANCTO.ESDS<br/>120B - movimentos validados")]
+  end
+  subgraph SEQ["Sequenciais / GDG"]
+    ENT["ENTRADA.SEQ 120B"]
+    REJ["REJEITOS.SEQ 150B"]
+    CON["CONCIL.SEQ 120B"]
+    EXT["EXTRATO.GDG 132B"]
+    FEC["FECHTO.SEQ 132B"]
+    SLD["SALDO.SEQ 120B"]
+    AUD["AUDIT.SEQ 120B MOD"]
+  end
+  subgraph PDS["PDS Libraries"]
+    COB["DEV.COBOL"]
+    CPY["DEV.COPY"]
+    JCL_P["DEV.JCL"]
+    LDB["DEV.LOADLIB"]
+  end
+  ENT --> LCT
+  ENT --> REJ
+  LCT --> CON
+  LCT --> EXT
+  CON --> FEC
+  CNT --> SLD
+  LCT --> AUD
+  CNT --> AUD
+</div>
+</div>
+
+<div class="card" style="padding:0;overflow:hidden">
+<table>
+  <tr><th>Dataset (HLQ.EMUNAH.ARQ.*)</th><th>Tipo</th><th>LRECL</th><th>DDNAME</th><th>Produzido por</th><th>Consumido por</th><th>Finalidade</th></tr>
+  <tr><td><code>ENTRADA.SEQ</code></td><td><span class="badge b-seq">SEQ</span></td><td>120</td><td>ENTRADA</td><td style="color:var(--text-d)">Sistema externo</td><td>EBVALI01</td><td>Movimentos/transações do dia</td></tr>
+  <tr><td><code>CLIENTE.KSDS</code></td><td><span class="badge b-ksds">KSDS</span></td><td>80</td><td>CLIENTE</td><td>EBCLLOAD</td><td>EBPOST01</td><td>Master de clientes — chave: ID_CLIENTE</td></tr>
+  <tr><td><code>CONTA.KSDS</code></td><td><span class="badge b-ksds">KSDS</span></td><td>100</td><td>CONTA</td><td>EBCLLOAD</td><td>EBPOST01, EBSALD01, EBJEOD01, EBCSSLD</td><td>Master de contas e saldos</td></tr>
+  <tr><td><code>LANCTO.ESDS</code></td><td><span class="badge b-esds">ESDS</span></td><td>120</td><td>MOVTIN / VALIDOS</td><td>EBVALI01</td><td>EBPOST01, EBEXTR01, EBCONC01, EBCSEXT</td><td>Log de movimentos validados</td></tr>
+  <tr><td><code>REJEITOS.SEQ</code></td><td><span class="badge b-seq">SEQ</span></td><td>150</td><td>REJEITOS / REJIN</td><td>EBVALI01</td><td>EBREPR01</td><td>Movimentos rejeitados com mensagem de erro</td></tr>
+  <tr><td><code>CONCIL.SEQ</code></td><td><span class="badge b-seq">SEQ</span></td><td>120</td><td>CONCOUT / CONCIN</td><td>EBCONC01</td><td>EBJEOD01</td><td>Output de conciliação com totais</td></tr>
+  <tr><td><code>EXTRATO.GDG</code></td><td><span class="badge b-seq">GDG</span></td><td>132</td><td>EXTROUT</td><td>EBEXTR01</td><td style="color:var(--text-d)">Relatório</td><td>Extrato formatado — histórico por geração</td></tr>
+  <tr><td><code>FECHTO.SEQ</code></td><td><span class="badge b-seq">SEQ</span></td><td>132</td><td>FECHOUT</td><td>EBJEOD01</td><td style="color:var(--text-d)">Relatório</td><td>Relatório de fechamento do fim do dia</td></tr>
+  <tr><td><code>AUDIT.SEQ</code></td><td><span class="badge b-aud">MOD</span></td><td>120</td><td>AUDIT</td><td>Todos os pgms</td><td style="color:var(--text-d)">Auditoria</td><td>Trilha de audit completa — DISP=MOD (append)</td></tr>
+  <tr><td><code>SALDO.SEQ</code></td><td><span class="badge b-seq">SEQ</span></td><td>80/120</td><td>SALDIN / SALDOUT</td><td>EBSALD01</td><td style="color:var(--text-d)">Relatório</td><td>Input de consulta e output de saldos</td></tr>
+</table>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 4 — COPYBOOKS
+══════════════════════════════════════════ -->
+<div id="copybooks" class="section">
+<h2 class="pt">Copybooks — Layouts e Dependências</h2>
+
+<div class="mw">
+<div class="mermaid" id="m-copy">
+%%{init: {"themeVariables": {"fontSize": "18px"}, "flowchart": {"htmlLabels": true, "useMaxWidth": false, "nodeSpacing": 80, "rankSpacing": 105}} }%%
+graph LR
+  subgraph LEFT[" "]
+    direction TB
+    subgraph LAY["COPYBOOKS / LAYOUTS"]
+      direction TB
+      CP1["<div style='font-size:20px;padding:12px 18px'><b>CPCLI001</b><br/>80B · ID, Nome, CPF, Status</div>"]
+      CP2["<div style='font-size:20px;padding:12px 18px'><b>CPCNT001</b><br/>100B · Agência, Conta, Saldo, Limite</div>"]
+      CP3["<div style='font-size:20px;padding:12px 18px'><b>CPSLD001</b><br/>100B · Saldo output</div>"]
+      CP4["<div style='font-size:20px;padding:12px 18px'><b>CPLCT001</b><br/>120B · Lançamento / Movimento</div>"]
+      CP5["<div style='font-size:20px;padding:12px 18px'><b>CPAUD001</b><br/>120B · Audit</div>"]
+      CP6["<div style='font-size:20px;padding:12px 18px'><b>CPREJ001</b><br/>150B · Rejeição</div>"]
+    end
+
+    subgraph DB2C["COPYBOOKS / DB2"]
+      direction TB
+      D1["<div style='font-size:20px;padding:12px 18px'><b>DCLCLIENTE</b><br/>TB_CLIENTE</div>"]
+      D2["<div style='font-size:20px;padding:12px 18px'><b>DCLCONTA</b><br/>TB_CONTA</div>"]
+      D3["<div style='font-size:20px;padding:12px 18px'><b>DCLLANCTO</b><br/>TB_LANCTO</div>"]
+    end
+
+    subgraph BMS["COPYBOOKS / TELAS"]
+      direction TB
+      B1["<div style='font-size:20px;padding:12px 18px'><b>EBMEXT</b><br/>Extrato</div>"]
+      B2["<div style='font-size:20px;padding:12px 18px'><b>EBMSLD</b><br/>Saldo</div>"]
+      B3["<div style='font-size:20px;padding:12px 18px'><b>EBMTRF</b><br/>Transferência</div>"]
+    end
+  end
+
+  subgraph RIGHT[" "]
+    direction TB
+    LOAD["<div style='font-size:20px;padding:10px 18px'><b>EBCLLOAD</b></div>"]
+    POST["<div style='font-size:20px;padding:10px 18px'><b>EBPOST01</b></div>"]
+    SALD["<div style='font-size:20px;padding:10px 18px'><b>EBSALD01</b></div>"]
+    EOD["<div style='font-size:20px;padding:10px 18px'><b>EBJEOD01</b></div>"]
+    CSEXT["<div style='font-size:20px;padding:10px 18px'><b>EBCSEXT</b></div>"]
+    CSSLD["<div style='font-size:20px;padding:10px 18px'><b>EBCSSLD</b></div>"]
+    CSTRF["<div style='font-size:20px;padding:10px 18px'><b>EBCSTRF</b></div>"]
+  end
+
+  style LEFT fill:transparent,stroke:transparent
+  style RIGHT fill:transparent,stroke:transparent
+
+  CP1 --> LOAD
+  CP2 --> LOAD
+  CP2 --> POST
+  CP2 --> SALD
+  CP2 --> EOD
+  CP3 --> SALD
+  B1 --> CSEXT
+  B2 --> CSSLD
+  B3 --> CSTRF
+</div>
+</div>
+
+<div class="g2">
+  <div class="card">
+    <div class="ct">Layouts (copybooks/layouts/)</div>
+    <table><tr><th>Copybook</th><th>LRECL</th><th>Usado por</th></tr>
+      <tr><td><code>CPCLI001</code></td><td>80B</td><td>EBCLLOAD</td></tr>
+      <tr><td><code>CPCNT001</code></td><td>100B</td><td>EBCLLOAD, EBPOST01, EBSALD01, EBJEOD01</td></tr>
+      <tr><td><code>CPSLD001</code></td><td>100B</td><td>EBSALD01</td></tr>
+      <tr><td><code>CPLCT001</code></td><td>120B</td><td>Programas de lançamento</td></tr>
+      <tr><td><code>CPAUD001</code></td><td>120B</td><td>EBCLLOAD, batch geral</td></tr>
+      <tr><td><code>CPREJ001</code></td><td>150B</td><td>EBREPR01</td></tr>
+    </table>
+  </div>
+  <div>
+    <div class="card">
+      <div class="ct">DCLGENs DB2 (copybooks/db2/)</div>
+      <div class="aw" style="padding:8px 12px;font-size:12px;margin-bottom:8px">Preparados mas não usados ainda nos programas batch. Prontos para SQL embedded futuro.</div>
+      <table><tr><th>Copybook</th><th>Tabela DB2</th></tr>
+        <tr><td><code>DCLCLIENTE</code></td><td>EMUNAH.TB_CLIENTE</td></tr>
+        <tr><td><code>DCLCONTA</code></td><td>EMUNAH.TB_CONTA</td></tr>
+        <tr><td><code>DCLLANCTO</code></td><td>EMUNAH.TB_LANCTO</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="ct">BMS Maps CICS (copybooks/telas/)</div>
+      <table><tr><th>Copybook</th><th>Programa</th><th>Função</th></tr>
+        <tr><td><code>EBMEXT</code></td><td>EBCSEXT</td><td>Tela extrato</td></tr>
+        <tr><td><code>EBMSLD</code></td><td>EBCSSLD</td><td>Tela saldo</td></tr>
+        <tr><td><code>EBMTRF</code></td><td>EBCSTRF</td><td>Tela transferência</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 5 — AMBIENTE & PDSs
+══════════════════════════════════════════ -->
+<div id="ambiente" class="section">
+<h2 class="pt">Ambiente &amp; Estrutura de PDSs</h2>
+
+<div class="mw">
+<div class="mermaid" id="m-amb">
+graph TD
+  subgraph LOCAL["Ambiente Local"]
+    VS["VS Code + Zowe"]
+    GIT["Git"]
+  end
+  subgraph DEV["z/OS DEV - HLQ.EMUNAH.DEV"]
+    DC["DEV.COBOL"]
+    DY["DEV.COPY"]
+    DJ["DEV.JCL"]
+    DR["DEV.REXX"]
+    DL["DEV.LOADLIB"]
+  end
+  subgraph BUILD["Build"]
+    BB["EBBUILD IGYWCL"]
+    BC["EBCOMP IGYCRCTL"]
+    BL["EBLINK IEWBLINK"]
+  end
+  subgraph HML["z/OS HML"]
+    HC["HML.COBOL"]
+    HL["HML.LOADLIB"]
+  end
+  subgraph PRD["z/OS PRD"]
+    PL["PRD.LOADLIB"]
+  end
+  subgraph ARQ["Dados ARQ"]
+    VS2["CLIENTE.KSDS<br/>CONTA.KSDS<br/>LANCTO.ESDS"]
+  end
+  GIT --> VS
+  VS --> DC
+  VS --> DY
+  VS --> DJ
+  DC --> BB
+  DY --> BB
+  DC --> BC
+  DY --> BC
+  BB --> DL
+  BC --> BL
+  BL --> DL
+  DL --> HL
+  HL --> PL
+  DL --> VS2
+</div>
+</div>
+
+<div class="g2">
+  <div class="card">
+    <div class="ct">Jobs de Compilação</div>
+    <div class="fi"><div class="fn">A</div><div class="fb"><div class="name">EBBUILD</div><div class="desc">IGYWCL — Compila + Link-edit em um passo (recomendado)</div></div></div>
+    <div class="fi"><div class="fn">B</div><div class="fb"><div class="name">EBCOMP</div><div class="desc">IGYCRCTL — Somente compilação COBOL</div></div></div>
+    <div class="fi"><div class="fn">C</div><div class="fb"><div class="name">EBLINK</div><div class="desc">IEWBLINK — Somente link-edit</div></div></div>
+    <div style="margin-top:12px"><div class="ct" style="font-size:13px">Jobs Utilitários</div>
+    <table style="margin-top:6px;font-size:12px">
+      <tr><th>Job</th><th>Finalidade</th></tr>
+      <tr><td><code>EBALLOC</code></td><td>Aloca PDSs e datasets VSAM</td></tr>
+      <tr><td><code>EBJBACKP</code></td><td>Backup antes do processamento diário</td></tr>
+      <tr><td><code>EBJPRECK</code></td><td>Pré-verificação (5 checks IDCAMS)</td></tr>
+      <tr><td><code>EBSEED</code></td><td>Popula dados de teste/semente</td></tr>
+      <tr><td><code>EBRESET</code></td><td>Reseta ambiente para estado limpo</td></tr>
+      <tr><td><code>EBDEPLOY</code></td><td>Coordenação geral de deploy</td></tr>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="ct">Convenção de Nomenclatura</div>
+    <p style="color:var(--text-m);font-size:12px;margin-bottom:10px">Prefixo: <code style="color:var(--acc)">HLQ.EMUNAH</code></p>
+    <table style="font-size:12px">
+      <tr><th>Segmento</th><th>Categoria</th><th>Exemplos</th></tr>
+      <tr><td><code>.DEV.*</code></td><td>Desenvolvimento</td><td>DEV.COBOL, DEV.JCL</td></tr>
+      <tr><td><code>.HML.*</code></td><td>Homologação</td><td>HML.COBOL, HML.LOADLIB</td></tr>
+      <tr><td><code>.PRD.*</code></td><td>Produção</td><td>PRD.LOADLIB</td></tr>
+      <tr><td><code>.ARQ.*</code></td><td>Dados operacionais</td><td>ARQ.CLIENTE.KSDS</td></tr>
+    </table>
+    <div style="margin-top:12px"><div class="ct" style="font-size:13px">Prefixos de Jobs</div>
+    <table style="font-size:12px;margin-top:6px">
+      <tr><th>Prefixo</th><th>Categoria</th><th>Exemplos</th></tr>
+      <tr><td><code>EBJ*</code></td><td>Batch</td><td>EBJVALD, EBJPOST, EBJEOD</td></tr>
+      <tr><td><code>EBB*</code></td><td>Build</td><td>EBBUILD, EBCOMP, EBLINK</td></tr>
+      <tr><td><code>EBA*</code></td><td>Alocação</td><td>EBALLOC</td></tr>
+      <tr><td><code>EBC*</code></td><td>CICS Online</td><td>EBCSEXT, EBCSSLD</td></tr>
+      <tr><td><code>EBS*</code></td><td>Saldo/Smoke</td><td>EBSALD01, EBSMKH01</td></tr>
+    </table></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 6 — DB2
+══════════════════════════════════════════ -->
+<div id="db2" class="section">
+<h2 class="pt">DB2 — Tabelas e Host Variables</h2>
+<div class="ai">DCLGENs DB2 definidos em <code>copybooks/db2/</code> mas programas batch usam VSAM atualmente. Prontos para SQL embedded futuro.</div>
+
+<div class="mw">
+<div class="mermaid" id="m-db2">
+erDiagram
+  TB_CLIENTE {
+    INT ID_CLIENTE PK
+    VARCHAR NOME
+    CHAR CPF
+    DATE DATA_NASC
+    CHAR STATUS
+    TIMESTAMP DATA_CADASTRO
+    SMALLINT AGENCIA_PRINC
+  }
+  TB_CONTA {
+    SMALLINT AGENCIA PK
+    INT NUM_CONTA PK
+    INT ID_CLIENTE FK
+    CHAR TIPO
+    CHAR STATUS
+    DATE DATA_ABERTURA
+    DECIMAL SALDO
+    DECIMAL LIMITE
+    TIMESTAMP ULT_MOV
+  }
+  TB_LANCTO {
+    INT ID_LANCTO PK
+    SMALLINT AGENCIA FK
+    INT NUM_CONTA FK
+    DATE DATA_LANCTO
+    CHAR TIPO
+    DECIMAL VALOR
+    VARCHAR HISTORICO
+    VARCHAR CANAL
+    CHAR STATUS
+  }
+  TB_CLIENTE ||--o{ TB_CONTA : possui
+  TB_CONTA ||--o{ TB_LANCTO : lancamentos
+</div>
+</div>
+
+<div class="g2">
+  <div class="card">
+    <div class="ct">EMUNAH.TB_CLIENTE</div>
+    <p style="color:var(--text-m);font-size:12px;margin-bottom:8px">DCLGEN: <code>DCLCLIENTE</code></p>
+    <table style="font-size:12px">
+      <tr><th>Campo</th><th>Tipo</th><th>Obs</th></tr>
+      <tr><td>ID_CLIENTE</td><td>INT</td><td>PK</td></tr>
+      <tr><td>NAME</td><td>VARCHAR</td><td>Nome completo</td></tr>
+      <tr><td>CPF</td><td>CHAR(11)</td><td>Sem formatação</td></tr>
+      <tr><td>BIRTH_DATE</td><td>DATE</td><td>Data de nascimento</td></tr>
+      <tr><td>STATUS</td><td>CHAR(1)</td><td>A/I/B</td></tr>
+      <tr><td>REGISTER_DATE</td><td>TIMESTAMP</td><td>Data de cadastro</td></tr>
+      <tr><td>AGENCY_PRINCIPAL</td><td>SMALLINT</td><td>Agência principal</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <div class="ct">EMUNAH.TB_CONTA</div>
+    <p style="color:var(--text-m);font-size:12px;margin-bottom:8px">DCLGEN: <code>DCLCONTA</code></p>
+    <table style="font-size:12px">
+      <tr><th>Campo</th><th>Tipo</th><th>Obs</th></tr>
+      <tr><td>AGENCIA</td><td>SMALLINT</td><td>PK composta</td></tr>
+      <tr><td>NUM_CONTA</td><td>INT</td><td>PK composta</td></tr>
+      <tr><td>ID_CLIENTE</td><td>INT</td><td>FK → TB_CLIENTE</td></tr>
+      <tr><td>TYPE</td><td>CHAR(1)</td><td>C/P</td></tr>
+      <tr><td>STATUS</td><td>CHAR(1)</td><td>A/I/E</td></tr>
+      <tr><td>OPEN_DATE</td><td>DATE</td><td></td></tr>
+      <tr><td>BALANCE</td><td>DECIMAL(13,2)</td><td>Saldo atual</td></tr>
+      <tr><td>LIMIT_VALUE</td><td>DECIMAL(11,2)</td><td>Limite crédito</td></tr>
+      <tr><td>LAST_MOVEMENT_DATE</td><td>TIMESTAMP</td><td></td></tr>
+    </table>
+  </div>
+</div>
+<div class="card">
+  <div class="ct">EMUNAH.TB_LANCTO</div>
+  <p style="color:var(--text-m);font-size:12px;margin-bottom:8px">DCLGEN: <code>DCLLANCTO</code></p>
+  <table style="font-size:12px">
+    <tr><th>Campo</th><th>Tipo</th><th>Obs</th></tr>
+    <tr><td>ID_LANCTO</td><td>INT</td><td>PK</td></tr>
+    <tr><td>AGENCIA</td><td>SMALLINT</td><td>FK → TB_CONTA</td></tr>
+    <tr><td>NUM_CONTA</td><td>INT</td><td>FK → TB_CONTA</td></tr>
+    <tr><td>DATA_LANCTO</td><td>DATE</td><td></td></tr>
+    <tr><td>TIPO</td><td>CHAR(1)</td><td>C=Crédito, D=Débito</td></tr>
+    <tr><td>VALOR</td><td>DECIMAL</td><td></td></tr>
+    <tr><td>HISTORICO</td><td>VARCHAR</td><td>Descrição do movimento</td></tr>
+    <tr><td>CANAL</td><td>CHAR</td><td>ATM, TED, PIX, CICS…</td></tr>
+    <tr><td>STATUS</td><td>CHAR(1)</td><td></td></tr>
+  </table>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TAB 7 — UNIVERSO GERAL
+══════════════════════════════════════════ -->
+<div id="universo" class="section">
+<h2 class="pt">Universo Geral do Laboratório</h2>
+
+<div class="univ-wrap">
+<svg viewBox="0 0 1800 1240" xmlns="http://www.w3.org/2000/svg" aria-label="Universo Geral do Laboratório" preserveAspectRatio="xMidYMin meet">
+  <defs>
+    <marker id="u-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--text-m)"/>
+    </marker>
+    <marker id="u-arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--acc)"/>
+    </marker>
+    <marker id="u-arrow-aud" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--aud-bd)"/>
+    </marker>
+    <style>
+      .panel{fill:var(--bg-card);stroke:var(--border);stroke-width:2}
+      .panel-title{fill:var(--acc)}
+      .panel-title-text{fill:#ffffff;font-size:17px;font-weight:700;font-family:'Segoe UI',system-ui,sans-serif}
+      .node{fill:var(--bg-page);stroke:var(--acc-bd);stroke-width:2}
+      .node-copy{fill:var(--cpy-bg);stroke:var(--cpy-bd);stroke-width:2}
+      .node-master{fill:var(--esds-bg);stroke:var(--esds-bd);stroke-width:2}
+      .node-master2{fill:var(--ksds-bg);stroke:var(--ksds-bd);stroke-width:2}
+      .node-out{fill:var(--seq-bg);stroke:var(--seq-bd);stroke-width:2}
+      .node-audit{fill:var(--aud-bg);stroke:var(--aud-bd);stroke-width:2}
+      .node-online{fill:var(--bg-page);stroke:var(--acc-bd);stroke-width:2}
+      .t-node{fill:var(--text);font-size:17px;font-weight:700;font-family:'Segoe UI',system-ui,sans-serif}
+      .edge{fill:none;stroke:var(--text-m);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#u-arrow)}
+      .edge-aud{fill:none;stroke:var(--aud-bd);stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:4 5;opacity:.85;marker-end:url(#u-arrow-aud)}
+      .edge-dash{fill:none;stroke:var(--acc);stroke-width:2.25;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:9 7;marker-end:url(#u-arrow-blue)}
+      .edge-label{fill:var(--acc);font-size:14px;font-weight:700;font-family:'Segoe UI',system-ui,sans-serif}
+      .aud-label{fill:var(--aud-bd);font-size:13px;font-weight:700;font-family:'Segoe UI',system-ui,sans-serif;letter-spacing:.5px}
+    </style>
+  </defs>
+
+  <!-- ═══ PAINÉIS ═══ -->
+  <rect class="panel" x="50" y="30" rx="22" ry="22" width="1700" height="150"/>
+  <rect class="panel-title" x="75" y="46" rx="14" ry="14" width="165" height="42"/>
+  <text class="panel-title-text" x="103" y="74">ENTRADA</text>
+
+  <rect class="panel" x="50" y="220" rx="22" ry="22" width="1700" height="500"/>
+  <rect class="panel-title" x="75" y="236" rx="14" ry="14" width="210" height="42"/>
+  <text class="panel-title-text" x="102" y="264">COBOL BATCH</text>
+  <rect class="panel-title" x="700" y="236" rx="14" ry="14" width="255" height="42"/>
+  <text class="panel-title-text" x="725" y="264">COPYBOOKS DE LAYOUT</text>
+  <rect class="panel-title" x="1195" y="236" rx="14" ry="14" width="185" height="42"/>
+  <text class="panel-title-text" x="1223" y="264">MASTERS VSAM</text>
+
+  <rect class="panel" x="50" y="760" rx="22" ry="22" width="1700" height="130"/>
+  <rect class="panel-title" x="75" y="776" rx="14" ry="14" width="170" height="42"/>
+  <text class="panel-title-text" x="101" y="804">CICS ONLINE</text>
+
+  <rect class="panel" x="50" y="930" rx="22" ry="22" width="1700" height="200"/>
+  <rect class="panel-title" x="75" y="946" rx="14" ry="14" width="120" height="42"/>
+  <text class="panel-title-text" x="101" y="974">SAÍDAS</text>
+
+  <!-- ═══ ENTRADA ═══ -->
+  <rect class="node" x="130" y="98" rx="14" ry="14" width="260" height="58"/>
+  <text class="t-node" x="260" y="135" text-anchor="middle">ENTRADA.SEQ</text>
+  <rect class="node" x="770" y="98" rx="14" ry="14" width="260" height="58"/>
+  <text class="t-node" x="900" y="135" text-anchor="middle">CLIENTIN.SEQ</text>
+  <rect class="node" x="1410" y="98" rx="14" ry="14" width="260" height="58"/>
+  <text class="t-node" x="1540" y="135" text-anchor="middle">CONTAIN.SEQ</text>
+
+  <!-- ═══ BATCH col1 ═══ -->
+  <rect class="node" x="115" y="310" rx="14" ry="14" width="215" height="54"/>
+  <text class="t-node" x="222" y="344" text-anchor="middle">EBCLLOAD</text>
+  <rect class="node" x="115" y="395" rx="14" ry="14" width="215" height="54"/>
+  <text class="t-node" x="222" y="429" text-anchor="middle">EBVALI01</text>
+  <rect class="node" x="115" y="480" rx="14" ry="14" width="215" height="54"/>
+  <text class="t-node" x="222" y="514" text-anchor="middle">EBPOST01</text>
+  <rect class="node" x="115" y="565" rx="14" ry="14" width="215" height="54"/>
+  <text class="t-node" x="222" y="599" text-anchor="middle">EBSALD01</text>
+
+  <!-- ═══ BATCH col2 ═══ -->
+  <rect class="node" x="395" y="310" rx="14" ry="14" width="215" height="54"/>
+  <text class="t-node" x="502" y="344" text-anchor="middle">EBEXTR01</text>
+  <rect class="node" x="395" y="395" rx="14" ry="14" width="215" height="54"/>
+  <text class="t-node" x="502" y="429" text-anchor="middle">EBCONC01</text>
+  <rect class="node" x="395" y="480" rx="14" ry="14" width="215" height="54"/>
+  <text class="t-node" x="502" y="514" text-anchor="middle">EBJEOD01</text>
+  <rect class="node" x="395" y="565" rx="14" ry="14" width="215" height="54"/>
+  <text class="t-node" x="502" y="599" text-anchor="middle">EBREPR01</text>
+
+  <!-- ═══ COPYBOOKS ═══ -->
+  <rect class="node-copy" x="695" y="310" rx="14" ry="14" width="270" height="54"/>
+  <text class="t-node" x="830" y="344" text-anchor="middle">CPCLI001</text>
+  <rect class="node-copy" x="695" y="395" rx="14" ry="14" width="270" height="54"/>
+  <text class="t-node" x="830" y="429" text-anchor="middle">CPCNT001</text>
+  <rect class="node-copy" x="695" y="480" rx="14" ry="14" width="270" height="54"/>
+  <text class="t-node" x="830" y="514" text-anchor="middle">CPSLD001</text>
+  <rect class="node-copy" x="695" y="565" rx="14" ry="14" width="270" height="54"/>
+  <text class="t-node" x="830" y="599" text-anchor="middle">BMS MAPS</text>
+
+  <!-- ═══ MASTERS VSAM ═══ -->
+  <rect class="node-master2" x="1185" y="310" rx="14" ry="14" width="320" height="54"/>
+  <text class="t-node" x="1345" y="344" text-anchor="middle">CLIENTE.KSDS</text>
+  <rect class="node-master2" x="1185" y="395" rx="14" ry="14" width="320" height="54"/>
+  <text class="t-node" x="1345" y="429" text-anchor="middle">CONTA.KSDS</text>
+  <rect class="node-master" x="1185" y="480" rx="14" ry="14" width="320" height="54"/>
+  <text class="t-node" x="1345" y="514" text-anchor="middle">LANCTO.ESDS</text>
+
+  <!-- ═══ CICS ONLINE ═══ -->
+  <rect class="node-online" x="260" y="795" rx="14" ry="14" width="240" height="52"/>
+  <text class="t-node" x="380" y="828" text-anchor="middle">EBCSEXT</text>
+  <rect class="node-online" x="780" y="795" rx="14" ry="14" width="240" height="52"/>
+  <text class="t-node" x="900" y="828" text-anchor="middle">EBCSSLD</text>
+  <rect class="node-online" x="1300" y="795" rx="14" ry="14" width="240" height="52"/>
+  <text class="t-node" x="1420" y="828" text-anchor="middle">EBCSTRF</text>
+
+  <!-- ═══ SAÍDAS ═══ -->
+  <rect class="node-out" x="105"  y="1025" rx="14" ry="14" width="215" height="58"/>
+  <text class="t-node" x="212"  y="1062" text-anchor="middle">REJEITOS.SEQ</text>
+  <rect class="node-out" x="390"  y="1025" rx="14" ry="14" width="215" height="58"/>
+  <text class="t-node" x="497"  y="1062" text-anchor="middle">CONCIL.SEQ</text>
+  <rect class="node-out" x="675"  y="1025" rx="14" ry="14" width="215" height="58"/>
+  <text class="t-node" x="782"  y="1062" text-anchor="middle">EXTRATO.GDG</text>
+  <rect class="node-out" x="960"  y="1025" rx="14" ry="14" width="215" height="58"/>
+  <text class="t-node" x="1067" y="1062" text-anchor="middle">FECHTO.SEQ</text>
+  <rect class="node-out" x="1245" y="1025" rx="14" ry="14" width="215" height="58"/>
+  <text class="t-node" x="1352" y="1062" text-anchor="middle">SALDO.SEQ</text>
+  <rect class="node-audit" x="1530" y="1025" rx="14" ry="14" width="215" height="58"/>
+  <text class="t-node" x="1637" y="1062" text-anchor="middle">AUDIT.SEQ</text>
+
+  <!-- ═══ ARESTAS (rotas validadas sem colisões) ═══ -->
+  <path class="edge" d="M 260 156 L 260 200 L 80 200 L 80 422 L 115 422"/>  <!-- ENTRADA.SEQ→EBVALI01 -->
+  <path class="edge" d="M 900 156 L 900 190 L 65 190 L 65 335 L 115 335"/>  <!-- CLIENTIN.SEQ→EBCLLOAD -->
+  <path class="edge" d="M 1540 156 L 1540 210 L 70 210 L 70 340 L 115 340"/>  <!-- CONTAIN.SEQ→EBCLLOAD -->
+  <path class="edge" d="M 330 325 L 345 325 L 345 295 L 1160 295 L 1160 325 L 1185 325"/>  <!-- EBCLLOAD→CLIENTE.KSDS -->
+  <path class="edge" d="M 330 350 L 355 350 L 355 302 L 1165 302 L 1165 420 L 1185 420"/>  <!-- EBCLLOAD→CONTA.KSDS -->
+  <path class="edge" d="M 330 410 L 360 410 L 360 462 L 1155 462 L 1155 505 L 1185 505"/>  <!-- EBVALI01→LANCTO.ESDS -->
+  <path class="edge" d="M 115 430 L 60 430 L 60 1000 L 205 1000 L 205 1025"/>  <!-- EBVALI01→REJEITOS.SEQ -->
+  <path class="edge" d="M 1185 520 L 1177 520 L 1177 547 L 350 547 L 350 497 L 330 497"/>  <!-- LANCTO.ESDS→EBPOST01 -->
+  <path class="edge" d="M 330 477 L 1163 477 L 1163 435 L 1185 435"/>  <!-- EBPOST01→CONTA.KSDS -->
+  <path class="edge" d="M 1185 440 L 1170 440 L 1170 633 L 370 633 L 370 594 L 330 594"/>  <!-- CONTA.KSDS→EBSALD01 -->
+  <path class="edge" d="M 222 619 L 222 735 L 1220 735 L 1220 1050 L 1245 1050"/>  <!-- EBSALD01→SALDO.SEQ -->
+  <path class="edge" d="M 1185 495 L 1180 495 L 1180 280 L 502 280 L 502 310"/>  <!-- LANCTO.ESDS→EBEXTR01 -->
+  <path class="edge" d="M 395 340 L 380 340 L 380 740 L 635 740 L 635 910 L 782 910 L 782 1025"/>  <!-- EBEXTR01→EXTRATO.GDG -->
+  <path class="edge" d="M 1185 510 L 1160 510 L 1160 452 L 645 452 L 645 412 L 610 412"/>  <!-- LANCTO.ESDS→EBCONC01 -->
+  <path class="edge" d="M 395 420 L 385 420 L 385 750 L 550 750 L 550 1025"/>  <!-- EBCONC01→CONCIL.SEQ -->
+  <path class="edge" d="M 500 1025 L 500 915 L 655 915 L 655 530 L 610 530"/>  <!-- CONCIL.SEQ→EBJEOD01 -->
+  <path class="edge" d="M 1185 430 L 1175 430 L 1175 372 L 355 372 L 355 520 L 395 520"/>  <!-- CONTA.KSDS→EBJEOD01 -->
+  <path class="edge" d="M 610 515 L 650 515 L 650 755 L 1067 755 L 1067 1025"/>  <!-- EBJEOD01→FECHTO.SEQ -->
+  <path class="edge" d="M 220 1025 L 220 700 L 360 700 L 360 588 L 395 588"/>  <!-- REJEITOS.SEQ→EBREPR01 -->
+  <path class="edge" d="M 610 605 L 640 605 L 640 467 L 1150 467 L 1150 513 L 1185 513"/>  <!-- EBREPR01→LANCTO.ESDS -->
+  <path class="edge" d="M 1505 510 L 1570 510 L 1570 768 L 380 768 L 380 795"/>  <!-- LANCTO.ESDS→EBCSEXT -->
+  <path class="edge" d="M 1505 425 L 1585 425 L 1585 772 L 900 772 L 900 795"/>  <!-- CONTA.KSDS→EBCSSLD -->
+  <path class="edge" d="M 1505 420 L 1600 420 L 1600 764 L 1420 764 L 1420 795"/>  <!-- CONTA.KSDS→EBCSTRF -->
+  <path class="edge" d="M 1450 795 L 1450 755 L 1620 755 L 1620 440 L 1505 440"/>  <!-- EBCSTRF→CONTA.KSDS -->
+  <path class="edge-aud" d="M 55 925 L 1637 925 L 1637 1025"/>  <!-- AUDIT-bus-tronco -->
+  <path class="edge-aud" d="M 115 335 L 55 335 L 55 925"/>  <!-- EBCLLOAD→AUDIT -->
+  <path class="edge-aud" d="M 115 422 L 95 422 L 95 925"/>  <!-- EBVALI01→AUDIT -->
+  <path class="edge-aud" d="M 115 507 L 90 507 L 90 925"/>  <!-- EBPOST01→AUDIT -->
+  <path class="edge-aud" d="M 115 592 L 85 592 L 85 925"/>  <!-- EBSALD01→AUDIT -->
+  <path class="edge-aud" d="M 395 510 L 345 510 L 345 707 L 105 707 L 105 925"/>  <!-- EBJEOD01→AUDIT -->
+  <path class="edge-aud" d="M 395 595 L 355 595 L 355 715 L 110 715 L 110 925"/>  <!-- EBREPR01→AUDIT -->
+  <path class="edge-dash" d="M 695 337 L 610 337"/>  <!-- CPCLI001→EBEXTR01-COPY -->
+  <path class="edge-dash" d="M 695 422 L 610 422"/>  <!-- CPCNT001→EBCONC01-COPY -->
+  <path class="edge-dash" d="M 695 507 L 610 507"/>  <!-- CPSLD001→EBJEOD01-COPY -->
+  <path class="edge-dash" d="M 830 619 L 830 782 L 380 782 L 380 795"/>  <!-- BMSMAPS→EBCSEXT-COPY -->
+  <path class="edge-dash" d="M 830 619 L 830 782 L 900 782 L 900 795"/>  <!-- BMSMAPS→EBCSSLD-COPY -->
+  <path class="edge-dash" d="M 830 619 L 830 782 L 1420 782 L 1420 795"/>  <!-- BMSMAPS→EBCSTRF-COPY -->
+
+  <!-- ═══ RÓTULOS "COPY" nas linhas pontilhadas azuis ═══ -->
+  <text class="edge-label" x="652" y="330" text-anchor="middle">COPY</text>
+  <text class="edge-label" x="652" y="415" text-anchor="middle">COPY</text>
+  <text class="edge-label" x="652" y="500" text-anchor="middle">COPY</text>
+  <text class="edge-label" x="655" y="702" text-anchor="middle">COPY (BMS)</text>
+
+  <!-- Rótulo do barramento AUDIT -->
+  <text class="aud-label" x="130" y="920">AUDIT BUS</text>
+</svg>
+</div>
+
+</div></div>
+
+<h3 class="sl">Resumo: Programas × Datasets × Copybooks</h3>
+<div class="card" style="padding:0;overflow:hidden">
+<table>
+  <tr><th>Programa</th><th>Entrada</th><th>Saída</th><th>Copybooks</th><th>Audit</th><th>Papel</th></tr>
+  <tr><td><code>EBCLLOAD</code></td><td>CLIENTIN, CONTAIN</td><td>CLIENTE.KSDS, CONTA.KSDS</td><td>CPCLI001, CPCNT001</td><td><span class="badge b-aud">Sim</span></td><td>Carga master</td></tr>
+  <tr><td><code>EBVALI01</code></td><td>ENTRADA.SEQ</td><td>LANCTO.ESDS, REJEITOS</td><td style="color:var(--text-d)">Inline</td><td><span class="badge b-aud">Sim</span></td><td>Validação</td></tr>
+  <tr><td><code>EBPOST01</code></td><td>LANCTO.ESDS</td><td>CONTA.KSDS (atualiza)</td><td>CPCNT001</td><td><span class="badge b-aud">Sim</span></td><td>Postagem saldos</td></tr>
+  <tr><td><code>EBSALD01</code></td><td>CONTA.KSDS, SALDIN</td><td>SALDOUT.SEQ</td><td>CPCNT001, CPSLD001</td><td><span class="badge b-aud">Sim</span></td><td>Relatório saldos</td></tr>
+  <tr><td><code>EBEXTR01</code></td><td>LANCTO.ESDS</td><td>EXTRATO.GDG</td><td style="color:var(--text-d)">Inline</td><td style="color:var(--text-d)">—</td><td>Extrato (GDG)</td></tr>
+  <tr><td><code>EBCONC01</code></td><td>LANCTO.ESDS</td><td>CONCIL.SEQ</td><td style="color:var(--text-d)">Inline</td><td style="color:var(--text-d)">—</td><td>Conciliação</td></tr>
+  <tr><td><code>EBJEOD01</code></td><td>CONCIL, CONTA.KSDS</td><td>FECHTO.SEQ</td><td>CPCNT001</td><td><span class="badge b-aud">Sim</span></td><td>Fechamento EOD</td></tr>
+  <tr><td><code>EBREPR01</code></td><td>REJEITOS.SEQ</td><td>LANCTO.OUT, REJOUT</td><td style="color:var(--text-d)">Inline</td><td><span class="badge b-aud">Sim</span></td><td>Reprocessamento</td></tr>
+  <tr><td><code>EBCSEXT</code></td><td>LANCTO.ESDS</td><td>Tela BMS</td><td>EBMEXT</td><td style="color:var(--text-d)">—</td><td>Online extrato</td></tr>
+  <tr><td><code>EBCSSLD</code></td><td>CONTA.KSDS</td><td>Tela BMS</td><td>EBMSLD</td><td style="color:var(--text-d)">—</td><td>Online saldo</td></tr>
+  <tr><td><code>EBCSTRF</code></td><td>CONTA.KSDS</td><td>CONTA.KSDS (atualiza)</td><td>EBMTRF</td><td style="color:var(--text-d)">—</td><td>Online transferência</td></tr>
+</table>
+</div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+// ═══ Mermaid setup ═══
+const MERM_DARK = {
+  startOnLoad:false, theme:'dark',
+  flowchart:{ useMaxWidth:false, htmlLabels:true, nodeSpacing:60, rankSpacing:80 },
+  themeVariables:{
+    darkMode:true, background:'#0d1117',
+    primaryColor:'#1c3560', primaryTextColor:'#cae8ff',
+    primaryBorderColor:'#1f6feb', lineColor:'#6e7681',
+    secondaryColor:'#161b22', tertiaryColor:'#21262d',
+    fontFamily:"'Courier New',monospace", fontSize:'16px',
+    edgeLabelBackground:'#0d1117', clusterBkg:'#161b22', clusterBorder:'#30363d'
+  }
+};
+const MERM_LIGHT = {
+  startOnLoad:false, theme:'default',
+  flowchart:{ useMaxWidth:false, htmlLabels:true, nodeSpacing:60, rankSpacing:80 },
+  themeVariables:{
+    fontFamily:"'Courier New',monospace", fontSize:'16px'
+  }
+};
+
+// Guarda o fonte original de cada diagrama antes do Mermaid tocar
+const diagramSrcs = {};
+document.querySelectorAll('.mermaid[id]').forEach(el => {
+  diagramSrcs[el.id] = el.textContent.trim();
+});
+
+// Controle de quais diagramas já foram renderizados no tema atual
+const rendered = new Set();
+
+function currentThemeIsLight() {
+  return document.documentElement.getAttribute('data-theme') === 'light';
+}
+
+function configureMermaid() {
+  mermaid.initialize(currentThemeIsLight() ? MERM_LIGHT : MERM_DARK);
+}
+
+// Renderiza apenas os diagramas visíveis (dentro de .section.active)
+// e que ainda não foram renderizados. Garante container com dimensão real.
+async function renderVisibleDiagrams() {
+  const nodes = document.querySelectorAll('.section.active .mermaid[id]');
+  for (const el of nodes) {
+    if (rendered.has(el.id)) continue;
+    el.innerHTML = diagramSrcs[el.id];
+    el.removeAttribute('data-processed');
+    try {
+      await mermaid.run({ nodes: [el] });
+      rendered.add(el.id);
+    } catch (e) {
+      console.error('Mermaid erro em', el.id, e);
+    }
+  }
+}
+
+// Troca de tema: invalida cache e reinjeta o fonte em todos os diagramas,
+// depois renderiza apenas o visível. Os demais serão renderizados ao abrir a aba.
+function rerenderAllForTheme() {
+  rendered.clear();
+  configureMermaid();
+  document.querySelectorAll('.mermaid[id]').forEach(el => {
+    el.innerHTML = diagramSrcs[el.id];
+    el.removeAttribute('data-processed');
+  });
+  renderVisibleDiagrams();
+}
+
+// ═══ Tema salvo ═══
+const saved = localStorage.getItem('emunah-theme') || 'dark';
+if (saved === 'light') {
+  document.documentElement.setAttribute('data-theme','light');
+  document.getElementById('togIcon').textContent = '🌙';
+  document.getElementById('togLbl').textContent = 'Tema Escuro';
+}
+configureMermaid();
+renderVisibleDiagrams();
+
+function toggleTheme() {
+  const html = document.documentElement;
+  const isLight = html.getAttribute('data-theme') === 'light';
+  const next = isLight ? 'dark' : 'light';
+  html.setAttribute('data-theme', next);
+  document.getElementById('togIcon').textContent = next === 'dark' ? '☀️' : '🌙';
+  document.getElementById('togLbl').textContent = next === 'dark' ? 'Tema Claro' : 'Tema Escuro';
+  localStorage.setItem('emunah-theme', next);
+  rerenderAllForTheme();
+}
+
+// ═══ Tab switching (lazy render) ═══
+function showTab(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+  renderVisibleDiagrams();
+}
+</script>
+</body>
+</html>
