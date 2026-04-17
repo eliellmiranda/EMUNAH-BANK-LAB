@@ -44,7 +44,7 @@ Executar a cadeia batch completa do inicio ao fim sem erros, validando que todos
 bash automation/submit/submit_cadeia.sh
 
 # Via REXX no TSO:
-EXEC 'Z77948.EMUNAH.DEV.REXX(EBCADEIA)'
+EXEC '<HLQ>.EMUNAH.DEV.REXX(EBCADEIA)'
 
 # Validar saidas:
 bash automation/valida/valida_saida.sh
