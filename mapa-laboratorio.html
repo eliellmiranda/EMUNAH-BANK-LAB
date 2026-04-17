@@ -609,12 +609,12 @@ td code{font-family:'Courier New',monospace;color:var(--acc);font-size:12px}
 <div class="mw">
 <div class="mermaid" id="m-datasets">
 graph LR
-  subgraph KSDS["VSAM KSDS — Indexado"]
-    CLI[("CLIENTE.KSDS\n80B · chave: ID_CLIENTE")]
-    CNT[("CONTA.KSDS\n100B · chave: AGENCIA+NUM_CONTA")]
+  subgraph KSDS["VSAM KSDS - Indexado"]
+    CLI[("CLIENTE.KSDS\n80B - chave ID_CLIENTE")]
+    CNT[("CONTA.KSDS\n100B - chave AGENCIA+CONTA")]
   end
-  subgraph ESDS["VSAM ESDS — Entry-Sequential"]
-    LCT[("LANCTO.ESDS\n120B · movimentos validados")]
+  subgraph ESDS["VSAM ESDS - Entry-Sequential"]
+    LCT[("LANCTO.ESDS\n120B - movimentos validados")]
   end
   subgraph SEQ["Sequenciais / GDG"]
     ENT["ENTRADA.SEQ 120B"]
@@ -631,6 +631,14 @@ graph LR
     JCL_P["DEV.JCL"]
     LDB["DEV.LOADLIB"]
   end
+  ENT --> LCT
+  ENT --> REJ
+  LCT --> CON
+  LCT --> EXT
+  CON --> FEC
+  CNT --> SLD
+  LCT --> AUD
+  CNT --> AUD
 </div>
 </div>
 
@@ -661,29 +669,40 @@ graph LR
 <div class="mermaid" id="m-copy">
 graph TD
   subgraph LAY["copybooks/layouts/"]
-    CP1["CPCLI001 · 80B\nID, Nome, CPF, Status"]
-    CP2["CPCNT001 · 100B\nAgencia, Conta, Saldo, Limite"]
-    CP3["CPSLD001 · 100B\nSaldo output"]
-    CP4["CPLCT001 · 120B\nLançamento/Movimento"]
-    CP5["CPAUD001 · 120B · Audit"]
-    CP6["CPREJ001 · 150B · Rejeição"]
+    CP1["CPCLI001 - 80B<br/>ID, Nome, CPF, Status"]
+    CP2["CPCNT001 - 100B<br/>Agencia, Conta, Saldo, Limite"]
+    CP3["CPSLD001 - 100B<br/>Saldo output"]
+    CP4["CPLCT001 - 120B<br/>Lancamento/Movimento"]
+    CP5["CPAUD001 - 120B<br/>Audit"]
+    CP6["CPREJ001 - 150B<br/>Rejeicao"]
   end
   subgraph DB2C["copybooks/db2/"]
-    D1["DCLCLIENTE · TB_CLIENTE"]
-    D2["DCLCONTA · TB_CONTA"]
-    D3["DCLLANCTO · TB_LANCTO"]
+    D1["DCLCLIENTE<br/>TB_CLIENTE"]
+    D2["DCLCONTA<br/>TB_CONTA"]
+    D3["DCLLANCTO<br/>TB_LANCTO"]
   end
   subgraph BMS["copybooks/telas/"]
-    B1["EBMEXT · extrato"]
-    B2["EBMSLD · saldo"]
-    B3["EBMTRF · transferência"]
+    B1["EBMEXT<br/>extrato"]
+    B2["EBMSLD<br/>saldo"]
+    B3["EBMTRF<br/>transferencia"]
   end
-  LOAD["EBCLLOAD"] POST["EBPOST01"] SALD["EBSALD01"] EOD["EBJEOD01"]
-  CSEXT["EBCSEXT"] CSSLD["EBCSSLD"] CSTRF["EBCSTRF"]
-  CP1-->LOAD  CP2-->LOAD  CP2-->POST  CP2-->SALD  CP2-->EOD  CP3-->SALD
-  B1-->CSEXT  B2-->CSSLD  B3-->CSTRF
-</div>
-</div>
+  LOAD["EBCLLOAD"]
+  POST["EBPOST01"]
+  SALD["EBSALD01"]
+  EOD["EBJEOD01"]
+  CSEXT["EBCSEXT"]
+  CSSLD["EBCSSLD"]
+  CSTRF["EBCSTRF"]
+  CP1 --> LOAD
+  CP2 --> LOAD
+  CP2 --> POST
+  CP2 --> SALD
+  CP2 --> EOD
+  CP3 --> SALD
+  B1 --> CSEXT
+  B2 --> CSSLD
+  B3 --> CSTRF
+</div></div>
 
 <div class="g2">
   <div class="card">
@@ -729,28 +748,46 @@ graph TD
 <div class="mermaid" id="m-amb">
 graph TD
   subgraph LOCAL["Ambiente Local"]
-    VS["VS Code + Zowe"] GIT["Git"]
+    VS["VS Code + Zowe"]
+    GIT["Git"]
   end
-  subgraph DEV["z/OS DEV — Z77948.EMUNAH.DEV.*"]
-    DC["DEV.COBOL"] DY["DEV.COPY"] DJ["DEV.JCL"] DR["DEV.REXX"] DL["DEV.LOADLIB"]
+  subgraph DEV["z/OS DEV - HLQ.EMUNAH.DEV"]
+    DC["DEV.COBOL"]
+    DY["DEV.COPY"]
+    DJ["DEV.JCL"]
+    DR["DEV.REXX"]
+    DL["DEV.LOADLIB"]
   end
   subgraph BUILD["Build"]
-    BB["EBBUILD IGYWCL"] BC["EBCOMP IGYCRCTL"] BL["EBLINK IEWBLINK"]
+    BB["EBBUILD IGYWCL"]
+    BC["EBCOMP IGYCRCTL"]
+    BL["EBLINK IEWBLINK"]
   end
   subgraph HML["z/OS HML"]
-    HC["HML.COBOL"] HL["HML.LOADLIB"]
+    HC["HML.COBOL"]
+    HL["HML.LOADLIB"]
   end
   subgraph PRD["z/OS PRD"]
     PL["PRD.LOADLIB"]
   end
-  subgraph ARQ["Dados ARQ.*"]
-    VS2["CLIENTE.KSDS\nCONTA.KSDS\nLANCTO.ESDS\n..."]
+  subgraph ARQ["Dados ARQ"]
+    VS2["CLIENTE.KSDS<br/>CONTA.KSDS<br/>LANCTO.ESDS"]
   end
-  GIT-->VS  VS-->DC  VS-->DY  VS-->DJ
-  DC & DY --> BB & BC  BB & BC --> DL  BC --> BL --> DL
-  DL-->HL  HL-->PL  DL-->VS2
-</div>
-</div>
+  GIT --> VS
+  VS --> DC
+  VS --> DY
+  VS --> DJ
+  DC --> BB
+  DY --> BB
+  DC --> BC
+  DY --> BC
+  BB --> DL
+  BC --> BL
+  BL --> DL
+  DL --> HL
+  HL --> PL
+  DL --> VS2
+</div></div>
 
 <div class="g2">
   <div class="card">
@@ -804,37 +841,37 @@ graph TD
 erDiagram
   TB_CLIENTE {
     INT ID_CLIENTE PK
-    VARCHAR NAME
-    CHAR11 CPF
-    DATE BIRTH_DATE
-    CHAR1 STATUS "A=Ativo I=Inativo B=Bloqueado"
-    TIMESTAMP REGISTER_DATE
-    SMALLINT AGENCY_PRINCIPAL
+    VARCHAR NOME
+    CHAR CPF
+    DATE DATA_NASC
+    CHAR STATUS
+    TIMESTAMP DATA_CADASTRO
+    SMALLINT AGENCIA_PRINC
   }
   TB_CONTA {
     SMALLINT AGENCIA PK
     INT NUM_CONTA PK
     INT ID_CLIENTE FK
-    CHAR1 TYPE "C=Corrente P=Poupança"
-    CHAR1 STATUS "A=Ativa I=Inativa E=Encerrada"
-    DATE OPEN_DATE
-    DEC132 BALANCE
-    DEC112 LIMIT_VALUE
-    TIMESTAMP LAST_MOVEMENT_DATE
+    CHAR TIPO
+    CHAR STATUS
+    DATE DATA_ABERTURA
+    DECIMAL SALDO
+    DECIMAL LIMITE
+    TIMESTAMP ULT_MOV
   }
   TB_LANCTO {
     INT ID_LANCTO PK
     SMALLINT AGENCIA FK
     INT NUM_CONTA FK
     DATE DATA_LANCTO
-    CHAR1 TIPO "C=Crédito D=Débito"
+    CHAR TIPO
     DECIMAL VALOR
     VARCHAR HISTORICO
-    CHAR CANAL
-    CHAR1 STATUS
+    VARCHAR CANAL
+    CHAR STATUS
   }
-  TB_CLIENTE ||--o{ TB_CONTA : "possui"
-  TB_CONTA ||--o{ TB_LANCTO : "tem lançamentos"
+  TB_CLIENTE ||--o{ TB_CONTA : possui
+  TB_CONTA ||--o{ TB_LANCTO : lancamentos
 </div>
 </div>
 
@@ -898,42 +935,86 @@ erDiagram
 <div class="mermaid" id="m-univ">
 graph TB
   subgraph IN["Entrada"]
-    ENT[("ENTRADA.SEQ")] CI["CLIENTIN.SEQ"] CN["CONTAIN.SEQ"]
+    ENT[("ENTRADA.SEQ")]
+    CI["CLIENTIN.SEQ"]
+    CN["CONTAIN.SEQ"]
   end
   subgraph MASTER["Masters VSAM"]
-    KCLI[("CLIENTE.KSDS")] KCNT[("CONTA.KSDS")] ELCT[("LANCTO.ESDS")]
+    KCLI[("CLIENTE.KSDS")]
+    KCNT[("CONTA.KSDS")]
+    ELCT[("LANCTO.ESDS")]
   end
   subgraph BATCH["COBOL Batch"]
-    LOAD["EBCLLOAD"] VALI["EBVALI01"] POST["EBPOST01"]
-    SALD["EBSALD01"] EXTR["EBEXTR01"] CONC["EBCONC01"]
-    EOD["EBJEOD01"] REPR["EBREPR01"]
+    LOAD["EBCLLOAD"]
+    VALI["EBVALI01"]
+    POST["EBPOST01"]
+    SALD["EBSALD01"]
+    EXTR["EBEXTR01"]
+    CONC["EBCONC01"]
+    EOD["EBJEOD01"]
+    REPR["EBREPR01"]
   end
   subgraph ONLINE["CICS Online"]
-    CSEXT["EBCSEXT"] CSSLD["EBCSSLD"] CSTRF["EBCSTRF"]
+    CSEXT["EBCSEXT"]
+    CSSLD["EBCSSLD"]
+    CSTRF["EBCSTRF"]
   end
-  subgraph OUT["Saídas"]
-    REJ[("REJEITOS.SEQ")] CON2[("CONCIL.SEQ")] GDG[("EXTRATO.GDG")]
-    FECH[("FECHTO.SEQ")] AUD[("AUDIT.SEQ")] SO[("SALDO.SEQ")]
+  subgraph OUT["Saidas"]
+    REJ[("REJEITOS.SEQ")]
+    CON2[("CONCIL.SEQ")]
+    GDG[("EXTRATO.GDG")]
+    FECH[("FECHTO.SEQ")]
+    AUD[("AUDIT.SEQ")]
+    SO[("SALDO.SEQ")]
   end
   subgraph COPY["Copybooks"]
-    CP1["CPCLI001"] CP2["CPCNT001"] CP3["CPSLD001"]
-    BMS["BMS Maps"] DCL["DCLGENs DB2"]
+    CP1["CPCLI001"]
+    CP2["CPCNT001"]
+    CP3["CPSLD001"]
+    BMS["BMS Maps"]
+    DCL["DCLGENs DB2"]
   end
-  CI & CN --> LOAD --> KCLI & KCNT
-  CP1 -.->|COPY| LOAD  CP2 -.->|COPY| LOAD
-  ENT --> VALI --> ELCT & REJ
-  ELCT --> POST  KCNT <--> POST  KCLI --> POST
+  CI --> LOAD
+  CN --> LOAD
+  LOAD --> KCLI
+  LOAD --> KCNT
+  CP1 -.->|COPY| LOAD
+  CP2 -.->|COPY| LOAD
+  ENT --> VALI
+  VALI --> ELCT
+  VALI --> REJ
+  ELCT --> POST
+  KCNT --> POST
+  POST --> KCNT
+  KCLI --> POST
   CP2 -.->|COPY| POST
-  KCNT --> SALD --> SO  CP2 -.->|COPY| SALD  CP3 -.->|COPY| SALD
-  ELCT --> EXTR --> GDG
-  ELCT --> CONC --> CON2
-  CON2 --> EOD  KCNT --> EOD --> FECH  CP2 -.->|COPY| EOD
-  REJ --> REPR --> ELCT
-  LOAD & VALI & POST & SALD & EOD & REPR --> AUD
-  ELCT --> CSEXT  KCNT --> CSSLD & CSTRF
-  BMS -.->|COPY| CSEXT & CSSLD & CSTRF
-</div>
-</div>
+  KCNT --> SALD
+  SALD --> SO
+  CP2 -.->|COPY| SALD
+  CP3 -.->|COPY| SALD
+  ELCT --> EXTR
+  EXTR --> GDG
+  ELCT --> CONC
+  CONC --> CON2
+  CON2 --> EOD
+  KCNT --> EOD
+  EOD --> FECH
+  CP2 -.->|COPY| EOD
+  REJ --> REPR
+  REPR --> ELCT
+  LOAD --> AUD
+  VALI --> AUD
+  POST --> AUD
+  SALD --> AUD
+  EOD --> AUD
+  REPR --> AUD
+  ELCT --> CSEXT
+  KCNT --> CSSLD
+  KCNT --> CSTRF
+  BMS -.->|COPY| CSEXT
+  BMS -.->|COPY| CSSLD
+  BMS -.->|COPY| CSTRF
+</div></div>
 
 <h3 class="sl">Resumo: Programas × Datasets × Copybooks</h3>
 <div class="card" style="padding:0;overflow:hidden">
@@ -976,33 +1057,64 @@ const MERM_LIGHT = {
   }
 };
 
-// Store original diagram sources before Mermaid processes them
+// Guarda o fonte original de cada diagrama antes do Mermaid tocar
 const diagramSrcs = {};
 document.querySelectorAll('.mermaid[id]').forEach(el => {
-  diagramSrcs[el.id] = el.textContent;
+  diagramSrcs[el.id] = el.textContent.trim();
 });
 
-function initMermaid(light) {
-  mermaid.initialize(light ? MERM_LIGHT : MERM_DARK);
-  document.querySelectorAll('.mermaid[id]').forEach(el => {
-    if (diagramSrcs[el.id]) {
-      el.innerHTML = diagramSrcs[el.id];
-      el.removeAttribute('data-processed');
-    }
-  });
-  mermaid.run({ querySelector: '.mermaid[id]' });
+// Controle de quais diagramas já foram renderizados
+const rendered = new Set();
+
+function currentThemeIsLight() {
+  return document.documentElement.getAttribute('data-theme') === 'light';
 }
 
-// Load saved theme or default dark
+// Configura o Mermaid uma vez por tema
+function configureMermaid() {
+  mermaid.initialize(currentThemeIsLight() ? MERM_LIGHT : MERM_DARK);
+}
+
+// Renderiza somente os diagramas visíveis (dentro de .section.active)
+// e que ainda não foram renderizados no tema corrente.
+async function renderVisibleDiagrams() {
+  const nodes = document.querySelectorAll('.section.active .mermaid[id]');
+  for (const el of nodes) {
+    if (rendered.has(el.id)) continue;
+    // reinjeta o fonte original e limpa marca do Mermaid
+    el.innerHTML = diagramSrcs[el.id];
+    el.removeAttribute('data-processed');
+    try {
+      await mermaid.run({ nodes: [el] });
+      rendered.add(el.id);
+    } catch (e) {
+      console.error('Mermaid erro em', el.id, e);
+    }
+  }
+}
+
+// Ao trocar de tema: invalida tudo e re-renderiza o que estiver visível agora
+function rerenderAllForTheme() {
+  rendered.clear();
+  configureMermaid();
+  // reinjeta fonte em todos para não sobrar SVG antigo em abas ocultas
+  document.querySelectorAll('.mermaid[id]').forEach(el => {
+    el.innerHTML = diagramSrcs[el.id];
+    el.removeAttribute('data-processed');
+  });
+  renderVisibleDiagrams();
+}
+
+// ═══ Tema salvo ═══
 const saved = localStorage.getItem('emunah-theme') || 'dark';
 if (saved === 'light') {
   document.documentElement.setAttribute('data-theme','light');
   document.getElementById('togIcon').textContent = '🌙';
   document.getElementById('togLbl').textContent = 'Tema Escuro';
-  initMermaid(true);
-} else {
-  initMermaid(false);
 }
+configureMermaid();
+// Render inicial só da aba ativa (Cadeia Batch, que não tem mermaid — tudo bem)
+renderVisibleDiagrams();
 
 function toggleTheme() {
   const html = document.documentElement;
@@ -1012,15 +1124,17 @@ function toggleTheme() {
   document.getElementById('togIcon').textContent = next === 'dark' ? '☀️' : '🌙';
   document.getElementById('togLbl').textContent = next === 'dark' ? 'Tema Claro' : 'Tema Escuro';
   localStorage.setItem('emunah-theme', next);
-  initMermaid(next === 'light');
+  rerenderAllForTheme();
 }
 
-// ═══ Tab switching ═══
+// ═══ Tab switching (lazy render) ═══
 function showTab(id, el) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   el.classList.add('active');
+  // Agora que a aba está visível (container com dimensão real), renderiza
+  renderVisibleDiagrams();
 }
 </script>
 </body>
