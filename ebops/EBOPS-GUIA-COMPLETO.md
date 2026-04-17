@@ -16,7 +16,7 @@ O simulador reproduz 7 ferramentas corporativas usadas diariamente em ambientes 
 
 ### 2.1. Control-M (Scheduler)
 
-**O que é na empresa:** Control-M é o scheduler corporativo da BMC. Ele agenda, monitora e gerencia a execução de milhares de jobs batch por dia. Controla dependências entre jobs, janelas de execução, SLAs e alertas automáticos. Todo banco de grande porte no Brasil usa Control-M ou similar (Tivoli Workload Scheduler, CA7).
+**O que é na empresa:** Control-M é o scheduler corporativo da BMC. Ele agenda, monitora e gerencia a execução de milhares de jobs batch por dia. Controla dependências entre jobs, janelas de execução, SLAs e alertas automáticos.
 
 **O que o desenvolvedor faz com ele no dia-a-dia:**
 - Verifica se a cadeia batch do sistema está verde (todos os jobs executaram com sucesso)
