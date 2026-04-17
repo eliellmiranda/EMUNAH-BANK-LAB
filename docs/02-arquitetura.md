@@ -1,4 +1,4 @@
-# Arquitetura do Laboratório — Emunah Bank Lab
+# [02] ARQUITETURA DO LABORATÓRIO - EMUNAH BANK LAB
 
 ## Visão Geral
 
