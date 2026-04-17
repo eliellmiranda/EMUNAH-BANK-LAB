@@ -1,4 +1,4 @@
-# Padrões de Publicação — Emunah Bank Lab
+# [09] - PADRÕES DE PUBLICAÇÃO - EMUNAH BANK LAB
 
 ## Princípio
 
