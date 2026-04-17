@@ -1,4 +1,4 @@
-# Runbooks Operacionais — Emunah Bank Lab
+# [06] - RUNBOOKS OPERACIONAIS - EMUNAH BANK LAB
 
 ## Objetivo
 
