@@ -7,7 +7,7 @@ Todos os datasets seguem o padrão:
 <HLQ>.<PROJETO>.<AMBIENTE>.<TIPO/FUNÇÃO>
 ```
 
-- **HLQ:** `Z77948` (userid no zXplore)
+- **HLQ:** `<HLQ>` (userid no zXplore)
 - **PROJETO:** `EMUNAH`
 - **AMBIENTE:** `DEV`, `HML`, `PRD`, `ARQ` (negócio) ou `SEED` (carga inicial)
 
@@ -17,11 +17,11 @@ Todos os datasets seguem o padrão:
 
 | Dataset                      | Tipo     | Membros principais                                              | Finalidade                            |
 |------------------------------|----------|-----------------------------------------------------------------|---------------------------------------|
-| `Z77948.EMUNAH.DEV.COBOL`    | PDS/PDSE | EBCLLOAD, EBVALI01, EBPOST01, EBSALD01, EBEXTR01, EBCONC01, EBREPR01, EBJEOD01 | Fontes COBOL de desenvolvimento |
-| `Z77948.EMUNAH.DEV.COPY`     | PDS/PDSE | CPAUD001, CPCLI001, CPCNT001, CPLCT001, CPSLD001               | Copybooks e layouts de registro       |
-| `Z77948.EMUNAH.DEV.JCL`      | PDS/PDSE | EBJPRECK, EBJBACKP, EBJLOAD, EBJVALD, EBJPOST, EBJSALD, EBJEXTR, EBJCONC, EBJEOD, EBJREPR, EBSEED | JCLs de compilação e execução em DEV |
-| `Z77948.EMUNAH.DEV.REXX`     | PDS/PDSE | Scripts utilitários                                             | Scripts REXX e automações             |
-| `Z77948.EMUNAH.DEV.LOADLIB`  | PDS/PDSE | Load modules compilados                                         | Executáveis gerados no build DEV      |
+| `<HLQ>.EMUNAH.DEV.COBOL`    | PDS/PDSE | EBCLLOAD, EBVALI01, EBPOST01, EBSALD01, EBEXTR01, EBCONC01, EBREPR01, EBJEOD01 | Fontes COBOL de desenvolvimento |
+| `<HLQ>.EMUNAH.DEV.COPY`     | PDS/PDSE | CPAUD001, CPCLI001, CPCNT001, CPLCT001, CPSLD001               | Copybooks e layouts de registro       |
+| `<HLQ>.EMUNAH.DEV.JCL`      | PDS/PDSE | EBJPRECK, EBJBACKP, EBJLOAD, EBJVALD, EBJPOST, EBJSALD, EBJEXTR, EBJCONC, EBJEOD, EBJREPR, EBSEED | JCLs de compilação e execução em DEV |
+| `<HLQ>.EMUNAH.DEV.REXX`     | PDS/PDSE | Scripts utilitários                                             | Scripts REXX e automações             |
+| `<HLQ>.EMUNAH.DEV.LOADLIB`  | PDS/PDSE | Load modules compilados                                         | Executáveis gerados no build DEV      |
 
 ---
 
@@ -29,9 +29,9 @@ Todos os datasets seguem o padrão:
 
 | Dataset                      | Tipo     | Finalidade                              |
 |------------------------------|----------|-----------------------------------------|
-| `Z77948.EMUNAH.HML.COBOL`    | PDS/PDSE | Fontes promovidos de DEV para HML       |
-| `Z77948.EMUNAH.HML.JCL`      | PDS/PDSE | JCLs de execução em HML                 |
-| `Z77948.EMUNAH.HML.LOADLIB`  | PDS/PDSE | Executáveis compilados em HML           |
+| `<HLQ>.EMUNAH.HML.COBOL`    | PDS/PDSE | Fontes promovidos de DEV para HML       |
+| `<HLQ>.EMUNAH.HML.JCL`      | PDS/PDSE | JCLs de execução em HML                 |
+| `<HLQ>.EMUNAH.HML.LOADLIB`  | PDS/PDSE | Executáveis compilados em HML           |
 
 ---
 
@@ -39,9 +39,9 @@ Todos os datasets seguem o padrão:
 
 | Dataset                      | Tipo     | Finalidade                              |
 |------------------------------|----------|-----------------------------------------|
-| `Z77948.EMUNAH.PRD.JCL`      | PDS/PDSE | JCLs de execução em PRD                 |
-| `Z77948.EMUNAH.PRD.LOADLIB`  | PDS/PDSE | Executáveis de produção                 |
-| `Z77948.EMUNAH.PRD.PARMLIB`  | PDS/PDSE | Parâmetros e membros de configuração    |
+| `<HLQ>.EMUNAH.PRD.JCL`      | PDS/PDSE | JCLs de execução em PRD                 |
+| `<HLQ>.EMUNAH.PRD.LOADLIB`  | PDS/PDSE | Executáveis de produção                 |
+| `<HLQ>.EMUNAH.PRD.PARMLIB`  | PDS/PDSE | Parâmetros e membros de configuração    |
 
 ---
 
@@ -51,8 +51,8 @@ Estes arquivos contêm a massa de dados real utilizada para população inicial 
 
 | Dataset                           | Tipo | DDNAME     | Registros | Finalidade                        |
 |-----------------------------------|------|------------|-----------|-----------------------------------|
-| `Z77948.EMUNAH.SEED.CLIENTES.SEQ` | PS   | `CLIENTIN` | 20        | Massa inicial de clientes         |
-| `Z77948.EMUNAH.SEED.CONTAS.SEQ`   | PS   | `CONTAIN`  | 40        | Massa inicial de contas (2/cliente) |
+| `<HLQ>.EMUNAH.SEED.CLIENTES.SEQ` | PS   | `CLIENTIN` | 20        | Massa inicial de clientes         |
+| `<HLQ>.EMUNAH.SEED.CONTAS.SEQ`   | PS   | `CONTAIN`  | 40        | Massa inicial de contas (2/cliente) |
 
 ### Clientes cadastrados (20 registros)
 
@@ -93,14 +93,14 @@ Saldos iniciais variam de R$ 1.100,00 (contas 1–2) a R$ 4.000,00 (contas 39–
 
 | Dataset                            | Tipo      | Org.  | DDNAME    | Finalidade                                        |
 |------------------------------------|-----------|-------|-----------|---------------------------------------------------|
-| `Z77948.EMUNAH.ARQ.CLIENTE.KSDS`   | VSAM      | KSDS  | `CLIENTE` | Cadastro master de clientes (chave: nº cliente)   |
-| `Z77948.EMUNAH.ARQ.CONTA.KSDS`     | VSAM      | KSDS  | `CONTA`   | Cadastro master de contas (chave: nº conta)       |
-| `Z77948.EMUNAH.ARQ.SALDO.KSDS`     | VSAM      | KSDS  | `SALDO`   | Saldo consolidado por conta                       |
-| `Z77948.EMUNAH.ARQ.LANCTO.ESDS`    | VSAM      | ESDS  | `VALIDOS` | Lançamentos aprovados (append-only, imutável)     |
-| `Z77948.EMUNAH.ARQ.ENTRADA.SEQ`    | PS        | SEQ   | `ENTRADA` | Arquivo de lançamentos do dia (entrada batch)     |
-| `Z77948.EMUNAH.ARQ.REJEITO.SEQ`    | PS        | SEQ   | `REJEITO` | Registros rejeitados na validação ou aplicação    |
-| `Z77948.EMUNAH.ARQ.AUDIT.SEQ`      | PS        | SEQ   | `AUDIT`   | Trilha de auditoria e mensagens de log            |
-| `Z77948.EMUNAH.ARQ.EXTRATO.GDG`    | GDG Base  | —     | —         | Base GDG para histórico de extratos por geração   |
+| `<HLQ>.EMUNAH.ARQ.CLIENTE.KSDS`   | VSAM      | KSDS  | `CLIENTE` | Cadastro master de clientes (chave: nº cliente)   |
+| `<HLQ>.EMUNAH.ARQ.CONTA.KSDS`     | VSAM      | KSDS  | `CONTA`   | Cadastro master de contas (chave: nº conta)       |
+| `<HLQ>.EMUNAH.ARQ.SALDO.KSDS`     | VSAM      | KSDS  | `SALDO`   | Saldo consolidado por conta                       |
+| `<HLQ>.EMUNAH.ARQ.LANCTO.ESDS`    | VSAM      | ESDS  | `VALIDOS` | Lançamentos aprovados (append-only, imutável)     |
+| `<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ`    | PS        | SEQ   | `ENTRADA` | Arquivo de lançamentos do dia (entrada batch)     |
+| `<HLQ>.EMUNAH.ARQ.REJEITO.SEQ`    | PS        | SEQ   | `REJEITO` | Registros rejeitados na validação ou aplicação    |
+| `<HLQ>.EMUNAH.ARQ.AUDIT.SEQ`      | PS        | SEQ   | `AUDIT`   | Trilha de auditoria e mensagens de log            |
+| `<HLQ>.EMUNAH.ARQ.EXTRATO.GDG`    | GDG Base  | —     | —         | Base GDG para histórico de extratos por geração   |
 
 ---
 
@@ -115,5 +115,5 @@ O arquivo [`mapa-emunah-bank-lab.html`](mapa-emunah-bank-lab.html) consolida tod
 - `ARQ.LANCTO.ESDS` usa organização ESDS (sequential append-only) por design — representa o histórico imutável de movimentos do dia
 - `ARQ.EXTRATO.GDG` gera uma nova geração (`G000xV00`) a cada execução do job `EBJEXTR`
 - Os arquivos KSDS devem ser alocados via IDCAMS antes da primeira execução de qualquer job que os utilize
-- O prefixo `Z77948` corresponde ao userid do ambiente zXplore e deve ser ajustado se o lab migrar para outro ambiente
+- O prefixo `<HLQ>` corresponde ao userid do ambiente zXplore e deve ser ajustado se o lab migrar para outro ambiente
 - Os dados seed são ficcionais e não contêm informações pessoais reais
