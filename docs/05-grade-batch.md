@@ -68,7 +68,7 @@ Verifica se o ambiente está pronto para execução: existência de bibliotecas 
 Registra o estado anterior do ambiente para permitir análise ou recuperação em caso de falha durante a cadeia.
 
 ### `EBJLOAD`
-Prepara o arquivo de entrada do dia a partir de `Z77948.EMUNAH.ARQ.ENTRADA.SEQ`.
+Prepara o arquivo de entrada do dia a partir de `<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ`.
 
 ### `EBJVALD`
 Executa o programa `EBVALI01`, validando layout do arquivo e regras básicas de negócio, como conta válida, tipo de lançamento, valor positivo e preenchimento obrigatório.
@@ -80,7 +80,7 @@ Executa o programa `EBPOST01`, aplicando os lançamentos válidos, atualizando c
 Executa `EBSALD01` para consolidar os saldos por conta após a aplicação dos lançamentos.
 
 ### `EBJEXTR`
-Executa `EBEXTR01` para gerar uma nova geração de extrato em `Z77948.EMUNAH.ARQ.EXTRATO.GDG`.
+Executa `EBEXTR01` para gerar uma nova geração de extrato em `<HLQ>.EMUNAH.ARQ.EXTRATO.GDG`.
 
 ### `EBJCONC`
 Executa `EBCONC01` para comparar totais de entrada, aplicação e saldo final.
@@ -122,14 +122,14 @@ O job de reprocessamento **não substitui** a execução normal do dia. Ele apen
 
 ## Datasets principais da cadeia
 
-- `Z77948.EMUNAH.ARQ.ENTRADA.SEQ`
-- `Z77948.EMUNAH.ARQ.REJEITO.SEQ`
-- `Z77948.EMUNAH.ARQ.AUDIT.SEQ`
-- `Z77948.EMUNAH.ARQ.CLIENTE.KSDS`
-- `Z77948.EMUNAH.ARQ.CONTA.KSDS`
-- `Z77948.EMUNAH.ARQ.LANCTO.ESDS`
-- `Z77948.EMUNAH.ARQ.SALDO.KSDS`
-- `Z77948.EMUNAH.ARQ.EXTRATO.GDG`
+- `<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ`
+- `<HLQ>.EMUNAH.ARQ.REJEITO.SEQ`
+- `<HLQ>.EMUNAH.ARQ.AUDIT.SEQ`
+- `<HLQ>.EMUNAH.ARQ.CLIENTE.KSDS`
+- `<HLQ>.EMUNAH.ARQ.CONTA.KSDS`
+- `<HLQ>.EMUNAH.ARQ.LANCTO.ESDS`
+- `<HLQ>.EMUNAH.ARQ.SALDO.KSDS`
+- `<HLQ>.EMUNAH.ARQ.EXTRATO.GDG`
 
 ---
 
