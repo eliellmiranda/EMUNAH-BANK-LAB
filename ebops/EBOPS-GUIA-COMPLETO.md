@@ -59,7 +59,7 @@ O simulador reproduz 7 ferramentas corporativas usadas diariamente em ambientes 
 - Após aprovação do analista/coordenador, a ferramenta promove para PRD
 - Se der problema em PRD, faz rollback para a versão anterior
 
-**Como o EBOPS simula:** Templates de categoria "change" reproduzem o fluxo completo: promoção DEV→HML→PRD, rollback de versão com bug, análise de impacto antes de alterar copybook, teste de regressão. No lab, o Git funciona como controle de versão, e datasets separados por ambiente (`DEV.COBOL`, `HML.COBOL`, `PRD.COBOL`) simulam a separação do Changeman.
+**Como o EBOPS simula:** Cenários de mudança controlada documentados em runbooks (formato Change Request: contexto, programas afetados, plano de promoção, plano de testes, plano de rollback, aprovadores e evidências pós-deploy) reproduzem o fluxo operacional da ferramenta: promoção DEV→HML→PRD, rollback de versão com bug, análise de impacto antes de alterar copybook e teste de regressão. No lab, o Git atua como controle de versão de fonte, e a segregação de datasets por ambiente (`<HLQ>.EMUNAH.DEV.*`, `<HLQ>.EMUNAH.HML.*`, `<HLQ>.EMUNAH.PRD.*`) reproduz a separação lógica que o Changeman impõe entre bibliotecas de desenvolvimento, homologação e produção.
 
 **Artefatos do lab relacionados:** EBSUBJCL.rexx (submit com ambiente parametrizado), branches Git, datasets `DEV.*` / `HML.*` / `PRD.*`, EBCOMP.jcl e EBLINK.jcl por ambiente.
 
