@@ -1,4 +1,4 @@
-# Fluxo Zowe — Emunah Bank Lab
+# [08] - FLUXO ZOWE - EMUNAH BANK LAB
 
 ## Objetivo
 
@@ -54,16 +54,16 @@ O fluxo padrão do laboratório segue esta sequência:
 ## Fluxo de publicação
 
 ### Publicação de copybooks
-`copybooks/layouts/` → `Z77948.EMUNAH.DEV.COPY`
+`copybooks/layouts/` → `<HLQ>.EMUNAH.DEV.COPY`
 
 ### Publicação de fontes COBOL batch
-`cobol/batch/` → `Z77948.EMUNAH.DEV.COBOL`
+`cobol/batch/` → `<HLQ>.EMUNAH.DEV.COBOL`
 
 ### Publicação de JCLs
-`jcl/compile/` e `jcl/batch/` → `Z77948.EMUNAH.DEV.JCL`
+`jcl/compile/` e `jcl/batch/` → `<HLQ>.EMUNAH.DEV.JCL`
 
 ### Publicação de arquivo de entrada
-`data/entrada/` → `Z77948.EMUNAH.ARQ.ENTRADA.SEQ`
+`data/entrada/` → `<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ`
 
 ---
 
@@ -107,7 +107,7 @@ O fluxo com Zowe está adequado quando:
 Um exemplo representativo do laboratório:
 
 1. o desenvolvedor edita `EBPOST01.cbl` localmente
-2. publica o membro em `Z77948.EMUNAH.DEV.COBOL(EBPOST01)`
+2. publica o membro em `<HLQ>.EMUNAH.DEV.COBOL(EBPOST01)`
 3. publica o copybook relacionado
 4. submete o job de build
 5. submete o job batch
