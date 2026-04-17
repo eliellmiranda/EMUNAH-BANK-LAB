@@ -1,6 +1,6 @@
        IDENTIFICATION DIVISION.
        PROGRAM-ID. EBCLLOAD.
-      *===============================================================*
+      *===============================================================*9
       * PROGRAMA: EBCLLOAD                                            *
       * FUNCAO : CARGA INICIAL DE CLIENTES E CONTAS                   *
       *                                                               *
