@@ -6,9 +6,7 @@
 
 ## 1. O que é o EBOPS
 
-O EBOPS é um simulador de dia-a-dia do desenvolvedor mainframe Junior a Pleno. Ele gera automaticamente demandas, incidentes e tarefas operacionais que reproduzem o que um profissional encontra ao abrir o computador em um banco que roda aplicações em z/OS.
-
-O objetivo não é brincar de mainframe. É criar muscle memory de troubleshooting, desenvolvimento e operação, usando o próprio Emunah Bank Lab como ambiente de execução real.
+O EBOPS é um simulador de dia-a-dia de um desenvolvedor mainframe. Ele gera automaticamente demandas, incidentes e tarefas operacionais que reproduzem o que um profissional encontra ao abrir o computador em um banco que roda aplicações em z/OS.
 
 ---
 
