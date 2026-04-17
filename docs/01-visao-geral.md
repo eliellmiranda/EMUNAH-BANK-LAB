@@ -1,4 +1,4 @@
-# EMUNAH BANK LAB
+# [01] - VISÃO GERAL - EMUNAH BANK LAB
 
 Ambiente pessoal de simulação bancária em **IBM z/OS**, criado para estudo prático de rotinas, arquitetura e troubleshooting em **mainframe**.
 
