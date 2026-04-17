@@ -25,7 +25,7 @@ Cada incidente é tratado a partir de seis perguntas principais:
 
 **Sintoma:** falha do job `EBJLOAD` e bloqueio da cadeia principal.  
 **Causas prováveis:** ausência do dataset de entrada, nome incorreto, problema de upload ou erro de catálogo.  
-**Diagnóstico:** verificar a existência de `Z77948.EMUNAH.ARQ.ENTRADA.SEQ`, conferir nome, conteúdo e destino do upload.  
+**Diagnóstico:** verificar a existência de `<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ`, conferir nome, conteúdo e destino do upload.  
 **Ação corretiva:** reenviar o arquivo, corrigir o nome ou o dataset de destino e repetir a checagem.  
 **Reprocessamento:** reexecutar `EBJLOAD` após a correção.  
 **Evidências:** spool do job, listagem do dataset e horário do reenvio.
@@ -36,7 +36,7 @@ Cada incidente é tratado a partir de seis perguntas principais:
 
 **Sintoma:** muitos rejeitos em `EBJVALD` ou RC elevado na validação.  
 **Causas prováveis:** tamanho incorreto de registro, tipo inválido, valor incorreto, data fora do padrão ou conta inexistente.  
-**Diagnóstico:** analisar o relatório de validação, `Z77948.EMUNAH.ARQ.REJEITO.SEQ` e comparar o layout com o copybook esperado.  
+**Diagnóstico:** analisar o relatório de validação, `<HLQ>.EMUNAH.ARQ.REJEITO.SEQ` e comparar o layout com o copybook esperado.  
 **Ação corretiva:** corrigir o arquivo, revisar a massa gerada ou ajustar a definição do layout.  
 **Reprocessamento:** reexecutar `EBJVALD`.  
 **Evidências:** registros rejeitados, motivo do rejeito e versão do layout utilizado.
@@ -46,7 +46,7 @@ Cada incidente é tratado a partir de seis perguntas principais:
 ## Incidente: conta inexistente ou inválida
 
 **Sintoma:** rejeição na validação ou na aplicação.  
-**Causas prováveis:** ausência da conta em `Z77948.EMUNAH.ARQ.CONTA.KSDS`, carga incompleta ou chave incorreta.  
+**Causas prováveis:** ausência da conta em `<HLQ>.EMUNAH.ARQ.CONTA.KSDS`, carga incompleta ou chave incorreta.  
 **Diagnóstico:** consultar o arquivo de contas, verificar a carga inicial e conferir a chave da conta.  
 **Ação corretiva:** corrigir a massa de entrada, recarregar o cadastro ou ajustar a composição da chave.  
 **Reprocessamento:** usar `EBJREPR` ou repetir a etapa correspondente.  
