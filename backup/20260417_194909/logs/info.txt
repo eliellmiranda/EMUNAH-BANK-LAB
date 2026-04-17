@@ -1,0 +1,7 @@
+﻿Timestamp........: 20260417_194909
+HLQ..............: Z77948
+Project..........: EMUNAH
+Prefix...........: Z77948.EMUNAH
+Diretorio Backup.: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260417_194909
+GDG Generations..: 2
+SkipVsam.........: False
