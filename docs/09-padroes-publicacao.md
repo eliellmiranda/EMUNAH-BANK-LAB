@@ -12,12 +12,12 @@ Toda publicação deve partir do ambiente local para o ambiente remoto. Alteraç
 
 | Pasta local | Dataset remoto | Tipo |
 |---|---|---|
-| `copybooks/layouts/` | `Z77948.EMUNAH.DEV.COPY` | copybook |
-| `cobol/batch/` | `Z77948.EMUNAH.DEV.COBOL` | fonte COBOL |
-| `jcl/compile/` | `Z77948.EMUNAH.DEV.JCL` | JCL |
-| `jcl/batch/` | `Z77948.EMUNAH.DEV.JCL` | JCL |
-| `rexx/util/` | `Z77948.EMUNAH.DEV.REXX` | script REXX |
-| `data/entrada/` | `Z77948.EMUNAH.ARQ.ENTRADA.SEQ` | dataset sequencial |
+| `copybooks/layouts/` | `<HLQ>.EMUNAH.DEV.COPY` | copybook |
+| `cobol/batch/` | `<HLQ>.EMUNAH.DEV.COBOL` | fonte COBOL |
+| `jcl/compile/` | `<HLQ>.EMUNAH.DEV.JCL` | JCL |
+| `jcl/batch/` | `<HLQ>.EMUNAH.DEV.JCL` | JCL |
+| `rexx/util/` | `<HLQ>.EMUNAH.DEV.REXX` | script REXX |
+| `data/entrada/` | `<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ` | dataset sequencial |
 
 ---
 
@@ -41,17 +41,17 @@ A promoção entre ambientes deve ser controlada e intencional.
 # Publicar membro COBOL
 zowe files upload file-to-data-set \
   ./cobol/batch/EBPOST01.cbl \
-  "Z77948.EMUNAH.DEV.COBOL(EBPOST01)"
+  "<HLQ>.EMUNAH.DEV.COBOL(EBPOST01)"
 
 # Publicar copybook
 zowe files upload file-to-data-set \
   ./copybooks/layouts/CPCONTA.cpy \
-  "Z77948.EMUNAH.DEV.COPY(CPCONTA)"
+  "<HLQ>.EMUNAH.DEV.COPY(CPCONTA)"
 
 # Publicar arquivo sequencial de entrada
 zowe files upload file-to-data-set \
   ./data/entrada/lancamentos.txt \
-  "Z77948.EMUNAH.ARQ.ENTRADA.SEQ" --binary
+  "<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ" --binary
 ```
 
 ---
@@ -73,10 +73,10 @@ Após publicar, deve-se confirmar a presença do membro e o conteúdo remoto.
 
 ```bash
 # Listar membros da biblioteca
-zowe files list members "Z77948.EMUNAH.DEV.COBOL"
+zowe files list members "<HLQ>.EMUNAH.DEV.COBOL"
 
 # Verificar conteúdo do membro
-zowe files view member "Z77948.EMUNAH.DEV.COBOL(EBPOST01)"
+zowe files view member "<HLQ>.EMUNAH.DEV.COBOL(EBPOST01)"
 ```
 
 ---
