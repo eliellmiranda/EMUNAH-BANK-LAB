@@ -342,6 +342,53 @@ def api_export():
     state = get_state()
     return jsonify(state.get("tickets", []))
 
+# ─── API: Importar tickets ────────────────────────────────────
+@app.route('/api/import/tickets', methods=['POST'])
+def api_import_tickets():
+    data = request.get_json(force=True)
+    tickets = data if isinstance(data, list) else data.get("tickets", [])
+    state = get_state()
+    existing_ids = {t["ticket_id"] for t in state.get("tickets", [])}
+    added = []
+    for t in tickets:
+        if t.get("ticket_id") and t["ticket_id"] not in existing_ids:
+            state.setdefault("tickets", []).append(t)
+            existing_ids.add(t["ticket_id"])
+            added.append(t["ticket_id"])
+    put_state(state)
+    return jsonify({"ok": True, "imported": len(added), "ids": added})
+
+# ─── API: Reverter último dia ────────────────────────────────
+@app.route('/api/revert_day', methods=['POST'])
+def api_revert_day():
+    state = get_state()
+    current_day = state.get("day", 1)
+    if current_day <= 1:
+        return jsonify({"ok": False, "msg": "Já está no dia 1, nada a reverter."})
+    last_day = current_day - 1
+    before = len(state.get("tickets", []))
+    state["tickets"] = [t for t in state.get("tickets", []) if t.get("dia") != last_day]
+    removed = before - len(state["tickets"])
+    state["day"] = last_day
+    put_state(state)
+    return jsonify({"ok": True, "reverted_day": last_day, "tickets_removed": removed})
+
+# ─── API: Importar injeções customizadas ─────────────────────
+@app.route('/api/import/injections', methods=['POST'])
+def api_import_injections():
+    data = request.get_json(force=True)
+    templates = data if isinstance(data, list) else data.get("injections", data.get("templates", []))
+    state = get_state()
+    existing_ids = {t.get("id") for t in state.get("custom_templates", [])}
+    added = []
+    for t in templates:
+        if t.get("id") and t["id"] not in existing_ids:
+            state.setdefault("custom_templates", []).append(t)
+            existing_ids.add(t["id"])
+            added.append(t["id"])
+    put_state(state)
+    return jsonify({"ok": True, "imported": len(added), "ids": added})
+
 # ─── Inicialização ───────────────────────────────────────────
 if __name__ == '__main__':
     print("\n  EBOPS Web Server")
