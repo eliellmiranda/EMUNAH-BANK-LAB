@@ -2,461 +2,70 @@
   "tickets": [
     {
       "ticket_id": "EB-001-01",
-      "template_id": "INV-003",
-      "titulo": "Integridade pós-reprocessamento",
-      "categoria": "investigação",
-      "severidade": "media",
-      "dificuldade": "pleno",
-      "tempo": "35min",
-      "ferramenta": "File Manager / IDCAMS",
-      "descricao": "Verificar: sem duplicidade, saldos ok, auditoria, conciliação.",
-      "tags": [
-        "integridade",
-        "reprocessamento"
-      ],
-      "inj": "INJ-029",
-      "status": "backlog",
-      "dia": 1,
-      "notas": "",
-      "criado_em": "2026-04-15T21:20:12.232476"
-    },
-    {
-      "ticket_id": "EB-001-02",
-      "template_id": "INC-002",
-      "titulo": "RC=08 em EBJVALD — rejeição acima de 30%",
-      "categoria": "incidente",
-      "severidade": "media",
-      "dificuldade": "junior",
-      "tempo": "30min",
-      "ferramenta": "SDSF / File Manager",
-      "descricao": "EBJVALD terminou RC=08. 47% de rejeição. Taxa normal é abaixo de 5%.",
-      "tags": [
-        "validação",
-        "RC",
-        "massa"
-      ],
-      "inj": "INJ-001",
-      "status": "backlog",
-      "dia": 1,
-      "notas": "",
-      "criado_em": "2026-04-15T21:20:12.232509"
-    },
-    {
-      "ticket_id": "EB-001-03",
-      "template_id": "INC-019",
-      "titulo": "SQLCODE -805 — DBRM não no PLAN",
-      "categoria": "incidente",
-      "severidade": "alta",
-      "dificuldade": "pleno",
-      "tempo": "35min",
-      "ferramenta": "DB2 / BIND",
-      "descricao": "EBAUDB01 abendou com -805. BIND não executado após pré-compilação.",
-      "tags": [
-        "DB2",
-        "-805",
-        "BIND"
-      ],
-      "inj": "",
-      "status": "backlog",
-      "dia": 1,
-      "notas": "",
-      "criado_em": "2026-04-15T21:20:12.232526"
-    },
-    {
-      "ticket_id": "EB-002-01",
-      "template_id": "OPS-009",
-      "titulo": "Documento de SLA da cadeia batch",
+      "template_id": "OPS-007",
+      "titulo": "Simular saldo-inconsistente e investigar",
       "categoria": "operação",
-      "severidade": "baixa",
-      "dificuldade": "pleno",
-      "tempo": "40min",
-      "ferramenta": "Documentação",
-      "descricao": "SLA por job: horário, duração máxima, RC aceitável.",
-      "tags": [
-        "SLA",
-        "ITIL",
-        "operação"
-      ],
-      "inj": "",
-      "status": "backlog",
-      "dia": 2,
-      "notas": "",
-      "criado_em": "2026-04-15T22:58:58.929002"
-    },
-    {
-      "ticket_id": "EB-002-02",
-      "template_id": "INC-018",
-      "titulo": "VSAM I/O ERROR em ESDS",
-      "categoria": "incidente",
       "severidade": "alta",
       "dificuldade": "pleno",
       "tempo": "45min",
-      "ferramenta": "IDCAMS / VSAM",
-      "descricao": "Performance degradada e I/O error no ARQ.LANCTO.ESDS.",
+      "ferramenta": "File Manager",
+      "descricao": "Alterar saldo no VSAM, rodar EBJCONC, localizar divergência.",
       "tags": [
-        "VSAM",
-        "ESDS",
-        "I/O"
+        "conciliação",
+        "investigação",
+        "cenário"
+      ],
+      "inj": "INJ-027",
+      "status": "em_revisao",
+      "dia": 1,
+      "notas": "",
+      "criado_em": "2026-04-17T21:01:24.007605"
+    },
+    {
+      "ticket_id": "EB-001-02",
+      "template_id": "OPS-008",
+      "titulo": "Massa de 1000 registros — teste de volume",
+      "categoria": "operação",
+      "severidade": "baixa",
+      "dificuldade": "junior",
+      "tempo": "45min",
+      "ferramenta": "Python",
+      "descricao": "Testar performance da cadeia com volume maior.",
+      "tags": [
+        "massa",
+        "performance",
+        "volume"
       ],
       "inj": "",
       "status": "backlog",
-      "dia": 2,
+      "dia": 1,
       "notas": "",
-      "criado_em": "2026-04-15T22:58:58.929034"
+      "criado_em": "2026-04-17T21:01:24.007634"
+    },
+    {
+      "ticket_id": "EB-001-03",
+      "template_id": "OPS-010",
+      "titulo": "Contingência para falha total da cadeia",
+      "categoria": "operação",
+      "severidade": "media",
+      "dificuldade": "pleno",
+      "tempo": "50min",
+      "ferramenta": "Runbook",
+      "descricao": "Runbook de contingência: escalação, opções, comunicação.",
+      "tags": [
+        "contingência",
+        "escalação",
+        "risco"
+      ],
+      "inj": "",
+      "status": "backlog",
+      "dia": 1,
+      "notas": "",
+      "criado_em": "2026-04-17T21:01:24.007641"
     }
   ],
   "custom_templates": [],
-  "day": 3,
+  "day": 2,
   "injections_active": [],
-  "history": [
-    {
-      "id": "INJ-007",
-      "titulo": "EBJVALD STEPLIB apontando para HML",
-      "arquivos": [
-        "EBJVALD.jcl"
-      ],
-      "timestamp": "2026-04-15T20:52:49.900271"
-    },
-    {
-      "id": "INJ-008",
-      "titulo": "EBJPOST DISP=SHR no AUDIT (deveria ser MOD)",
-      "arquivos": [
-        "EBJPOST.jcl"
-      ],
-      "timestamp": "2026-04-15T20:52:58.591948"
-    },
-    {
-      "id": "INJ-009",
-      "titulo": "EBJVALD sem DD REJEITOS",
-      "arquivos": [
-        "EBJVALD.jcl"
-      ],
-      "timestamp": "2026-04-15T20:53:06.990563"
-    },
-    {
-      "id": "INJ-010",
-      "titulo": "EBJPOST dataset errado no MOVTIN",
-      "arquivos": [
-        "EBJPOST.jcl"
-      ],
-      "timestamp": "2026-04-15T20:53:19.463294"
-    },
-    {
-      "id": "INJ-015",
-      "titulo": "Copybook CPLCT001 deslocado",
-      "arquivos": [
-        "CPLCT001.cpy"
-      ],
-      "timestamp": "2026-04-15T20:53:39.436734"
-    },
-    {
-      "id": "INJ-015",
-      "titulo": "Copybook CPLCT001 deslocado",
-      "arquivos": [
-        "CPLCT001.cpy"
-      ],
-      "timestamp": "2026-04-15T20:54:00.223745"
-    },
-    {
-      "id": "INJ-015",
-      "titulo": "Copybook CPLCT001 deslocado",
-      "arquivos": [
-        "CPLCT001.cpy"
-      ],
-      "timestamp": "2026-04-15T20:54:52.169575"
-    },
-    {
-      "id": "INJ-016",
-      "titulo": "Copybook CPCNT001 sem sinal no saldo",
-      "arquivos": [
-        "CPCNT001.cpy"
-      ],
-      "timestamp": "2026-04-15T20:54:57.129251"
-    },
-    {
-      "id": "INJ-017",
-      "titulo": "COMBO: bug validação + massa corrompida",
-      "arquivos": [
-        "EBVALI01.cbl",
-        "lancamentos_d0.txt"
-      ],
-      "timestamp": "2026-04-15T21:05:12.429020"
-    },
-    {
-      "id": "INJ-010",
-      "titulo": "EBJPOST dataset errado no MOVTIN",
-      "arquivos": [
-        "EBJPOST.jcl"
-      ],
-      "timestamp": "2026-04-15T21:07:00.572545"
-    },
-    {
-      "id": "INJ-011",
-      "titulo": "Massa com letras no campo valor",
-      "arquivos": [
-        "lancamentos_d0.txt"
-      ],
-      "timestamp": "2026-04-15T21:07:10.442454"
-    },
-    {
-      "id": "INJ-012",
-      "titulo": "Massa com tipo 'X' inválido",
-      "arquivos": [
-        "lancamentos_d0.txt"
-      ],
-      "timestamp": "2026-04-15T21:07:22.198127"
-    },
-    {
-      "id": "INJ-013",
-      "titulo": "Massa com registros truncados",
-      "arquivos": [
-        "lancamentos_d0.txt"
-      ],
-      "timestamp": "2026-04-15T21:07:33.193424"
-    },
-    {
-      "id": "INJ-014",
-      "titulo": "Massa com conta inexistente",
-      "arquivos": [
-        "lancamentos_d0.txt"
-      ],
-      "timestamp": "2026-04-15T21:07:46.739039"
-    },
-    {
-      "id": "INJ-015",
-      "titulo": "Copybook CPLCT001 deslocado",
-      "arquivos": [
-        "CPLCT001.cpy"
-      ],
-      "timestamp": "2026-04-15T21:07:57.420587"
-    },
-    {
-      "id": "INJ-016",
-      "titulo": "Copybook CPCNT001 sem sinal no saldo",
-      "arquivos": [
-        "CPCNT001.cpy"
-      ],
-      "timestamp": "2026-04-15T21:08:06.868133"
-    },
-    {
-      "id": "INJ-016",
-      "titulo": "Copybook CPCNT001 sem sinal no saldo",
-      "arquivos": [
-        "CPCNT001.cpy"
-      ],
-      "timestamp": "2026-04-15T21:08:23.985730"
-    },
-    {
-      "id": "INJ-017",
-      "titulo": "COMBO: bug validação + massa corrompida",
-      "arquivos": [
-        "EBVALI01.cbl",
-        "lancamentos_d0.txt"
-      ],
-      "timestamp": "2026-04-15T21:08:34.809603"
-    },
-    {
-      "id": "INJ-016",
-      "titulo": "Copybook CPCNT001 sem sinal no saldo",
-      "arquivos": [
-        "CPCNT001.cpy"
-      ],
-      "timestamp": "2026-04-15T21:08:50.811663"
-    },
-    {
-      "id": "INJ-018",
-      "titulo": "COMBO: JCL errado + copybook deslocado",
-      "arquivos": [
-        "EBJVALD.jcl",
-        "CPLCT001.cpy"
-      ],
-      "timestamp": "2026-04-15T21:08:57.551362"
-    },
-    {
-      "id": "INJ-019",
-      "titulo": "Arquivo de entrada renomeado — ausente",
-      "arquivos": [
-        "lancamentos_d0.txt"
-      ],
-      "timestamp": "2026-04-15T21:09:04.539683"
-    },
-    {
-      "id": "INJ-020",
-      "titulo": "EBJSALD com TYPRUN=HOLD",
-      "arquivos": [
-        "EBJSALD.jcl"
-      ],
-      "timestamp": "2026-04-15T21:09:09.326726"
-    },
-    {
-      "id": "INJ-021",
-      "titulo": "EBPOST01 sem IS NUMERIC antes de comparação",
-      "arquivos": [
-        "EBPOST01.cbl"
-      ],
-      "timestamp": "2026-04-15T21:09:13.587323"
-    },
-    {
-      "id": "INJ-022",
-      "titulo": "EBJPOST com REGION=1K — insuficiente",
-      "arquivos": [
-        "EBJPOST.jcl"
-      ],
-      "timestamp": "2026-04-15T21:09:18.345729"
-    },
-    {
-      "id": "INJ-023",
-      "titulo": "EBPOST01 — ACCEPT com PIC errado",
-      "arquivos": [
-        "EBPOST01.cbl"
-      ],
-      "timestamp": "2026-04-15T21:09:23.845038"
-    },
-    {
-      "id": "INJ-023",
-      "titulo": "EBPOST01 — ACCEPT com PIC errado",
-      "arquivos": [
-        "EBPOST01.cbl"
-      ],
-      "timestamp": "2026-04-15T21:09:40.832997"
-    },
-    {
-      "id": "INJ-020",
-      "titulo": "EBJSALD com TYPRUN=HOLD",
-      "arquivos": [
-        "EBJSALD.jcl"
-      ],
-      "timestamp": "2026-04-15T21:10:33.052335"
-    },
-    {
-      "id": "INJ-021",
-      "titulo": "EBPOST01 sem IS NUMERIC antes de comparação",
-      "arquivos": [
-        "EBPOST01.cbl"
-      ],
-      "timestamp": "2026-04-15T21:10:36.637528"
-    },
-    {
-      "id": "INJ-022",
-      "titulo": "EBJPOST com REGION=1K — insuficiente",
-      "arquivos": [
-        "EBJPOST.jcl"
-      ],
-      "timestamp": "2026-04-15T21:10:43.676661"
-    },
-    {
-      "id": "INJ-023",
-      "titulo": "EBPOST01 — ACCEPT com PIC errado",
-      "arquivos": [
-        "EBPOST01.cbl"
-      ],
-      "timestamp": "2026-04-15T21:10:51.397001"
-    },
-    {
-      "id": "INJ-025",
-      "titulo": "EBJCONC com dataset errado no MOVTIN",
-      "arquivos": [
-        "EBJCONC.jcl"
-      ],
-      "timestamp": "2026-04-15T21:11:03.675214"
-    },
-    {
-      "id": "INJ-026",
-      "titulo": "EBJSALD sem DD SALDOUT",
-      "arquivos": [
-        "EBJSALD.jcl"
-      ],
-      "timestamp": "2026-04-15T21:11:07.357567"
-    },
-    {
-      "id": "INJ-026",
-      "titulo": "EBJSALD sem DD SALDOUT",
-      "arquivos": [
-        "EBJSALD.jcl"
-      ],
-      "timestamp": "2026-04-15T21:11:20.105018"
-    },
-    {
-      "id": "INJ-027",
-      "titulo": "Seed de contas com saldo inicial corrompido",
-      "arquivos": [
-        "contas.txt"
-      ],
-      "timestamp": "2026-04-15T21:11:34.215762"
-    },
-    {
-      "id": "INJ-028",
-      "titulo": "EBJPOST sem DD CLIENTE",
-      "arquivos": [
-        "EBJPOST.jcl"
-      ],
-      "timestamp": "2026-04-15T21:11:38.373955"
-    },
-    {
-      "id": "INJ-029",
-      "titulo": "EBPOST01 sem REWRITE — saldo nunca persiste",
-      "arquivos": [
-        "EBPOST01.cbl"
-      ],
-      "timestamp": "2026-04-15T21:11:42.617771"
-    },
-    {
-      "id": "INJ-030",
-      "titulo": "EBJCLLD com DDNAMEs trocados (cliente↔conta)",
-      "arquivos": [
-        "EBJCLLD.jcl"
-      ],
-      "timestamp": "2026-04-15T21:11:46.194234"
-    },
-    {
-      "id": "INJ-032",
-      "titulo": "EBVALI01 sem IS NUMERIC na agência",
-      "arquivos": [
-        "EBVALI01.cbl"
-      ],
-      "timestamp": "2026-04-15T21:11:51.477534"
-    },
-    {
-      "id": "INJ-034",
-      "titulo": "COMBO: sem REWRITE + seed corrompida",
-      "arquivos": [
-        "EBPOST01.cbl",
-        "contas.txt"
-      ],
-      "timestamp": "2026-04-15T21:11:59.637789"
-    },
-    {
-      "id": "INJ-034",
-      "titulo": "COMBO: sem REWRITE + seed corrompida",
-      "arquivos": [
-        "EBPOST01.cbl",
-        "contas.txt"
-      ],
-      "timestamp": "2026-04-15T21:12:09.900465"
-    },
-    {
-      "id": "INJ-023",
-      "titulo": "EBPOST01 — ACCEPT com PIC errado",
-      "arquivos": [
-        "EBPOST01.cbl"
-      ],
-      "timestamp": "2026-04-15T21:18:59.546307"
-    },
-    {
-      "id": "INJ-026",
-      "titulo": "EBJSALD sem DD SALDOUT",
-      "arquivos": [
-        "EBJSALD.jcl"
-      ],
-      "timestamp": "2026-04-15T21:19:10.326163"
-    },
-    {
-      "id": "INJ-025",
-      "titulo": "EBJCONC com dataset errado no MOVTIN",
-      "arquivos": [
-        "EBJCONC.jcl"
-      ],
-      "timestamp": "2026-04-17T15:43:59.840555"
-    }
-  ]
+  "history": []
 }
