@@ -67,5 +67,14 @@
   "custom_templates": [],
   "day": 2,
   "injections_active": [],
-  "history": []
+  "history": [
+    {
+      "id": "INJ-027",
+      "titulo": "Seed de contas com saldo inicial corrompido",
+      "arquivos": [
+        "contas.txt"
+      ],
+      "timestamp": "2026-04-17T21:08:45.354162"
+    }
+  ]
 }
