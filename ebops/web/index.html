@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EBOPS — Emunah Bank Operations Simulator — "[...] mas o justo viverá pela sua fé." Habacuque 2:4</title>
+<title>EBOPS — Emunah Bank Operations Simulator</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='22' fill='%233fb950'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,6 +48,8 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 a { color: var(--blue); text-decoration: none; }
 
@@ -64,12 +66,12 @@ a { color: var(--blue); text-decoration: none; }
   z-index: 100;
 }
 .header h1 {
-  font-size:calc(18px + var(--font-bump));
+  font-size: calc(18px + var(--font-bump));
   color: var(--green);
   letter-spacing: 1px;
 }
 .header h1 span { color: var(--text2); font-weight: normal; }
-.header-actions { display: flex; gap: 8px; }
+.header-actions { display: flex; gap: 8px; align-items: center; }
 
 /* ── Buttons ── */
 .btn {
@@ -79,7 +81,7 @@ a { color: var(--blue); text-decoration: none; }
   background: var(--bg3);
   color: var(--text);
   font-family: inherit;
-  font-size:calc(14px + var(--font-bump));
+  font-size: calc(14px + var(--font-bump));
   cursor: pointer;
   transition: all .15s;
 }
@@ -92,7 +94,61 @@ a { color: var(--blue); text-decoration: none; }
 .btn-blue:hover { background: var(--blue); color: var(--bg); }
 .btn-yellow { border-color: var(--yellow); color: var(--yellow); }
 .btn-yellow:hover { background: var(--yellow); color: var(--bg); }
-.btn-sm { padding: 3px 8px; font-size:calc(13px + var(--font-bump)); }
+.btn-sm { padding: 3px 8px; font-size: calc(12px + var(--font-bump)); }
+
+/* ── Gerar Dia — botão grande ── */
+.btn-gerar-dia {
+  background: var(--green);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  padding: 14px 20px;
+  font-family: inherit;
+  font-size: calc(14px + var(--font-bump));
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: .5px;
+  transition: opacity .15s, transform .1s;
+  flex-shrink: 0;
+  min-width: 110px;
+  box-shadow: 0 4px 14px rgba(63,185,80,.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  line-height: 1.3;
+}
+.btn-gerar-dia:hover { opacity: .88; transform: translateY(-2px); }
+.btn-gerar-dia:active { transform: translateY(0); }
+.btn-gerar-dia .btn-icon { font-size: 1.5em; line-height: 1; }
+
+/* ── Reverter Dia ── */
+.btn-reverter-dia {
+  background: none;
+  color: var(--red);
+  border: 1px solid var(--red);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-family: inherit;
+  font-size: calc(13px + var(--font-bump));
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  flex-shrink: 0;
+  min-width: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+  line-height: 1.3;
+}
+.btn-reverter-dia:hover { background: rgba(248,81,73,.12); transform: translateY(-1px); }
+.btn-reverter-dia:active { transform: translateY(0); }
+.btn-reverter-dia .btn-icon { font-size: 1.2em; line-height: 1; }
 
 /* ── Tabs ── */
 .tabs {
@@ -104,7 +160,7 @@ a { color: var(--blue); text-decoration: none; }
 }
 .tab {
   padding: 10px 18px;
-  font-size:calc(15px + var(--font-bump));
+  font-size: calc(15px + var(--font-bump));
   color: var(--text2);
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -119,9 +175,21 @@ a { color: var(--blue); text-decoration: none; }
 .tab.active { color: var(--green); border-bottom-color: var(--green); }
 
 /* ── Layout ── */
-.main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+.main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; }
 .section { display: none; }
 .section.active { display: block; }
+
+/* ── Dashboard topo ── */
+.dashboard-top {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  margin-bottom: 20px;
+}
+.dashboard-top .stats {
+  flex: 1;
+  margin-bottom: 0;
+}
 
 /* ── Cards ── */
 .card {
@@ -133,7 +201,7 @@ a { color: var(--blue); text-decoration: none; }
   margin-bottom: 12px;
 }
 .card h3 {
-  font-size:calc(15px + var(--font-bump));
+  font-size: calc(15px + var(--font-bump));
   color: var(--green);
   margin-bottom: 10px;
   text-transform: uppercase;
@@ -143,9 +211,8 @@ a { color: var(--blue); text-decoration: none; }
 /* ── Stats row ── */
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
-  margin-bottom: 20px;
 }
 .stat {
   box-shadow: var(--shadow);
@@ -160,46 +227,17 @@ a { color: var(--blue); text-decoration: none; }
   cursor: pointer;
   transition: transform .15s, border-color .15s, background .15s;
 }
-.stat-link:hover {
-  border-color: var(--blue);
-  background: var(--bg3);
-  transform: translateY(-1px);
-}
-.stat-link:focus-visible {
-  outline: 2px solid var(--blue);
-  outline-offset: 2px;
-}
-.stat .value {
-  font-size:calc(30px + var(--font-bump));
-  font-weight: bold;
-  color: var(--green);
-}
-.stat .label {
-  font-size:calc(13px + var(--font-bump));
-  color: var(--text2);
-  margin-top: 4px;
-  text-transform: uppercase;
-}
+.stat-link:hover { border-color: var(--blue); background: var(--bg3); transform: translateY(-1px); }
+.stat .value { font-size: calc(30px + var(--font-bump)); font-weight: bold; color: var(--green); }
+.stat .label { font-size: calc(12px + var(--font-bump)); color: var(--text2); margin-top: 4px; text-transform: uppercase; }
 
 /* ── Batch table ── */
-.batch-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size:calc(14px + var(--font-bump));
-}
+.batch-table { width: 100%; border-collapse: collapse; font-size: calc(14px + var(--font-bump)); }
 .batch-table th {
-  text-align: left;
-  padding: 8px 10px;
-  color: var(--text2);
-  border-bottom: 1px solid var(--border);
-  font-size:calc(13px + var(--font-bump));
-  text-transform: uppercase;
+  text-align: left; padding: 8px 10px; color: var(--text2);
+  border-bottom: 1px solid var(--border); font-size: calc(13px + var(--font-bump)); text-transform: uppercase;
 }
-.batch-table td {
-  font-size:calc(14px + var(--font-bump));
-  padding: 6px 10px;
-  border-bottom: 1px solid rgba(48,54,61,.5);
-}
+.batch-table td { font-size: calc(14px + var(--font-bump)); padding: 6px 10px; border-bottom: 1px solid rgba(48,54,61,.5); }
 .batch-table tr:hover td { background: rgba(48,54,61,.3); }
 .st-ok { color: var(--green); }
 .st-error { color: var(--red); font-weight: bold; }
@@ -208,12 +246,7 @@ a { color: var(--blue); text-decoration: none; }
 .st-pending { color: var(--text2); }
 
 /* ── Kanban board ── */
-.kanban {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-top: 12px;
-}
+.kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
 .kanban-col {
   box-shadow: var(--shadow);
   background: var(--bg2);
@@ -222,50 +255,29 @@ a { color: var(--blue); text-decoration: none; }
   min-height: 300px;
 }
 .kanban-col-header {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--border);
-  font-size:calc(14px + var(--font-bump));
-  font-weight: bold;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 10px 12px; border-bottom: 1px solid var(--border);
+  font-size: calc(14px + var(--font-bump)); font-weight: bold;
+  display: flex; justify-content: space-between; align-items: center;
 }
 .kanban-col-header .count {
-  background: var(--bg3);
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size:calc(13px + var(--font-bump));
-  color: var(--text2);
+  background: var(--bg3); padding: 2px 8px; border-radius: 10px;
+  font-size: calc(13px + var(--font-bump)); color: var(--text2);
 }
 .kanban-col-body { padding: 8px; }
 
 .ticket-card {
   box-shadow: var(--shadow);
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 10px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: border-color .15s;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px; margin-bottom: 8px;
+  cursor: pointer; transition: border-color .15s;
 }
 .ticket-card:hover { border-color: var(--text2); }
-.ticket-card .ticket-id {
-  font-size:calc(13px + var(--font-bump));
-  color: var(--cyan);
-  margin-bottom: 4px;
-}
-.ticket-card .ticket-title {
-  font-size:calc(14px + var(--font-bump));
-  margin-bottom: 6px;
-  line-height: 1.4;
-}
+.ticket-card .ticket-id { font-size: calc(13px + var(--font-bump)); color: var(--cyan); margin-bottom: 4px; }
+.ticket-card .ticket-title { font-size: calc(14px + var(--font-bump)); margin-bottom: 6px; line-height: 1.4; }
 .ticket-tags { display: flex; gap: 4px; flex-wrap: wrap; }
 .tag {
-  font-size:calc(14px + var(--font-bump));
-  padding: 1px 6px;
-  border-radius: 3px;
-  border: 1px solid;
+  font-size: calc(11px + var(--font-bump)); padding: 1px 6px;
+  border-radius: 3px; border: 1px solid;
 }
 .tag-sev-critica { color: var(--red); border-color: var(--red); }
 .tag-sev-alta { color: var(--yellow); border-color: var(--yellow); }
@@ -276,157 +288,122 @@ a { color: var(--blue); text-decoration: none; }
 .tag-inj { color: var(--orange); border-color: var(--orange); }
 
 /* ── Injection list ── */
-.inj-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 10px;
-}
+.inj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
 .inj-card {
   box-shadow: var(--shadow);
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 12px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px;
 }
-.inj-card .inj-id { color: var(--orange); font-size:calc(13px + var(--font-bump)); font-weight: bold; }
-.inj-card .inj-title { font-size:calc(14px + var(--font-bump)); margin: 4px 0; }
-.inj-card .inj-detail { font-size:calc(13px + var(--font-bump)); color: var(--text2); margin: 2px 0; }
+.inj-card .inj-id { color: var(--orange); font-size: calc(13px + var(--font-bump)); font-weight: bold; }
+.inj-card .inj-title { font-size: calc(14px + var(--font-bump)); margin: 4px 0; }
+.inj-card .inj-detail { font-size: calc(13px + var(--font-bump)); color: var(--text2); margin: 2px 0; }
+
+/* ── Sintoma oculto ── */
+.sintoma-reveal-btn {
+  background: none; border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text2); font-family: inherit;
+  font-size: calc(12px + var(--font-bump));
+  cursor: pointer; padding: 2px 8px; margin-top: 6px;
+  transition: border-color .15s, color .15s;
+}
+.sintoma-reveal-btn:hover { border-color: var(--yellow); color: var(--yellow); }
+.inj-sintoma-hidden { display: none; font-size: calc(13px + var(--font-bump)); color: var(--yellow); margin-top: 4px; }
 
 /* ── Active injections ── */
 .active-inj {
-  background: rgba(248,81,73,.08);
-  border: 1px solid rgba(248,81,73,.3);
-  border-radius: 6px;
-  padding: 10px 14px;
-  margin-bottom: 8px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: rgba(248,81,73,.08); border: 1px solid rgba(248,81,73,.3);
+  border-radius: 6px; padding: 10px 14px; margin-bottom: 8px;
+  display: flex; justify-content: space-between; align-items: center;
 }
 .active-inj .inj-info { flex: 1; }
 
 /* ── Modal ── */
 .modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.6);
-  z-index: 200;
-  justify-content: center;
-  align-items: center;
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.6); z-index: 200;
+  justify-content: center; align-items: center;
 }
 .modal-overlay.open { display: flex; }
 .modal {
   box-shadow: var(--shadow);
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  width: 560px;
-  max-width: 95vw;
-  max-height: 85vh;
-  overflow-y: auto;
-  padding: 20px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; width: 580px; max-width: 95vw;
+  max-height: 85vh; overflow-y: auto; padding: 20px;
 }
-.modal h2 {
-  font-size:calc(15px + var(--font-bump));
-  color: var(--green);
-  margin-bottom: 14px;
-}
+.modal h2 { font-size: calc(15px + var(--font-bump)); color: var(--green); margin-bottom: 14px; }
 .modal label {
-  font-size:calc(13px + var(--font-bump));
-  color: var(--text2);
-  text-transform: uppercase;
-  display: block;
-  margin-bottom: 4px;
-  margin-top: 10px;
+  font-size: calc(13px + var(--font-bump)); color: var(--text2);
+  text-transform: uppercase; display: block; margin-bottom: 4px; margin-top: 10px;
 }
 .modal textarea {
-  width: 100%;
-  min-height: 80px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  font-family: inherit;
-  font-size:calc(14px + var(--font-bump));
-  padding: 8px;
-  resize: vertical;
+  width: 100%; min-height: 80px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text); font-family: inherit;
+  font-size: calc(14px + var(--font-bump)); padding: 8px; resize: vertical;
 }
-.modal .modal-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
-  justify-content: flex-end;
-}
+.modal .modal-actions { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
 .modal select {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-family: inherit;
-  font-size:calc(14px + var(--font-bump));
-  padding: 6px 8px;
-  border-radius: 4px;
-  width: 100%;
+  background: var(--bg); border: 1px solid var(--border);
+  color: var(--text); font-family: inherit;
+  font-size: calc(14px + var(--font-bump)); padding: 6px 8px;
+  border-radius: 4px; width: 100%;
 }
 
+/* ── Dica oculta no modal de injeção ── */
+.dica-reveal-btn {
+  background: none; border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text2); font-family: inherit;
+  font-size: calc(12px + var(--font-bump)); cursor: pointer;
+  padding: 3px 10px; margin-top: 8px; transition: border-color .15s, color .15s;
+}
+.dica-reveal-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.dica-content { display: none; font-size: calc(14px + var(--font-bump)); color: var(--cyan); margin-top: 6px; }
+
+/* ── Banner injeção automática ── */
+.auto-inj-banner {
+  background: rgba(240,136,62,.1); border: 1px solid rgba(240,136,62,.4);
+  border-radius: 6px; padding: 12px; margin-top: 12px;
+}
+.auto-inj-banner p { font-size: calc(13px + var(--font-bump)); color: var(--orange); margin-bottom: 8px; }
+
 /* ── Toast ── */
-.toast-container {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 300;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
 .toast {
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-size:calc(14px + var(--font-bump));
-  animation: toast-in .3s;
-  border: 1px solid;
+  padding: 10px 16px; border-radius: 6px;
+  font-size: calc(14px + var(--font-bump)); animation: toast-in .3s; border: 1px solid;
 }
-.toast-ok { background: rgba(63,185,80,.15); border-color: var(--green); color: var(--green); }
-.toast-err { background: rgba(248,81,73,.15); border-color: var(--red); color: var(--red); }
-.toast-info { background: rgba(88,166,255,.15); border-color: var(--blue); color: var(--blue); }
+.toast-ok  { background: rgba(63,185,80,.15);  border-color: var(--green);  color: var(--green); }
+.toast-err { background: rgba(248,81,73,.15);  border-color: var(--red);    color: var(--red); }
+.toast-info{ background: rgba(88,166,255,.15); border-color: var(--blue);   color: var(--blue); }
 @keyframes toast-in { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 
 /* ── Filter bar ── */
-.filter-bar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  align-items: center;
-}
+.filter-bar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
 .filter-bar input {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
-  font-family: inherit;
-  font-size:calc(14px + var(--font-bump));
-  padding: 6px 10px;
-  flex: 1;
-  max-width: 300px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text); font-family: inherit;
+  font-size: calc(14px + var(--font-bump)); padding: 6px 10px;
+  flex: 1; max-width: 300px;
 }
 .filter-bar input::placeholder { color: var(--text2); }
 
-
-
-.theme-indicator {
-  color: var(--text2);
+/* ── Footer ── */
+.footer {
+  text-align: center; padding: 18px 24px;
+  color: var(--text2); font-size: calc(12px + var(--font-bump));
+  border-top: 1px solid var(--border); margin-top: auto;
+  font-style: italic; letter-spacing: .3px;
 }
 
-/* ── Responsive ── */
-@media (max-width: 900px) {
-  .kanban { grid-template-columns: 1fr 1fr; }
-  .stats { grid-template-columns: 1fr 1fr; }
+/* ── Loading ── */
+.loading { text-align: center; padding: 40px; color: var(--text2); }
+.spinner {
+  display: inline-block; width: 20px; height: 20px;
+  border: 2px solid var(--border); border-top-color: var(--green);
+  border-radius: 50%; animation: spin .6s linear infinite;
+  margin-right: 8px; vertical-align: middle;
 }
-@media (max-width: 600px) {
-  .kanban { grid-template-columns: 1fr; }
-  .tabs { overflow-x: auto; }
-  .header { flex-direction: column; gap: 8px; }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 8px; }
@@ -434,36 +411,34 @@ a { color: var(--blue); text-decoration: none; }
 ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--border); }
 
-/* ── Loading ── */
-.loading {
-  text-align: center;
-  padding: 40px;
-  color: var(--text2);
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .kanban { grid-template-columns: 1fr 1fr; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .dashboard-top { flex-direction: column; }
+  .btn-gerar-dia { width: 100%; }
 }
-.spinner {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--border);
-  border-top-color: var(--green);
-  border-radius: 50%;
-  animation: spin .6s linear infinite;
-  margin-right: 8px;
-  vertical-align: middle;
+@media (max-width: 600px) {
+  .kanban { grid-template-columns: 1fr; }
+  .tabs { overflow-x: auto; }
+  .header { flex-direction: column; gap: 8px; }
+  .header-actions { flex-wrap: wrap; justify-content: center; }
 }
-@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
 <!-- ═══════ HEADER ═══════ -->
 <div class="header">
-  <h1>EBOPS <span>— Emunah Bank Operations Simulator — "[...] mas o justo viverá pela sua fé." Habacuque 2:4</span></h1>
+  <h1>EBOPS <span>— Emunah Bank Operations Simulator</span></h1>
   <div class="header-actions">
-    <button class="btn btn-blue" id="theme-toggle" onclick="toggleTheme()">Tema</button>
-    <button class="btn btn-green" onclick="gerarDia()">+ Novo Dia</button>
-    <button class="btn btn-yellow" onclick="exportar()">Exportar</button>
-    <button class="btn btn-red" onclick="resetar()">Reset</button>
+    <button class="btn btn-blue" id="theme-toggle" onclick="toggleTheme()">🌙 Escuro</button>
+    <button class="btn btn-green" onclick="exportar()">💾 Backup</button>
+    <input type="file" id="input-import-tickets" accept=".json" style="display:none" onchange="importarTickets(this)">
+    <button class="btn btn-blue" onclick="showImportModal('tickets')">📥 Importar Tickets</button>
+    <input type="file" id="input-import-injecoes" accept=".json" style="display:none" onchange="importarInjecoes(this)">
+    <button class="btn btn-blue" onclick="showImportModal('injecoes')">📥 Importar Injeções</button>
+    <button class="btn btn-red" onclick="resetar()">🗑 Reset</button>
   </div>
 </div>
 
@@ -480,27 +455,46 @@ a { color: var(--blue); text-decoration: none; }
 
   <!-- ─── Dashboard ─── -->
   <div id="sec-dashboard" class="section active">
-    <div class="stats" id="stats-row">
-      <div class="stat"><div class="value" id="st-dia">-</div><div class="label">Dia Atual</div></div>
-      <a class="stat stat-link" href="#" onclick="goToTab('tickets'); return false;" aria-label="Abrir Tickets">
-        <div class="value" id="st-tickets">-</div>
-        <div class="label">Tickets</div>
-      </a>
-      <a class="stat stat-link" href="#" onclick="goToTab('injecoes'); return false;" aria-label="Abrir Injeções">
-        <div class="value" id="st-inj">-</div>
-        <div class="label">Injeções Ativas</div>
-      </a>
-      <a class="stat stat-link" href="#" onclick="goToTab('historico'); return false;" aria-label="Abrir Histórico">
-        <div class="value" id="st-hist">-</div>
-        <div class="label">Histórico</div>
-      </a>
+
+    <!-- Topo: botões de dia + stats -->
+    <div class="dashboard-top">
+      <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
+        <button class="btn-gerar-dia" onclick="gerarDia()">
+          <span class="btn-icon">⚡</span>
+          <span>Gerar</span>
+          <span>Dia</span>
+        </button>
+        <button class="btn-reverter-dia" onclick="revertarDia()">
+          <span class="btn-icon">↩</span>
+          <span>Reverter</span>
+          <span>Dia</span>
+        </button>
+      </div>
+      <div class="stats" id="stats-row">
+        <div class="stat">
+          <div class="value" id="st-dia">-</div>
+          <div class="label">Dia Atual</div>
+        </div>
+        <a class="stat stat-link" href="#" onclick="goToTab('tickets'); return false;">
+          <div class="value" id="st-tickets">-</div>
+          <div class="label">Tickets</div>
+        </a>
+        <a class="stat stat-link" href="#" onclick="goToTab('injecoes'); return false;">
+          <div class="value" id="st-inj">-</div>
+          <div class="label">Injeções Ativas</div>
+        </a>
+        <a class="stat stat-link" href="#" onclick="goToTab('historico'); return false;">
+          <div class="value" id="st-hist">-</div>
+          <div class="label">Histórico</div>
+        </a>
+      </div>
     </div>
 
     <div class="card">
       <h3>Grade Batch</h3>
       <div style="display:flex;gap:8px;margin-bottom:10px;">
-        <button class="btn btn-sm btn-green" onclick="loadBatch(false)">Batch Normal</button>
-        <button class="btn btn-sm btn-red" onclick="loadBatch(true)">Simular Falha</button>
+        <button class="btn btn-sm btn-green" onclick="loadBatch(false)">✅ Batch Normal</button>
+        <button class="btn btn-sm btn-red" onclick="loadBatch(true)">⚠️ Simular Falha</button>
       </div>
       <table class="batch-table">
         <thead><tr><th>Job</th><th>Hora</th><th>Programa</th><th>Status</th><th>RC</th></tr></thead>
@@ -513,7 +507,7 @@ a { color: var(--blue); text-decoration: none; }
   <div id="sec-tickets" class="section">
     <div class="filter-bar">
       <input type="text" id="filtro-tickets" placeholder="Filtrar por categoria, severidade, status, título..." oninput="loadTickets()">
-      <button class="btn btn-sm" onclick="document.getElementById('filtro-tickets').value='';loadTickets()">Limpar</button>
+      <button class="btn btn-sm" onclick="document.getElementById('filtro-tickets').value='';loadTickets()">✕ Limpar</button>
     </div>
     <div class="kanban" id="kanban-board"></div>
   </div>
@@ -538,7 +532,12 @@ a { color: var(--blue); text-decoration: none; }
     </div>
   </div>
 
-</div>
+</div><!-- /main -->
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer class="footer">
+  "[...] mas o justo viverá pela sua fé." — Habacuque 2:4
+</footer>
 
 <!-- ═══════ MODAL: Ticket Detail ═══════ -->
 <div class="modal-overlay" id="modal-ticket">
@@ -566,8 +565,8 @@ a { color: var(--blue); text-decoration: none; }
     <label>Notas</label>
     <textarea id="md-notas" placeholder="Anote observações aqui..."></textarea>
     <div class="modal-actions">
-      <button class="btn" onclick="closeModal('modal-ticket')">Fechar</button>
-      <button class="btn btn-green" onclick="salvarNotas()">Salvar Notas</button>
+      <button class="btn" onclick="closeModal('modal-ticket')">✕ Fechar</button>
+      <button class="btn btn-green" onclick="salvarNotas()">💾 Salvar Notas</button>
     </div>
   </div>
 </div>
@@ -575,14 +574,16 @@ a { color: var(--blue); text-decoration: none; }
 <!-- ═══════ MODAL: Injection Result ═══════ -->
 <div class="modal-overlay" id="modal-inject-result">
   <div class="modal">
-    <h2>Injeção Aplicada</h2>
+    <h2>⚡ Injeção Aplicada</h2>
     <label>ID</label><div id="mir-id" style="font-size:calc(15px + var(--font-bump));color:var(--orange);"></div>
     <label>Título</label><div id="mir-title" style="font-size:calc(15px + var(--font-bump));"></div>
     <label>Arquivos Afetados</label><div id="mir-files" style="font-size:calc(14px + var(--font-bump));color:var(--text2);"></div>
     <label>Sintoma Observável</label><div id="mir-sintoma" style="font-size:calc(14px + var(--font-bump));color:var(--yellow);"></div>
-    <label>Dica</label><div id="mir-dica" style="font-size:calc(14px + var(--font-bump));color:var(--cyan);"></div>
+    <label>Dica</label>
+    <button class="dica-reveal-btn" onclick="toggleDica(this)">👁 Revelar dica</button>
+    <div class="dica-content" id="mir-dica"></div>
     <div class="modal-actions">
-      <button class="btn" onclick="closeModal('modal-inject-result')">OK</button>
+      <button class="btn" onclick="closeModal('modal-inject-result')">✕ OK</button>
     </div>
   </div>
 </div>
@@ -593,7 +594,65 @@ a { color: var(--blue); text-decoration: none; }
     <h2 id="modal-dia-title">Novo Dia Gerado</h2>
     <div id="modal-dia-body"></div>
     <div class="modal-actions">
-      <button class="btn btn-green" onclick="closeModal('modal-dia')">OK</button>
+      <button class="btn btn-green" onclick="closeModal('modal-dia');loadTickets();loadInfo();">✓ OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: Import Tickets ═══════ -->
+<div class="modal-overlay" id="modal-import-tickets">
+  <div class="modal">
+    <h2>📥 Importar Tickets</h2>
+    <p style="font-size:calc(13px + var(--font-bump));color:var(--text2);margin-bottom:12px;">
+      Selecione um arquivo <code style="color:var(--cyan);">.json</code> com a lista de tickets no formato abaixo.
+      Tickets com <code style="color:var(--cyan);">ticket_id</code> já existente serão ignorados.
+    </p>
+    <label>Modelo esperado</label>
+    <pre style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;font-size:calc(11px + var(--font-bump));color:var(--cyan);overflow-x:auto;margin-top:4px;line-height:1.5;">[
+  {
+    "ticket_id": "EB-001-01",
+    "titulo": "Título do ticket",
+    "categoria": "incidente",
+    "severidade": "alta",
+    "dificuldade": "pleno",
+    "tempo": "60min",
+    "ferramenta": "SDSF / JES",
+    "descricao": "Descrição detalhada...",
+    "tags": ["cobol", "batch"],
+    "status": "backlog",
+    "dia": 1,
+    "inj": null,
+    "notas": ""
+  }
+]</pre>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-import-tickets')">✕ Cancelar</button>
+      <button class="btn btn-blue" onclick="closeModal('modal-import-tickets');document.getElementById('input-import-tickets').click()">📂 Selecionar Arquivo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: Import Injeções ═══════ -->
+<div class="modal-overlay" id="modal-import-injecoes">
+  <div class="modal">
+    <h2>📥 Importar Injeções</h2>
+    <p style="font-size:calc(13px + var(--font-bump));color:var(--text2);margin-bottom:12px;">
+      Selecione um arquivo <code style="color:var(--cyan);">.json</code> com injeções customizadas no formato abaixo.
+      Injeções com <code style="color:var(--cyan);">id</code> já existente serão ignoradas.
+    </p>
+    <label>Modelo esperado</label>
+    <pre style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;font-size:calc(11px + var(--font-bump));color:var(--cyan);overflow-x:auto;margin-top:4px;line-height:1.5;">[
+  {
+    "id": "INJ-CUS-001",
+    "titulo": "Título da injeção",
+    "arquivos": ["EBVALI01.cbl"],
+    "sintoma": "Sintoma observável no batch ou no spool...",
+    "dica": "Dica de diagnóstico para o analista."
+  }
+]</pre>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-import-injecoes')">✕ Cancelar</button>
+      <button class="btn btn-blue" onclick="closeModal('modal-import-injecoes');document.getElementById('input-import-injecoes').click()">📂 Selecionar Arquivo</button>
     </div>
   </div>
 </div>
@@ -602,9 +661,6 @@ a { color: var(--blue); text-decoration: none; }
 <div class="toast-container" id="toast-container"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════
-// API BASE
-// ═══════════════════════════════════════════════════════
 const API = '';
 
 async function api(path, opts) {
@@ -627,7 +683,7 @@ const THEME_KEY = 'ebops-theme';
 function applyTheme(theme) {
   document.body.setAttribute('data-theme', theme);
   const btn = document.getElementById('theme-toggle');
-  if (btn) btn.innerHTML = theme === 'light' ? '🌞 Tema Claro' : '🌙 Tema Escuro';
+  if (btn) btn.textContent = theme === 'light' ? '🌞 Claro' : '🌙 Escuro';
 }
 
 function initTheme() {
@@ -681,6 +737,33 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 document.querySelectorAll('.modal-overlay').forEach(m => {
   m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
 });
+
+// ═══════════════════════════════════════════════════════
+// DICA OCULTA (modal de resultado de injeção)
+// ═══════════════════════════════════════════════════════
+function toggleDica(btn) {
+  const content = document.getElementById('mir-dica');
+  const visible = content.style.display === 'block';
+  content.style.display = visible ? 'none' : 'block';
+  btn.textContent = visible ? '👁 Revelar dica' : '🙈 Ocultar dica';
+}
+
+// ═══════════════════════════════════════════════════════
+// SINTOMA OCULTO (catálogo de injeções)
+// ═══════════════════════════════════════════════════════
+function toggleSintoma(btn) {
+  const el = btn.nextElementSibling;
+  const visible = el.style.display === 'block';
+  el.style.display = visible ? 'none' : 'block';
+  btn.textContent = visible ? '👁 Revelar sintoma' : '🙈 Ocultar sintoma';
+}
+
+function toggleDicaCatalog(btn) {
+  const el = btn.nextElementSibling;
+  const visible = el.style.display === 'block';
+  el.style.display = visible ? 'none' : 'block';
+  btn.textContent = visible ? '👁 Revelar dica' : '🙈 Ocultar dica';
+}
 
 // ═══════════════════════════════════════════════════════
 // DASHBOARD
@@ -740,8 +823,9 @@ function renderKanban(tickets, counts) {
           <span class="count">${count}</span>
         </div>
         <div class="kanban-col-body">
-          ${col_tickets.length === 0 ? '<div style="text-align:center;color:var(--text2);font-size:calc(11px + var(--font-bump));padding:20px;">—</div>' :
-            col_tickets.map(t => renderTicketCard(t)).join('')}
+          ${col_tickets.length === 0
+            ? '<div style="text-align:center;color:var(--text2);font-size:calc(11px + var(--font-bump));padding:20px;">—</div>'
+            : col_tickets.map(t => renderTicketCard(t)).join('')}
         </div>
       </div>
     `;
@@ -795,8 +879,7 @@ async function moveTicketFromModal() {
       body: JSON.stringify({ticket_id: currentTicketId, status})
     });
     toast('Ticket movido para ' + STATUS_NAMES[status]);
-    loadTickets();
-    loadInfo();
+    loadTickets(); loadInfo();
   } catch(e) {}
 }
 
@@ -826,9 +909,12 @@ async function loadCatalog() {
         <div class="inj-id">${inj.id}</div>
         <div class="inj-title">${inj.t}</div>
         <div class="inj-detail">Arquivos: ${inj.arqs.join(', ')}</div>
-        <div class="inj-detail">Sintoma: ${inj.sintoma}</div>
+        <button class="sintoma-reveal-btn" onclick="toggleSintoma(this)">👁 Revelar sintoma</button>
+        <div class="inj-sintoma-hidden">Sintoma: ${inj.sintoma}</div>
+        <button class="sintoma-reveal-btn" style="margin-top:4px;" onclick="toggleDicaCatalog(this)">👁 Revelar dica</button>
+        <div class="inj-sintoma-hidden" style="color:var(--cyan);">Dica: ${inj.dica}</div>
         <div style="margin-top:8px;">
-          <button class="btn btn-sm btn-yellow" onclick="injectDefect('${inj.id}')">Injetar</button>
+          <button class="btn btn-sm btn-yellow" onclick="injectDefect('${inj.id}')">⚡ Injetar</button>
         </div>
       </div>
     `).join('');
@@ -849,11 +935,11 @@ async function loadActiveInjections() {
           <strong style="color:var(--orange);">${a.id}</strong> — ${a.titulo}
           <div style="font-size:calc(11px + var(--font-bump));color:var(--text2);">Arquivos: ${(a.arquivos||[]).join(', ')}</div>
         </div>
-        <button class="btn btn-sm btn-red" onclick="revertInjection('${a.id}')">Reverter</button>
+        <button class="btn btn-sm btn-red" onclick="revertInjection('${a.id}')">↩ Reverter</button>
       </div>
     `).join('') + `
       <div style="margin-top:8px;">
-        <button class="btn btn-sm btn-red" onclick="revertInjection(null)">Reverter Todas</button>
+        <button class="btn btn-sm btn-red" onclick="revertInjection(null)">↩ Reverter Todas</button>
       </div>
     `;
   } catch(e) {}
@@ -870,10 +956,12 @@ async function injectDefect(injId) {
     document.getElementById('mir-title').textContent = res.titulo;
     document.getElementById('mir-files').textContent = (res.arquivos||[]).join(', ');
     document.getElementById('mir-sintoma').textContent = res.sintoma;
-    document.getElementById('mir-dica').textContent = res.dica;
+    const dicaEl = document.getElementById('mir-dica');
+    dicaEl.textContent = res.dica;
+    dicaEl.style.display = 'none';
+    document.querySelector('.dica-reveal-btn').textContent = '👁 Revelar dica';
     openModal('modal-inject-result');
-    loadActiveInjections();
-    loadInfo();
+    loadActiveInjections(); loadInfo();
   } catch(e) {}
 }
 
@@ -885,8 +973,7 @@ async function revertInjection(injId) {
       body: JSON.stringify({inj_id: injId})
     });
     toast(injId ? injId + ' revertida' : 'Todas revertidas');
-    loadActiveInjections();
-    loadInfo();
+    loadActiveInjections(); loadInfo();
   } catch(e) {}
 }
 
@@ -914,7 +1001,7 @@ async function loadHistory() {
 }
 
 // ═══════════════════════════════════════════════════════
-// AÇÕES GLOBAIS
+// GERAR DIA (com auto-injeção mediante confirmação)
 // ═══════════════════════════════════════════════════════
 async function gerarDia() {
   try {
@@ -922,8 +1009,9 @@ async function gerarDia() {
     const body = document.getElementById('modal-dia-body');
     document.getElementById('modal-dia-title').textContent = `Dia #${res.dia} Gerado`;
 
+    // Tickets
     let html = `<div style="margin-bottom:12px;">
-      <label>Tickets Gerados (${res.tickets.length})</label>
+      <label style="font-size:calc(13px + var(--font-bump));color:var(--text2);text-transform:uppercase;">Tickets Gerados (${res.tickets.length})</label>
       <div style="margin-top:4px;">`;
     for (const t of res.tickets) {
       const icon = CAT_ICONS[t.categoria] || '📋';
@@ -934,43 +1022,64 @@ async function gerarDia() {
     }
     html += '</div></div>';
 
-    if (res.injectable && res.injectable.length > 0) {
-      html += `<label>Injeções Disponíveis</label><div style="margin-top:4px;">`;
-      for (const inj of res.injectable) {
-        html += `<div style="background:rgba(240,136,62,.1);border:1px solid rgba(240,136,62,.3);padding:8px;border-radius:4px;margin-bottom:4px;font-size:calc(14px + var(--font-bump));">
-          <span style="color:var(--orange);font-weight:bold;">${inj.inj_id}</span> — ${inj.ticket}
-          <button class="btn btn-sm btn-yellow" style="margin-left:8px;" onclick="injectDefect('${inj.inj_id}');closeModal('modal-dia');">Injetar</button>
-        </div>`;
-      }
-      html += '</div>';
-    }
-
     // Batch summary
-    const batchFailed = res.batch.some(j => j.status === 'error');
-    html += `<div style="margin-top:12px;"><label>Batch</label>
+    const batchFailed = res.batch && res.batch.some(j => j.status === 'error');
+    html += `<div style="margin-bottom:12px;">
+      <label style="font-size:calc(13px + var(--font-bump));color:var(--text2);text-transform:uppercase;">Batch</label>
       <div style="font-size:calc(14px + var(--font-bump));margin-top:4px;color:${batchFailed?'var(--red)':'var(--green)'};">
         ${batchFailed ? '⚠ Falha no batch — verifique a grade' : '✓ Batch concluído com sucesso'}
       </div></div>`;
 
+    // Injeções disponíveis — banner de confirmação automática
+    if (res.injectable && res.injectable.length > 0) {
+      const injList = res.injectable.map(i =>
+        `<div style="font-size:calc(13px + var(--font-bump));margin-bottom:2px;">
+          <span style="color:var(--orange);font-weight:bold;">${i.inj_id}</span> — ${i.ticket}
+        </div>`
+      ).join('');
+
+      html += `<div class="auto-inj-banner">
+        <p>⚡ Este dia tem injeções vinculadas a tickets:</p>
+        ${injList}
+        <div style="margin-top:10px;display:flex;gap:8px;">
+          <button class="btn btn-sm btn-yellow" onclick="confirmarAutoInjecao(${JSON.stringify(res.injectable).replace(/"/g,'&quot;')})">
+            Confirmar e Aplicar Injeções
+          </button>
+          <button class="btn btn-sm" onclick="this.closest('.auto-inj-banner').remove()">Pular</button>
+        </div>
+      </div>`;
+    }
+
     body.innerHTML = html;
     openModal('modal-dia');
     loadInfo();
-    loadTickets();
   } catch(e) {}
 }
 
-async function resetar() {
-  if (!confirm('Resetar todo o estado do EBOPS? Tickets, injeções e histórico serão perdidos.')) return;
-  try {
-    await api('/api/reset', {method:'POST'});
-    toast('Estado resetado');
-    loadInfo();
-    loadTickets();
-    loadActiveInjections();
-    loadHistory();
-  } catch(e) {}
+async function confirmarAutoInjecao(injecoes) {
+  const lista = injecoes.map(i => `• ${i.inj_id} — ${i.ticket}`).join('\n');
+  if (!confirm(`Aplicar as seguintes injeções automaticamente?\n\n${lista}`)) return;
+
+  for (const inj of injecoes) {
+    try {
+      await api('/api/inject', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({inj_id: inj.inj_id})
+      });
+      toast(`${inj.inj_id} injetada`, 'info');
+    } catch(e) {}
+  }
+  loadActiveInjections();
+  loadInfo();
+  // Remove o banner
+  const banner = document.querySelector('.auto-inj-banner');
+  if (banner) banner.remove();
 }
 
+// ═══════════════════════════════════════════════════════
+// EXPORTAR / IMPORTAR
+// ═══════════════════════════════════════════════════════
 async function exportar() {
   try {
     const tickets = await api('/api/export');
@@ -982,6 +1091,86 @@ async function exportar() {
     a.click();
     URL.revokeObjectURL(url);
     toast('Exportação concluída');
+  } catch(e) {}
+}
+
+function importarTickets(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const res = await api('/api/import/tickets', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
+      toast(`${res.imported} ticket(s) importado(s)`);
+      loadTickets(); loadInfo();
+    } catch(err) {
+      toast('Erro ao importar tickets: ' + err.message, 'err');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function importarInjecoes(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      const res = await api('/api/import/injections', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      });
+      toast(`${res.imported} injeção(ões) importada(s)`);
+      loadCatalog();
+    } catch(err) {
+      toast('Erro ao importar injeções: ' + err.message, 'err');
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════════════════════
+// IMPORTAR — modais de modelo
+// ═══════════════════════════════════════════════════════
+function showImportModal(tipo) {
+  openModal(tipo === 'tickets' ? 'modal-import-tickets' : 'modal-import-injecoes');
+}
+
+// ═══════════════════════════════════════════════════════
+// REVERTER DIA
+// ═══════════════════════════════════════════════════════
+async function revertarDia() {
+  try {
+    const info = await api('/api/info');
+    const dia = info.day;
+    if (dia <= 1) { toast('Já está no dia 1, nada a reverter.', 'err'); return; }
+    if (!confirm(`Reverter o Dia #${dia - 1}? Os tickets desse dia serão removidos.`)) return;
+    const res = await api('/api/revert_day', { method: 'POST' });
+    if (!res.ok) { toast(res.msg, 'err'); return; }
+    toast(`Dia #${res.reverted_day} revertido — ${res.tickets_removed} ticket(s) removido(s).`);
+    loadInfo();
+    loadTickets();
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════════════
+async function resetar() {
+  if (!confirm('Resetar todo o estado do EBOPS? Tickets, injeções e histórico serão perdidos.')) return;
+  try {
+    await api('/api/reset', {method:'POST'});
+    toast('Estado resetado');
+    loadInfo(); loadTickets(); loadActiveInjections(); loadHistory();
   } catch(e) {}
 }
 
