@@ -42,6 +42,7 @@ Este laboratório busca simular práticas reais de desenvolvimento, operação e
 | Processamento Batch | JCL |
 | Armazenamento | VSAM |
 | Banco de Dados | DB2 |
+| Ambiente interativo | TSO / ISPF |
 | Acesso ao ambiente | Terminal TN3270 emulado / Zowe |
 | Tooling moderno | Zowe CLI |
 | Simulação operacional | EBOPS (Python) |
@@ -82,6 +83,15 @@ Automação de tarefas utilitárias e administrativas, com foco em:
 - validações operacionais;
 - automação no **TSO/ISPF**;
 - apoio a rotinas recorrentes do ambiente.
+
+### TSO / ISPF
+Interação direta e operação do ambiente z/OS via terminal 3270, incluindo:
+
+- navegação pelo painel ISPF (edição, browse e gerenciamento de datasets);
+- execução de comandos TSO nativos;
+- submissão e acompanhamento de jobs via SDSF;
+- inspeção de spool e investigação de falhas em tempo real;
+- operação de suporte a rotinas batch e diagnóstico de abends.
 
 ### Zowe CLI
 Uso de interface moderna para operações no mainframe, permitindo:
@@ -124,6 +134,7 @@ Este laboratório é orientado à reprodução de situações comuns em ambiente
 - Manipulação de arquivos **VSAM**
 - Integração com **DB2**
 - Automação com **REXX**
+- Operação e navegação em **TSO/ISPF**
 - Operação com **Zowe CLI**
 - Diagnóstico e troubleshooting em **z/OS**
 - Simulação de operações bancárias com **EBOPS**
@@ -144,5 +155,7 @@ Isso permite explorar tanto a base clássica do ecossistema z/OS quanto prática
 ## Finalidade
 
 Este projeto tem como objetivo servir como laboratório contínuo de aprendizado, documentação e evolução técnica em **mainframe bancário**, com ênfase em prática realista, disciplina operacional e aprofundamento técnico.
+
+O laboratório também responde a uma necessidade concreta do mercado: instituições financeiras e empresas que operam sistemas críticos em mainframe enfrentam crescente dificuldade em encontrar profissionais qualificados e treinados nessas tecnologias. O **Emunah Bank Lab** busca ser um ambiente de formação prática que contribui para reduzir essa lacuna — preparando quem o utiliza com experiência concreta nos processos, ferramentas e dinâmicas operacionais exigidas por essas organizações.
 
 ---
