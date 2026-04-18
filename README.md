@@ -207,27 +207,27 @@ zowe zosmf check status
 
 ```bash
 # Copybooks primeiro — sempre antes dos fontes COBOL
-zowe files upload dir-to-pds ./copybooks/layouts "Z77948.EMUNAH.DEV.COPY"
+zowe files upload dir-to-pds ./copybooks/layouts "<HLQ>.EMUNAH.DEV.COPY"
 
 # Fontes COBOL
-zowe files upload dir-to-pds ./cobol/batch "Z77948.EMUNAH.DEV.COBOL"
+zowe files upload dir-to-pds ./cobol/batch "<HLQ>.EMUNAH.DEV.COBOL"
 
 # JCLs
-zowe files upload dir-to-pds ./jcl/compile "Z77948.EMUNAH.DEV.JCL"
-zowe files upload dir-to-pds ./jcl/batch   "Z77948.EMUNAH.DEV.JCL"
+zowe files upload dir-to-pds ./jcl/compile "<HLQ>.EMUNAH.DEV.JCL"
+zowe files upload dir-to-pds ./jcl/batch   "<HLQ>.EMUNAH.DEV.JCL"
 
 # Scripts REXX
-zowe files upload dir-to-pds ./rexx/util "Z77948.EMUNAH.DEV.REXX"
+zowe files upload dir-to-pds ./rexx/util "<HLQ>.EMUNAH.DEV.REXX"
 ```
 
 ### 4. Execute o build
 
 ```bash
 # Compila todos os programas
-zowe jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBBUILD)"
+zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBBUILD)"
 
 # Acompanhe o job
-zowe jobs list jobs --owner Z77948
+zowe jobs list jobs --owner <HLQ>
 ```
 
 ### 5. Execute a cadeia batch
@@ -236,10 +236,10 @@ zowe jobs list jobs --owner Z77948
 # Envie o arquivo de entrada do dia
 zowe files upload file-to-data-set \
   ./data/entrada/lancamentos.txt \
-  "Z77948.EMUNAH.ARQ.ENTRADA.SEQ" --record-length 80
+  "<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ" --record-length 80
 
 # Submeta a cadeia
-zowe jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJLOAD)"
+zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJLOAD)"
 ```
 
 ---
@@ -322,14 +322,14 @@ Para carregar a massa no mainframe:
 # Envia os arquivos seed
 zowe files upload file-to-data-set \
   ./data/seed/clientes.txt \
-  "Z77948.EMUNAH.SEED.CLIENTES.SEQ" --record-length 80
+  "<HLQ>.EMUNAH.SEED.CLIENTES.SEQ" --record-length 80
 
 zowe files upload file-to-data-set \
   ./data/seed/contas.txt \
-  "Z77948.EMUNAH.SEED.CONTAS.SEQ" --record-length 120
+  "<HLQ>.EMUNAH.SEED.CONTAS.SEQ" --record-length 120
 
 # Executa o job de carga
-zowe jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBSEED)"
+zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBSEED)"
 ```
 
 ---
