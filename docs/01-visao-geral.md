@@ -42,7 +42,7 @@ Este laboratório busca simular práticas reais de desenvolvimento, operação e
 | Processamento Batch | JCL |
 | Armazenamento | VSAM |
 | Banco de Dados | DB2 |
-| Acesso ao ambiente | TN3270 / emulação 3270 |
+| Acesso ao ambiente | Terminal TN3270 emulado / Zowe |
 | Tooling moderno | Zowe CLI |
 | Simulação operacional | EBOPS (Python) |
 
