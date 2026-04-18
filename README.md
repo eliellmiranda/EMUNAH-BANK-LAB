@@ -7,6 +7,7 @@
 ![VSAM](https://img.shields.io/badge/VSAM-KSDS%20%2F%20ESDS-yellow?style=flat-square)
 ![DB2](https://img.shields.io/badge/DB2-z%2FOS-blue?style=flat-square&logo=ibm)
 ![REXX](https://img.shields.io/badge/REXX-automation-purple?style=flat-square)
+![TSO/ISPF](https://img.shields.io/badge/TSO%2FISPF-terminal-lightblue?style=flat-square)
 ![EBOPS](https://img.shields.io/badge/EBOPS-simulator-red?style=flat-square)
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-brightgreen?style=flat-square)
 
@@ -349,8 +350,9 @@ O arquivo [`docs/mapa-emunah-bank-lab.html`](docs/mapa-emunah-bank-lab.html) é 
 - **GDG** — histórico de extratos com geração automática
 - **DB2** — banco de dados relacional z/OS
 - **REXX** — automação e scripts utilitários
+- **TSO / ISPF** — operação interativa e navegação no ambiente z/OS via terminal 3270
 - **Zowe CLI / Explorer** — ponte entre ambiente local e mainframe
-- **TN3270** — operação clássica via ISPF e SDSF
+- **TN3270** — acesso ao terminal mainframe (emulador)
 - **EBOPS** — simulador de operações e demandas bancárias (Python)
 
 ---
