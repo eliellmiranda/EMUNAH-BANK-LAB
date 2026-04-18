@@ -3,9 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EBOPS — Emunah Bank Operations Simulator</title>
+<title>EBOPS — Emunah Bank Operations Simulator — "[...] mas o justo viverá pela sua fé." Habacuque 2:4</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='22' fill='%233fb950'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
+  --font-bump: 2.667px;
   --bg: #0d1117;
   --bg2: #161b22;
   --bg3: #21262d;
@@ -19,10 +24,27 @@
   --cyan: #39d353;
   --magenta: #bc8cff;
   --orange: #f0883e;
+  --shadow: 0 10px 28px rgba(0,0,0,.18);
+}
+body[data-theme="light"] {
+  --bg: #f6f8fb;
+  --bg2: #ffffff;
+  --bg3: #eef2f7;
+  --border: #cfd8e3;
+  --text: #17202a;
+  --text2: #5c6672;
+  --green: #1f8f4d;
+  --red: #cf3f37;
+  --yellow: #b37a00;
+  --blue: #1369ce;
+  --cyan: #127e72;
+  --magenta: #8d56d6;
+  --orange: #c96b1a;
+  --shadow: 0 10px 24px rgba(15, 23, 42, .08);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
-  font-family: 'Cascadia Code','Fira Code','Consolas',monospace;
+  font-family: 'IBM Plex Mono','Cascadia Code','Fira Code','Consolas',monospace;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -42,7 +64,7 @@ a { color: var(--blue); text-decoration: none; }
   z-index: 100;
 }
 .header h1 {
-  font-size: 18px;
+  font-size:calc(18px + var(--font-bump));
   color: var(--green);
   letter-spacing: 1px;
 }
@@ -57,7 +79,7 @@ a { color: var(--blue); text-decoration: none; }
   background: var(--bg3);
   color: var(--text);
   font-family: inherit;
-  font-size: 14px;
+  font-size:calc(14px + var(--font-bump));
   cursor: pointer;
   transition: all .15s;
 }
@@ -70,7 +92,7 @@ a { color: var(--blue); text-decoration: none; }
 .btn-blue:hover { background: var(--blue); color: var(--bg); }
 .btn-yellow { border-color: var(--yellow); color: var(--yellow); }
 .btn-yellow:hover { background: var(--yellow); color: var(--bg); }
-.btn-sm { padding: 3px 8px; font-size: 13px; }
+.btn-sm { padding: 3px 8px; font-size:calc(13px + var(--font-bump)); }
 
 /* ── Tabs ── */
 .tabs {
@@ -82,7 +104,7 @@ a { color: var(--blue); text-decoration: none; }
 }
 .tab {
   padding: 10px 18px;
-  font-size: 15px;
+  font-size:calc(15px + var(--font-bump));
   color: var(--text2);
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -103,6 +125,7 @@ a { color: var(--blue); text-decoration: none; }
 
 /* ── Cards ── */
 .card {
+  box-shadow: var(--shadow);
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -110,7 +133,7 @@ a { color: var(--blue); text-decoration: none; }
   margin-bottom: 12px;
 }
 .card h3 {
-  font-size: 15px;
+  font-size:calc(15px + var(--font-bump));
   color: var(--green);
   margin-bottom: 10px;
   text-transform: uppercase;
@@ -125,19 +148,34 @@ a { color: var(--blue); text-decoration: none; }
   margin-bottom: 20px;
 }
 .stat {
+  box-shadow: var(--shadow);
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 14px;
   text-align: center;
 }
+.stat-link {
+  display: block;
+  cursor: pointer;
+  transition: transform .15s, border-color .15s, background .15s;
+}
+.stat-link:hover {
+  border-color: var(--blue);
+  background: var(--bg3);
+  transform: translateY(-1px);
+}
+.stat-link:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
 .stat .value {
-  font-size: 30px;
+  font-size:calc(30px + var(--font-bump));
   font-weight: bold;
   color: var(--green);
 }
 .stat .label {
-  font-size: 13px;
+  font-size:calc(13px + var(--font-bump));
   color: var(--text2);
   margin-top: 4px;
   text-transform: uppercase;
@@ -147,18 +185,18 @@ a { color: var(--blue); text-decoration: none; }
 .batch-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size:calc(14px + var(--font-bump));
 }
 .batch-table th {
   text-align: left;
   padding: 8px 10px;
   color: var(--text2);
   border-bottom: 1px solid var(--border);
-  font-size: 13px;
+  font-size:calc(13px + var(--font-bump));
   text-transform: uppercase;
 }
 .batch-table td {
-  font-size: 14px;
+  font-size:calc(14px + var(--font-bump));
   padding: 6px 10px;
   border-bottom: 1px solid rgba(48,54,61,.5);
 }
@@ -177,6 +215,7 @@ a { color: var(--blue); text-decoration: none; }
   margin-top: 12px;
 }
 .kanban-col {
+  box-shadow: var(--shadow);
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -185,7 +224,7 @@ a { color: var(--blue); text-decoration: none; }
 .kanban-col-header {
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
-  font-size: 14px;
+  font-size:calc(14px + var(--font-bump));
   font-weight: bold;
   display: flex;
   justify-content: space-between;
@@ -195,12 +234,13 @@ a { color: var(--blue); text-decoration: none; }
   background: var(--bg3);
   padding: 2px 8px;
   border-radius: 10px;
-  font-size: 13px;
+  font-size:calc(13px + var(--font-bump));
   color: var(--text2);
 }
 .kanban-col-body { padding: 8px; }
 
 .ticket-card {
+  box-shadow: var(--shadow);
   background: var(--bg3);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -211,18 +251,18 @@ a { color: var(--blue); text-decoration: none; }
 }
 .ticket-card:hover { border-color: var(--text2); }
 .ticket-card .ticket-id {
-  font-size: 13px;
+  font-size:calc(13px + var(--font-bump));
   color: var(--cyan);
   margin-bottom: 4px;
 }
 .ticket-card .ticket-title {
-  font-size: 14px;
+  font-size:calc(14px + var(--font-bump));
   margin-bottom: 6px;
   line-height: 1.4;
 }
 .ticket-tags { display: flex; gap: 4px; flex-wrap: wrap; }
 .tag {
-  font-size: 14px;
+  font-size:calc(14px + var(--font-bump));
   padding: 1px 6px;
   border-radius: 3px;
   border: 1px solid;
@@ -242,14 +282,15 @@ a { color: var(--blue); text-decoration: none; }
   gap: 10px;
 }
 .inj-card {
+  box-shadow: var(--shadow);
   background: var(--bg3);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 12px;
 }
-.inj-card .inj-id { color: var(--orange); font-size: 13px; font-weight: bold; }
-.inj-card .inj-title { font-size: 14px; margin: 4px 0; }
-.inj-card .inj-detail { font-size: 13px; color: var(--text2); margin: 2px 0; }
+.inj-card .inj-id { color: var(--orange); font-size:calc(13px + var(--font-bump)); font-weight: bold; }
+.inj-card .inj-title { font-size:calc(14px + var(--font-bump)); margin: 4px 0; }
+.inj-card .inj-detail { font-size:calc(13px + var(--font-bump)); color: var(--text2); margin: 2px 0; }
 
 /* ── Active injections ── */
 .active-inj {
@@ -276,6 +317,7 @@ a { color: var(--blue); text-decoration: none; }
 }
 .modal-overlay.open { display: flex; }
 .modal {
+  box-shadow: var(--shadow);
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -286,12 +328,12 @@ a { color: var(--blue); text-decoration: none; }
   padding: 20px;
 }
 .modal h2 {
-  font-size: 15px;
+  font-size:calc(15px + var(--font-bump));
   color: var(--green);
   margin-bottom: 14px;
 }
 .modal label {
-  font-size: 13px;
+  font-size:calc(13px + var(--font-bump));
   color: var(--text2);
   text-transform: uppercase;
   display: block;
@@ -306,7 +348,7 @@ a { color: var(--blue); text-decoration: none; }
   border-radius: 4px;
   color: var(--text);
   font-family: inherit;
-  font-size: 14px;
+  font-size:calc(14px + var(--font-bump));
   padding: 8px;
   resize: vertical;
 }
@@ -321,7 +363,7 @@ a { color: var(--blue); text-decoration: none; }
   border: 1px solid var(--border);
   color: var(--text);
   font-family: inherit;
-  font-size: 14px;
+  font-size:calc(14px + var(--font-bump));
   padding: 6px 8px;
   border-radius: 4px;
   width: 100%;
@@ -340,7 +382,7 @@ a { color: var(--blue); text-decoration: none; }
 .toast {
   padding: 10px 16px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size:calc(14px + var(--font-bump));
   animation: toast-in .3s;
   border: 1px solid;
 }
@@ -362,12 +404,18 @@ a { color: var(--blue); text-decoration: none; }
   border-radius: 4px;
   color: var(--text);
   font-family: inherit;
-  font-size: 14px;
+  font-size:calc(14px + var(--font-bump));
   padding: 6px 10px;
   flex: 1;
   max-width: 300px;
 }
 .filter-bar input::placeholder { color: var(--text2); }
+
+
+
+.theme-indicator {
+  color: var(--text2);
+}
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
@@ -410,8 +458,9 @@ a { color: var(--blue); text-decoration: none; }
 
 <!-- ═══════ HEADER ═══════ -->
 <div class="header">
-  <h1>EBOPS <span>— Emunah Bank Operations Simulator</span></h1>
+  <h1>EBOPS <span>— Emunah Bank Operations Simulator — "[...] mas o justo viverá pela sua fé." Habacuque 2:4</span></h1>
   <div class="header-actions">
+    <button class="btn btn-blue" id="theme-toggle" onclick="toggleTheme()">Tema</button>
     <button class="btn btn-green" onclick="gerarDia()">+ Novo Dia</button>
     <button class="btn btn-yellow" onclick="exportar()">Exportar</button>
     <button class="btn btn-red" onclick="resetar()">Reset</button>
@@ -433,9 +482,18 @@ a { color: var(--blue); text-decoration: none; }
   <div id="sec-dashboard" class="section active">
     <div class="stats" id="stats-row">
       <div class="stat"><div class="value" id="st-dia">-</div><div class="label">Dia Atual</div></div>
-      <div class="stat"><div class="value" id="st-tickets">-</div><div class="label">Tickets</div></div>
-      <div class="stat"><div class="value" id="st-inj">-</div><div class="label">Injeções Ativas</div></div>
-      <div class="stat"><div class="value" id="st-hist">-</div><div class="label">Histórico</div></div>
+      <a class="stat stat-link" href="#" onclick="goToTab('tickets'); return false;" aria-label="Abrir Tickets">
+        <div class="value" id="st-tickets">-</div>
+        <div class="label">Tickets</div>
+      </a>
+      <a class="stat stat-link" href="#" onclick="goToTab('injecoes'); return false;" aria-label="Abrir Injeções">
+        <div class="value" id="st-inj">-</div>
+        <div class="label">Injeções Ativas</div>
+      </a>
+      <a class="stat stat-link" href="#" onclick="goToTab('historico'); return false;" aria-label="Abrir Histórico">
+        <div class="value" id="st-hist">-</div>
+        <div class="label">Histórico</div>
+      </a>
     </div>
 
     <div class="card">
@@ -464,7 +522,7 @@ a { color: var(--blue); text-decoration: none; }
   <div id="sec-injecoes" class="section">
     <div class="card">
       <h3>Injeções Ativas</h3>
-      <div id="active-inj-list"><p style="color:var(--text2);font-size:14px;">Nenhuma injeção ativa.</p></div>
+      <div id="active-inj-list"><p style="color:var(--text2);font-size:calc(14px + var(--font-bump));">Nenhuma injeção ativa.</p></div>
     </div>
     <div class="card">
       <h3>Catálogo de Injeções</h3>
@@ -476,7 +534,7 @@ a { color: var(--blue); text-decoration: none; }
   <div id="sec-historico" class="section">
     <div class="card">
       <h3>Injeções Revertidas</h3>
-      <div id="history-list"><p style="color:var(--text2);font-size:14px;">Nenhum registro.</p></div>
+      <div id="history-list"><p style="color:var(--text2);font-size:calc(14px + var(--font-bump));">Nenhum registro.</p></div>
     </div>
   </div>
 
@@ -487,17 +545,17 @@ a { color: var(--blue); text-decoration: none; }
   <div class="modal">
     <h2 id="modal-ticket-title"></h2>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-      <div><label>ID</label><div id="md-id" style="font-size:15px;color:var(--cyan);"></div></div>
-      <div><label>Dia</label><div id="md-dia" style="font-size:15px;"></div></div>
-      <div><label>Categoria</label><div id="md-cat" style="font-size:15px;"></div></div>
-      <div><label>Severidade</label><div id="md-sev" style="font-size:15px;"></div></div>
-      <div><label>Dificuldade</label><div id="md-dif" style="font-size:15px;"></div></div>
-      <div><label>Tempo</label><div id="md-tempo" style="font-size:15px;"></div></div>
-      <div><label>Ferramenta</label><div id="md-fer" style="font-size:15px;"></div></div>
-      <div><label>Injeção</label><div id="md-inj" style="font-size:15px;"></div></div>
+      <div><label>ID</label><div id="md-id" style="font-size:calc(15px + var(--font-bump));color:var(--cyan);"></div></div>
+      <div><label>Dia</label><div id="md-dia" style="font-size:calc(15px + var(--font-bump));"></div></div>
+      <div><label>Categoria</label><div id="md-cat" style="font-size:calc(15px + var(--font-bump));"></div></div>
+      <div><label>Severidade</label><div id="md-sev" style="font-size:calc(15px + var(--font-bump));"></div></div>
+      <div><label>Dificuldade</label><div id="md-dif" style="font-size:calc(15px + var(--font-bump));"></div></div>
+      <div><label>Tempo</label><div id="md-tempo" style="font-size:calc(15px + var(--font-bump));"></div></div>
+      <div><label>Ferramenta</label><div id="md-fer" style="font-size:calc(15px + var(--font-bump));"></div></div>
+      <div><label>Injeção</label><div id="md-inj" style="font-size:calc(15px + var(--font-bump));"></div></div>
     </div>
     <label>Descrição</label>
-    <div id="md-desc" style="font-size:14px;color:var(--text);background:var(--bg);padding:8px;border-radius:4px;white-space:pre-wrap;"></div>
+    <div id="md-desc" style="font-size:calc(14px + var(--font-bump));color:var(--text);background:var(--bg);padding:8px;border-radius:4px;white-space:pre-wrap;"></div>
     <label>Status</label>
     <select id="md-status" onchange="moveTicketFromModal()">
       <option value="backlog">Backlog</option>
@@ -518,11 +576,11 @@ a { color: var(--blue); text-decoration: none; }
 <div class="modal-overlay" id="modal-inject-result">
   <div class="modal">
     <h2>Injeção Aplicada</h2>
-    <label>ID</label><div id="mir-id" style="font-size:15px;color:var(--orange);"></div>
-    <label>Título</label><div id="mir-title" style="font-size:15px;"></div>
-    <label>Arquivos Afetados</label><div id="mir-files" style="font-size:14px;color:var(--text2);"></div>
-    <label>Sintoma Observável</label><div id="mir-sintoma" style="font-size:14px;color:var(--yellow);"></div>
-    <label>Dica</label><div id="mir-dica" style="font-size:14px;color:var(--cyan);"></div>
+    <label>ID</label><div id="mir-id" style="font-size:calc(15px + var(--font-bump));color:var(--orange);"></div>
+    <label>Título</label><div id="mir-title" style="font-size:calc(15px + var(--font-bump));"></div>
+    <label>Arquivos Afetados</label><div id="mir-files" style="font-size:calc(14px + var(--font-bump));color:var(--text2);"></div>
+    <label>Sintoma Observável</label><div id="mir-sintoma" style="font-size:calc(14px + var(--font-bump));color:var(--yellow);"></div>
+    <label>Dica</label><div id="mir-dica" style="font-size:calc(14px + var(--font-bump));color:var(--cyan);"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('modal-inject-result')">OK</button>
     </div>
@@ -562,21 +620,45 @@ async function api(path, opts) {
 }
 
 // ═══════════════════════════════════════════════════════
+// TEMA
+// ═══════════════════════════════════════════════════════
+const THEME_KEY = 'ebops-theme';
+
+function applyTheme(theme) {
+  document.body.setAttribute('data-theme', theme);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.innerHTML = theme === 'light' ? '🌞 Tema Claro' : '🌙 Tema Escuro';
+}
+
+function initTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+  applyTheme(saved || (prefersLight ? 'light' : 'dark'));
+}
+
+function toggleTheme() {
+  const current = document.body.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+}
+
+// ═══════════════════════════════════════════════════════
 // TABS
 // ═══════════════════════════════════════════════════════
+function goToTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + tabName).classList.add('active');
+
+  if (tabName === 'dashboard') { loadInfo(); loadBatch(false); }
+  else if (tabName === 'tickets') loadTickets();
+  else if (tabName === 'injecoes') { loadActiveInjections(); loadCatalog(); }
+  else if (tabName === 'historico') loadHistory();
+}
+
 document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('sec-' + tab.dataset.tab).classList.add('active');
-    // Refresh data on tab switch
-    const t = tab.dataset.tab;
-    if (t === 'dashboard') { loadInfo(); loadBatch(false); }
-    else if (t === 'tickets') loadTickets();
-    else if (t === 'injecoes') { loadActiveInjections(); loadCatalog(); }
-    else if (t === 'historico') loadHistory();
-  });
+  tab.addEventListener('click', () => goToTab(tab.dataset.tab));
 });
 
 // ═══════════════════════════════════════════════════════
@@ -658,7 +740,7 @@ function renderKanban(tickets, counts) {
           <span class="count">${count}</span>
         </div>
         <div class="kanban-col-body">
-          ${col_tickets.length === 0 ? '<div style="text-align:center;color:var(--text2);font-size:11px;padding:20px;">—</div>' :
+          ${col_tickets.length === 0 ? '<div style="text-align:center;color:var(--text2);font-size:calc(11px + var(--font-bump));padding:20px;">—</div>' :
             col_tickets.map(t => renderTicketCard(t)).join('')}
         </div>
       </div>
@@ -758,14 +840,14 @@ async function loadActiveInjections() {
     const active = await api('/api/injections/active');
     const div = document.getElementById('active-inj-list');
     if (active.length === 0) {
-      div.innerHTML = '<p style="color:var(--text2);font-size:14px;">Nenhuma injeção ativa.</p>';
+      div.innerHTML = '<p style="color:var(--text2);font-size:calc(14px + var(--font-bump));">Nenhuma injeção ativa.</p>';
       return;
     }
     div.innerHTML = active.map(a => `
       <div class="active-inj">
         <div class="inj-info">
           <strong style="color:var(--orange);">${a.id}</strong> — ${a.titulo}
-          <div style="font-size:11px;color:var(--text2);">Arquivos: ${(a.arquivos||[]).join(', ')}</div>
+          <div style="font-size:calc(11px + var(--font-bump));color:var(--text2);">Arquivos: ${(a.arquivos||[]).join(', ')}</div>
         </div>
         <button class="btn btn-sm btn-red" onclick="revertInjection('${a.id}')">Reverter</button>
       </div>
@@ -816,7 +898,7 @@ async function loadHistory() {
     const hist = await api('/api/history');
     const div = document.getElementById('history-list');
     if (hist.length === 0) {
-      div.innerHTML = '<p style="color:var(--text2);font-size:14px;">Nenhum registro.</p>';
+      div.innerHTML = '<p style="color:var(--text2);font-size:calc(14px + var(--font-bump));">Nenhum registro.</p>';
       return;
     }
     div.innerHTML = '<table class="batch-table"><thead><tr><th>ID</th><th>Título</th><th>Arquivos</th><th>Timestamp</th></tr></thead><tbody>' +
@@ -845,7 +927,7 @@ async function gerarDia() {
       <div style="margin-top:4px;">`;
     for (const t of res.tickets) {
       const icon = CAT_ICONS[t.categoria] || '📋';
-      html += `<div style="background:var(--bg3);padding:8px;border-radius:4px;margin-bottom:4px;font-size:14px;">
+      html += `<div style="background:var(--bg3);padding:8px;border-radius:4px;margin-bottom:4px;font-size:calc(14px + var(--font-bump));">
         <span style="color:var(--cyan);">${t.ticket_id}</span> ${icon} ${t.titulo}
         <span class="tag tag-sev-${t.severidade}" style="margin-left:4px;">${t.severidade.toUpperCase()}</span>
       </div>`;
@@ -855,7 +937,7 @@ async function gerarDia() {
     if (res.injectable && res.injectable.length > 0) {
       html += `<label>Injeções Disponíveis</label><div style="margin-top:4px;">`;
       for (const inj of res.injectable) {
-        html += `<div style="background:rgba(240,136,62,.1);border:1px solid rgba(240,136,62,.3);padding:8px;border-radius:4px;margin-bottom:4px;font-size:14px;">
+        html += `<div style="background:rgba(240,136,62,.1);border:1px solid rgba(240,136,62,.3);padding:8px;border-radius:4px;margin-bottom:4px;font-size:calc(14px + var(--font-bump));">
           <span style="color:var(--orange);font-weight:bold;">${inj.inj_id}</span> — ${inj.ticket}
           <button class="btn btn-sm btn-yellow" style="margin-left:8px;" onclick="injectDefect('${inj.inj_id}');closeModal('modal-dia');">Injetar</button>
         </div>`;
@@ -866,7 +948,7 @@ async function gerarDia() {
     // Batch summary
     const batchFailed = res.batch.some(j => j.status === 'error');
     html += `<div style="margin-top:12px;"><label>Batch</label>
-      <div style="font-size:14px;margin-top:4px;color:${batchFailed?'var(--red)':'var(--green)'};">
+      <div style="font-size:calc(14px + var(--font-bump));margin-top:4px;color:${batchFailed?'var(--red)':'var(--green)'};">
         ${batchFailed ? '⚠ Falha no batch — verifique a grade' : '✓ Batch concluído com sucesso'}
       </div></div>`;
 
@@ -906,6 +988,7 @@ async function exportar() {
 // ═══════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════
+initTheme();
 loadInfo();
 loadBatch(false);
 </script>
