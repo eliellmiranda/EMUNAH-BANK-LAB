@@ -1,0 +1,300 @@
+*   [33m4d1550c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mDATASETS-E-MEMBROS-PREENCHIDOS[m[33m)[m Merge branch 'DATASETS-E-MEMBROS-PREENCHIDOS' of https://github.com/eliellmiranda/EMUNAH-BANK-LAB into DATASETS-E-MEMBROS-PREENCHIDOS
+[31m|[m[32m\[m  
+[31m|[m * [33m4992adf[m[33m ([m[1;31morigin/HEAD[m[33m, [m[1;31morigin/DATASETS-E-MEMBROS-PREENCHIDOS[m[33m)[m Update ebops_server.py
+[31m|[m * [33m5e23158[m Update index.html
+[31m|[m * [33m2a01e4b[m Update ebops_state.json
+[31m|[m * [33m2b3a75d[m Update ebops_state.json
+[31m|[m * [33mbd2659f[m Update index.html
+[31m|[m * [33m4404745[m Update mapa-emunah-bank-lab.html
+[31m|[m * [33m5392e2a[m Update ebops_state.json
+[31m|[m * [33m493b4aa[m Update cenario-01-cadeia-normal.md
+[31m|[m * [33mb49240c[m teste de backup
+[31m|[m * [33m83387fc[m delete(backup)
+[31m|[m * [33m93b5686[m .
+[31m|[m * [33m363d51b[m Delete EBOPS.url
+[31m|[m * [33m583b06d[m Update EBOPS-GUIA-COMPLETO.md
+[31m|[m * [33m9172cb8[m Create EBOPS - EMUNAH BANK OPERATIONS SIMULATOR.url
+[31m|[m * [33m3a13f9b[m Update ebops_state.json
+[31m|[m * [33maadfcb0[m Update EBOPS-GUIA-COMPLETO.md
+[31m|[m * [33m74e46c5[m Create EBOPS.url
+[31m|[m * [33m34c1126[m Update EBOPS-GUIA-COMPLETO.md
+[31m|[m * [33md8969c8[m Update 05-grade-batch.md
+[31m|[m * [33m01e28b6[m Update 04-mapa-datasets.md
+[31m|[m * [33m968f6d9[m Update 03-modulos.md
+[31m|[m * [33m9845778[m Update 02-arquitetura.md
+[31m|[m * [33m443685e[m Update 01-visao-geral.md
+[31m|[m * [33m2452643[m Update 06-runbooks.md
+[31m|[m * [33m82301d5[m Update 05-grade-batch.md
+[31m|[m * [33mfef6c54[m Update 06-runbooks.md
+[31m|[m * [33m593ded1[m Update 07-cenarios-incidente.md
+[31m|[m * [33mf6f612a[m Update 08-fluxo-zowe.md
+[31m|[m * [33m39d3423[m Update 09-padroes-publicacao.md
+[31m|[m * [33md38d2a7[m Update 04-mapa-datasets.md
+[31m|[m * [33m446df96[m Update 09-padroes-publicacao.md
+* [32m|[m [33m1fc6051[m Update ebops_state.json
+[32m|[m[32m/[m  
+* [33m9dd2ff6[m docs: adiciona EBOPS, mapa visual e massa de dados real ao README e documentação
+* [33mbda07b6[m Delete mapa-laboratorio.html
+* [33m57a3d86[m[33m ([m[1;32mclaude/eager-ramanujan[m[33m)[m Create mapa-emunah-bank-lab.html
+* [33m7948cff[m wipe
+* [33mcefbabf[m Create mapa-laboratorio.html
+* [33mf0dcd35[m[33m ([m[1;32mclaude/reverent-khorana[m[33m)[m .
+* [33m047b983[m Update fluxo-trabalho.html
+* [33m5d05728[m .
+* [33mceb57ab[m `fix: corrigir caminhos de INJ-011~014 e revert CLI para arquivos fora de cobol/batch`
+* [33mbd04d20[m Update ebops_state.json
+* [33mf7e2eac[m Update ebops_state.json
+* [33m4c741eb[m `fix: resolver caminhos de JCL, copybooks e dados no EBOPS + conteúdo do EBJVALD`
+* [33mfb09478[m style: increase all font sizes by 2px in EBOPS web frontend
+* [33m4b4823b[m feat: EBOPS web interface (Flask + HTML) (#4)
+* [33m12fbcaf[m Create ebops.cpython-314.pyc
+* [33m1899e77[m feat: add EBOPS web interface — Flask backend + HTML/CSS/JS frontend
+* [33m4bd1f1d[m feat: substituir placeholders por artefatos reais do laboratório (#3)
+* [33mdc7fb39[m Update .gitignore
+* [33m116aeb0[m feat: add ebops_inject.py — injetor de defeitos reais para prática de troubleshooting
+* [33m9d28f5c[m feat: add EBOPS — simulador de operações e demandas do desenvolvedor mainframe
+* [33m2a43757[m Create PROD_SERVER.rsp
+* [33m824e7e0[m Create fluxo-trabalho.html
+* [33m5d24c29[m Create case-006.md
+* [33m216f7d5[m Adiciona DDL DB2, script de setup local e consultas uteis
+* [33me940042[m Create case-005.md
+* [33m1e4a820[m backup lab
+* [33m7219053[m Update EBJVALD.jcl
+* [33mf6af1bf[m Update EBJVALD.jcl
+* [33m6e86a57[m Create case-.md
+* [33m1b215b9[m Update lancamentos_d0.txt
+* [33m113420a[m Update lancamentos_d0.txt
+* [33m4674678[m Create tatus
+* [33m9b7694a[m Update lancamentos_d0.txt
+* [33mb976e63[m Update lancamentos_d0.txt
+* [33m9cd2951[m Update 01-visao-geral.md
+* [33m91dca22[m Update 01-visao-geral.md
+* [33m8d5266b[m Delete DIARIO DE IMPLANTACAO.txt
+* [33m5300137[m Limpeza de arquivos
+* [33maea911e[m docs: atualiza README com foco em batch e online
+* [33mb400b94[m Create CASE-004-ESTUDO.pdf
+* [33mbdccf32[m Create CASE-004-CLIENTES-ANTES-E-DEPOIS.docx
+* [33m02ab7c2[m Create(case-004)
+* [33m66bff96[m Update zowe.config.json
+* [33mc0ddfb7[m add(documentation)
+* [33m293f2ad[m Update clientes.txt
+* [33m1904e8b[m Create hgit log --oneline
+* [33mdb73961[m Update settings.json
+* [33m12d2eb7[m Update contas.txt
+*   [33mf507c73[m Merge branch 'main' into DATASETS-E-MEMBROS-PREENCHIDOS
+[33m|[m[34m\[m  
+[33m|[m *   [33m6dbcfb6[m[33m ([m[1;31morigin/main[m[33m)[m Merge pull request #1 from eliellmiranda/DATASETS-E-MEMBROS-PREENCHIDOS
+[33m|[m [35m|[m[36m\[m  
+[33m|[m * [36m|[m [33m893e00c[m Delete ~$SSO A PASSO CHATGPT.docx
+[33m|[m * [36m|[m [33m5714ade[m Delete EMUNAH-BANK-LAB.html
+[33m|[m * [36m|[m [33m96f7b04[m Delete EMUNAH-BANK-LAB-revisao-v2.html
+[33m|[m * [36m|[m [33m6cb8f6c[m Delete EMUNAH-BANK-LAB-revisao-v2 (1).html
+[33m|[m * [36m|[m [33mb239450[m Delete emunah-bank-lab-reescrito.html
+[33m|[m * [36m|[m [33m3fdead0[m Delete EMUNAH-BANK-LAB-blueprint.html
+[33m|[m * [36m|[m [33m0e31015[m Delete EMUNAH-BANK-LAB (2).html
+[33m|[m * [36m|[m [33m0191e2c[m Delete EMUNAH-BANK-LAB (1).html
+* [36m|[m [36m|[m   [33m770a42e[m Merge branch 'DATASETS-E-MEMBROS-PREENCHIDOS' of https://github.com/eliellmiranda/EMUNAH-BANK-LAB into DATASETS-E-MEMBROS-PREENCHIDOS
+[1;31m|[m[1;32m\[m [36m\[m [36m\[m  
+[1;31m|[m * [36m|[m [36m|[m [33mc0e1492[m Create ferramentas_mainframe.md
+[1;31m|[m * [36m|[m [36m|[m [33md09df57[m Create PACK-COMPLETO-PARA-COLAR.txt
+[1;31m|[m * [36m|[m [36m|[m [33m9b61b1a[m Create PACK-COMPLETO-PARA-COLAR.md
+[1;31m|[m * [36m|[m [36m|[m [33m251f2d1[m Create 07-PROMPTS-UTEIS.md
+[1;31m|[m * [36m|[m [36m|[m [33md3e528c[m Create 06-ROADMAP-DE-IMPLEMENTACAO.md
+[1;31m|[m * [36m|[m [36m|[m [33m8ec8557[m Create 05-MODELO-FUNCIONAL-DO-EMUNAH-LAB.md
+[1;31m|[m * [36m|[m [36m|[m [33m5a1e454[m Create 04-MAINFRAME-NA-PRATICA.md
+[1;31m|[m * [36m|[m [36m|[m [33mdb66080[m Create 03-CORE-BANCARIO-APLICADO-AO-LAB.md
+[1;31m|[m * [36m|[m [36m|[m [33medf2eda[m Create 01-PROJECT-INSTRUCTIONS.md
+[1;31m|[m * [36m|[m [36m|[m [33mc45929e[m Create 02-MERCADO-MAINFRAME-APLICADO-AO-LAB.md
+[1;31m|[m * [36m|[m [36m|[m [33m58ddc65[m Create 00-COMO-USAR-NO-CLAUDE.md
+* [1;32m|[m [36m|[m [36m|[m [33m3422626[m Create CPSLD001.cpy
+* [1;32m|[m [36m|[m [36m|[m [33m541078d[m Create CPREJ001.cpy
+* [1;32m|[m [36m|[m [36m|[m [33macf4ec1[m Create CPLCT001.cpy
+* [1;32m|[m [36m|[m [36m|[m [33mb5f8519[m Create CPEXT001.cpy
+* [1;32m|[m [36m|[m [36m|[m [33mc6d3e92[m Create CPCNT001.cpy
+* [1;32m|[m [36m|[m [36m|[m [33m85f4e58[m Create CPCLI001.cpy
+* [1;32m|[m [36m|[m [36m|[m [33m6235158[m Create CPAUD001.cpy
+* [1;32m|[m [36m|[m [36m|[m [33m78c26f3[m Create 08-CONVENCOES-DE-CODIGO.md
+* [1;32m|[m [36m|[m [36m|[m [33mea81c06[m Create 08-CONVENCOES-DE-CODIGO.md
+* [1;32m|[m [36m|[m [36m|[m [33m2a4021f[m Create 07-PROMPTS-UTEIS.md
+* [1;32m|[m [36m|[m [36m|[m [33mf79d198[m Create 06-ROADMAP-DE-IMPLEMENTACAO.md
+* [1;32m|[m [36m|[m [36m|[m [33m3a2972a[m Create 05-MODELO-FUNCIONAL-DO-EMUNAH-LAB.md
+* [1;32m|[m [36m|[m [36m|[m [33m0e20fae[m Create 04-MAINFRAME-NA-PRATICA.md
+* [1;32m|[m [36m|[m [36m|[m [33mf42a855[m Create 03-CORE-BANCARIO-APLICADO-AO-LAB.md
+* [1;32m|[m [36m|[m [36m|[m [33mb1af5e5[m Create 02-MERCADO-MAINFRAME-APLICADO-AO-LAB.md
+* [1;32m|[m [36m|[m [36m|[m [33m5c42d9e[m Create 01-PROJECT-INSTRUCTIONS.md
+* [1;32m|[m [36m|[m [36m|[m [33m36dfdf1[m Create 00-COMO-USAR-NO-CLAUDE.md
+[1;32m|[m[1;32m/[m [36m/[m [36m/[m  
+* [36m|[m [36m|[m [33m73b4f0d[m Create Enterprise COBOL-language-reference.pdf
+* [36m|[m [36m|[m [33mde98cc8[m Create db2z_13_Utility Guide and Reference.pdf
+* [36m|[m [36m|[m [33m2819c7f[m Create Enterprise COBOL-messages-and-codes.pdf
+* [36m|[m [36m|[m [33mcb512c3[m Create Enterprise COBOL-programming-guide.pdf
+* [36m|[m [36m|[m [33m01c89fd[m Create zOS-MVS-JCL-REFERENCE.pdf
+* [36m|[m [36m|[m [33m3d521b3[m Create zOS-MVS-JCL-USERS-GUIDE.pdf
+* [36m|[m [36m|[m [33md9216c8[m Create zOS-TSOE-PRIMER.pdf
+* [36m|[m [36m|[m [33m0e5ba30[m Create zOS-TSOE-REXX-USERS-GUIDE.pdf
+* [36m|[m [36m|[m [33m5d9c79e[m Create db2z_13_SQL Reference.pdf
+* [36m|[m [36m|[m [33m8690590[m Create db2z_13_codesbook.pdf
+* [36m|[m [36m|[m [33mb073673[m Create Db2 13 for zOS - application programming.pdf
+* [36m|[m [36m|[m [33m1954d91[m Update README.md
+* [36m|[m [36m|[m [33m73772ec[m Initialize README for Emunah Bank Lab
+* [36m|[m [36m|[m [33mc795128[m Update 09-padroes-publicacao.md
+* [36m|[m [36m|[m [33m7ada873[m Update 08-fluxo-zowe.md
+* [36m|[m [36m|[m [33m04786f0[m Update 07-cenarios-incidente.md
+* [36m|[m [36m|[m [33m74a48a4[m Update 06-runbooks.md
+* [36m|[m [36m|[m [33m7807ecc[m Update 05-grade-batch.md
+* [36m|[m [36m|[m [33m105b667[m Update 01-visao-geral.md
+* [36m|[m [36m|[m [33mc8a33b4[m Create(placeholders)
+* [36m|[m [36m|[m [33m7f7cd33[m Update 09-padroes-publicacao.md
+* [36m|[m [36m|[m [33mb0cbb4d[m Update 04-mapa-datasets.md
+* [36m|[m [36m|[m [33m04dc9fa[m Update 03-modulos.md
+* [36m|[m [36m|[m [33mb95c152[m Update 02-arquitetura.md
+* [36m|[m [36m|[m [33m0482b36[m Update 01-visao-geral.md
+* [36m|[m [36m|[m [33mb9e2039[m Update DIARIO DE IMPLANTACAO.txt
+* [36m|[m [36m|[m [33m791ce60[m Update DIARIO DE IMPLANTACAO.txt
+* [36m|[m [36m|[m [33m8a99bd3[m Create mapa-datasets-e-membros-003.png
+* [36m|[m [36m|[m [33mf69fd37[m Create mapa-datasets-e-membros-002.png
+* [36m|[m [36m|[m [33m1742843[m Create mapa-datasets-e-membros-001.png
+* [36m|[m [36m|[m [33mcb7e123[m Create datasets-e-membros-003.png
+* [36m|[m [36m|[m [33me981369[m Create datasets-e-membros-002.png
+* [36m|[m [36m|[m [33m5378b61[m Create datasets-e-membros-001.png
+* [36m|[m [36m|[m [33mabbd08e[m Create case-003.txt
+* [36m|[m [36m|[m [33m2f5d514[m Create case-002.txt
+* [36m|[m [36m|[m [33m4cc3f93[m Update case-001.txt
+* [36m|[m [36m|[m [33m0fb7e58[m Update zapp.yaml
+* [36m|[m [36m|[m [33m1d85627[m Update EMUNAH-BANK-LAB.code-workspace
+* [36m|[m [36m|[m [33ma5d9171[m Update settings.json
+* [36m|[m [36m|[m [33m4a45533[m Create Novo(a) Documento de Texto.txt
+* [36m|[m [36m|[m [33m3e8ce2c[m Update zapp.yaml
+* [36m|[m [36m|[m [33m338b2d9[m Create case-001.txt
+* [36m|[m [36m|[m [33m2d80823[m Create settings.json
+* [36m|[m [36m|[m [33md2cb165[m Delete MELHORIAS-SEITE.txt
+* [36m|[m [36m|[m [33m7b7a4ca[m Create MELHORIAS-SITE.txt
+[36m|[m [36m|[m[36m/[m  
+[36m|[m[36m/[m[36m|[m   
+* [36m|[m [33m05c895b[m Delete ~$SSO A PASSO CHATGPT.docx
+* [36m|[m [33m77d46ed[m Delete EMUNAH-BANK-LAB.html
+* [36m|[m [33mda87765[m Delete EMUNAH-BANK-LAB-revisao-v2.html
+* [36m|[m [33m288099b[m Delete EMUNAH-BANK-LAB-revisao-v2 (1).html
+* [36m|[m [33mad49221[m Delete emunah-bank-lab-reescrito.html
+* [36m|[m [33md3670e1[m Delete EMUNAH-BANK-LAB-blueprint.html
+* [36m|[m [33mf5fc7bf[m Delete EMUNAH-BANK-LAB (2).html
+* [36m|[m [33m4368161[m Delete EMUNAH-BANK-LAB (1).html
+[36m|[m[36m/[m  
+* [33me8d36ef[m Create EBSUBJCL.rexx
+* [33m2584915[m Create EBCHKLAB.rexx
+* [33m1c6cc1d[m Create EBBATCHP.txt
+* [33m641b662[m Create EBAUDITP.txt
+* [33m2416419[m Create EBJPOSTP.jcl
+* [33m87ffd42[m Create EBJEODP.jcl
+* [33m4e1861b[m Create EBJSMKH.jcl
+* [33m21febe8[m Create EBJCONCH.jcl
+* [33ma4ff0fd[m Create EBSMKH01.cbl
+* [33m6af17e2[m Update EBPOST01.cbl
+* [33m3634e65[m Update EBCONC01.cbl
+* [33m5e86991[m final do dia16/03-segunda
+* [33mbcf05e5[m Create EBSEED.jcl
+* [33m29341b3[m Update DIARIO DE IMPLANTACAO.txt
+* [33m64b1d29[m Update EBBUILD.jcl
+* [33m926969f[m Update EBCOMP.jcl
+* [33m2705a38[m Update EBLINK.jcl
+* [33m8e77143[m Create MELHORIAS-SEITE.txt
+* [33m21241cd[m Refactor(website)
+* [33mc4d1efc[m Create emunah-bank-lab-reescrito.html
+* [33m6c30d1a[m Create EMUNAH-BANK-LAB.html
+* [33me82d36b[m Create EMUNAH-BANK-LAB (2).html
+* [33m5626812[m Create EMUNAH-BANK-LAB.html
+* [33mda4ec4c[m Create EMUNAH-BANK-LAB (1).html
+* [33m8007fae[m Create EMUNAH-BANK-LAB-revisao-v2.html
+* [33m93feec6[m Create EMUNAH-BANK-LAB-revisao-v2 (1).html
+* [33m4c6f639[m Create EMUNAH-BANK-LAB-blueprint.html
+* [33m366167f[m Update EBCOMP.jcl
+* [33m2e57c2c[m Update EBBUILD.jcl
+* [33m9278ac9[m Update EBJVALD.jcl
+* [33mde2c060[m Update EBJSALD.jcl
+* [33mdd80c01[m Update EBJPOST.jcl
+* [33mad7585e[m Update EBJLOAD.jcl
+* [33me666668[m Update EBJEXTR.jcl
+* [33me114ae3[m Update EBJEOD.jcl
+* [33m83bcf20[m Update EBJCONC.jcl
+* [33m0051388[m Update EBJCLLD.jcl
+* [33m595f376[m Update DIARIO DE IMPLANTACAO.txt
+* [33mf0115f7[m Update DIARIO DE IMPLANTACAO.txt
+* [33m0416ec5[m Update EBCLLOAD.cbl
+* [33m5faa31a[m Update 04-mapa-datasets.md
+* [33mcbd2cd8[m Update 04-mapa-datasets.md
+* [33m8cc476c[m Update 04-mapa-datasets.md
+* [33mbf5f504[m Update lancamentos_d0.txt
+* [33mf243df6[m Update CPSLD001.cpy
+* [33m4688cb4[m Update CPLCT001.cpy
+* [33m63c477d[m Update CPCNT001.cpy
+* [33m31aec7d[m Update CPCLI001.cpy
+* [33mb6c0db1[m Update CPAUD001.cpy
+* [33m59bfef8[m Update DIARIO DE IMPLANTACAO.txt
+* [33mc093d2a[m Update EBVALI01.cbl
+* [33m10d6b9e[m Update EBSALD01.cbl
+* [33m85d45ac[m Update EBPOST01.cbl
+* [33m9e14aeb[m Update EBEXTR01.cbl
+* [33m167948f[m Update EBCONC01.cbl
+* [33m5000f77[m Update EBCLLOAD.cbl
+*   [33mef317f6[m Merge branch 'main' of https://github.com/eliellmiranda/EMUNAH-BANK-LAB
+[1;33m|[m[1;34m\[m  
+[1;33m|[m * [33m4c98c18[m Update PASSO A PASSO CHATGPT.docx
+[1;33m|[m * [33maa8df54[m Update DIARIO DE IMPLANTACAO.txt
+[1;33m|[m * [33m9327945[m Update EBCLLOAD.cbl
+* [1;34m|[m [33m5d1f1c7[m Create LOGO-EMUNAH-BANK.png
+[1;34m|[m[1;34m/[m  
+* [33mb082cb6[m Update PASSO A PASSO CHATGPT.docx
+* [33m1b887a0[m Create EBJCLLD.jcl
+* [33m48235e7[m Update DIARIO DE IMPLANTACAO.txt
+* [33m0475df7[m Update contas.txt
+* [33me9b2ff1[m Delete ~WRL1486.tmp
+* [33mc1c2624[m Create ~WRL1486.tmp
+* [33m77c0dc5[m Update PASSO A PASSO CHATGPT.docx
+* [33mf1f71ea[m Update EBBUILD.jcl
+* [33m6948389[m Create contas.txt
+* [33m47e64ad[m Update DIARIO DE IMPLANTACAO.txt
+* [33mfc6bebc[m Create clientes.txt
+* [33m5fb5ba5[m Update CPCNT001.cpy
+* [33m39438bc[m Update CPCLI001.cpy
+* [33m02591b3[m Update EBCLLOAD.cbl
+* [33m03c1deb[m Update PASSO A PASSO CHATGPT.docx
+* [33m61471fa[m Update DIARIO DE IMPLANTACAO.txt
+* [33m996572a[m Update DIARIO DE IMPLANTACAO.txt
+* [33mdd555df[m Create PASSO A PASSO CHATGPT (Recuperação Automática).docx
+* [33m3aed2f7[m Create zapp.yaml
+* [33m74dd005[m Create EBJSALD.jcl
+* [33m74676b2[m Create EBJEXTR.jcl
+* [33ma749948[m Create EBJEOD.jcl
+* [33mb2d7bad[m Create EBJCONC.jcl
+* [33m2b11663[m Update DIARIO DE IMPLANTACAO.txt
+* [33m7e4fa4b[m Update DIARIO DE IMPLANTACAO.txt
+* [33mf5c3447[m Update 06-runbooks.md
+* [33m84a2ba6[m Update 08-fluxo-zowe.md
+* [33m6b558ec[m Update 09-padroes-publicacao.md
+* [33m5351712[m Update 07-cenarios-incidente.md
+* [33mf2d1eba[m Update 05-grade-batch.md
+* [33m41c2fbc[m Update 04-mapa-datasets.md
+* [33m2356def[m Update 03-modulos.md
+* [33m7f8c439[m Update 02-arquitetura.md
+* [33ma098509[m Update 01-visao-geral.md
+* [33mf3fd2b3[m Update PASSO A PASSO CHATGPT.docx
+* [33m99725d7[m Update PASSO A PASSO CHATGPT.docx
+* [33m1a3cd1d[m Update lancamentos_d0.txt
+* [33m5759138[m Update DIARIO DE IMPLANTACAO.txt
+* [33me9f3eb7[m Update DIARIO DE IMPLANTACAO.txt
+* [33m9fdd05e[m Create lancamentos_d0.txt
+* [33m1dd0d19[m Created(jcl\batch)
+* [33me9ac6f2[m Created(jcl\compile)
+* [33mdeafcc3[m Created(copybooks\layouts)
+* [33mccd0a38[m Created(cobol\batch)
+* [33m014ee0a[m Create .gitignore
+* [33m0bb1472[m Update DIARIO DE IMPLANTACAO.txt
+* [33mb6148ff[m Update EMUNAH-BANK-LAB.code-workspace
+* [33mc0de3d8[m Create README.md
+* [33m2114b75[m Criação de arquivos de documentação
+* [33mf5e8163[m DIA 01 - HOME
+* [33mf0842e2[m Update PASSO A PASSO CHATGPT.docx
+* [33me2bde5c[m Create zowe.schema.json
+* [33m9e58e5c[m Create zowe.config.json
+* [33m81bfd4d[m Update PASSO A PASSO CHATGPT.docx
+* [33m0f6b128[m Initial commit
