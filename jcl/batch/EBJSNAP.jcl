@@ -1,5 +1,5 @@
 //* ------------------------------------------------------------
-//* JOB: EBJSALD
+//* JOB: EBJSNAP
 //* FINALIDADE:
 //* Executar o programa EBSALD01 para processar a rotina de
 //* saldo do laboratorio EMUNAH.
