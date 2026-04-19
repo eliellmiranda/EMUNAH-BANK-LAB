@@ -1,7 +1,7 @@
 //* ------------------------------------------------------------
-//* ARQUIVO      : EBJBACKPD.jcl
-//* CAMINHO LOCAL: jcl/batch/EBJBACKPD.jcl
-//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJBACKPD)
+//* ARQUIVO      : EBJBCKPD.jcl
+//* CAMINHO LOCAL: jcl/batch/EBJBCKPD.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJBCKPD)
 //* FINALIDADE:
 //* Registrar o estado anterior do ambiente (backup logico)
 //* antes da execucao da cadeia batch principal.
