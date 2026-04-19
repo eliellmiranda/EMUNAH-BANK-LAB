@@ -6,12 +6,14 @@
 //* Executar o fechamento diario (End-Of-Day) do laboratorio.
 //*
 //* FLUXO ESPERADO:
-//* 1. Ler o arquivo de conciliacao do dia.
-//* 2. Totalizar contas no KSDS.
-//* 3. Gerar relatorio de fechamento.
-//* 4. Gravar registro de auditoria com status do dia.
+//* 1. STEP1   - EBJEOD01 le conciliacao, totaliza contas,
+//*              gera relatorio de fechamento e audita.
+//* 2. CLOSDAY - IEBGENER grava CTL.STATUS=CLOSED.
 //* ------------------------------------------------------------
 //EBJEOD   JOB ,'EMUNAH EOD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//*
+//* === STEP 1: FECHAMENTO DIARIO (EBJEOD01) ===
+//*
 //STEP1    EXEC PGM=EBJEOD01
 //* Programa de fechamento diario.
 //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
@@ -31,3 +33,18 @@
 //* Saida geral do programa.
 //SYSPRINT DD SYSOUT=*
 //* Mensagens tecnicas.
+//*
+//* === STEP 2: FECHAR DIA CONTABIL (STATUS = CLOSED) ===
+//*
+//CLOSDAY  EXEC PGM=IEBGENER,COND=(0,NE)
+//* Grava "CLOSED" em ARQ.CTL.STATUS apos EOD concluido ok.
+//SYSPRINT DD SYSOUT=*
+//SYSUT1   DD *
+CLOSED
+/*
+//SYSUT2   DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
+//* Dataset de status, ja existente no catalogo.
+//SYSIN    DD DUMMY
+//*
+//* RC 0  = dia fechado com sucesso.
+//* RC 12 = falha - status NAO atualizado, investigar antes de rerun.
