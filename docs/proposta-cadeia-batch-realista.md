@@ -321,3 +321,6 @@ Nenhuma. Todas as decisões foram tomadas.
 - **Alto:** as fases canônicas de banco real (SOD/EOTI/posting/accrual/snapshot/recon/EOFI/output/EOD/housekeeping) são **padrão amplamente documentado** em FLEXCUBE e literatura de EOD.
 - **Alto:** a adequação ao lab é coerente com a escolha explícita do Eliel de buscar máxima proximidade com produção real — `EBJACCR`, `EBJWAIT` robusto e `CTL.STATUS` como *source of truth* são consequência direta dessa escolha.
 - **Baixo:** estimativa de dias/esforço das ondas — não estimei.
+
+
+
