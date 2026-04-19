@@ -7,7 +7,7 @@
 //* Executado sob demanda, fora da cadeia batch normal.
 //*
 //* FLUXO ESPERADO:
-//* 1. Ler o arquivo de rejeitos (ARQ.REJEITO.SEQ).
+//* 1. Ler o arquivo de rejeitos (ARQ.REJEITOS.SEQ).
 //* 2. Revalidar cada registro com as mesmas regras.
 //* 3. Gravar recuperados em ARQ.REPR.LANCTO.SEQ.
 //* 4. Gravar nao-recuperados em ARQ.REPR.REJPERM.SEQ.
@@ -18,7 +18,7 @@
 //* Programa de reprocessamento de rejeitos.
 //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
 //* Biblioteca do executavel EBREPR01.
-//REJIN    DD DSN=Z77948.EMUNAH.ARQ.REJEITO.SEQ,DISP=SHR
+//REJIN    DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,DISP=SHR
 //* Arquivo de rejeitos a reprocessar.
 //LCTOUT   DD DSN=Z77948.EMUNAH.ARQ.REPR.LANCTO.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
