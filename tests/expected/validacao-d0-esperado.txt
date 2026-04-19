@@ -1,0 +1,12 @@
+*** RESUMO VALIDACAO ***
+REGISTROS LIDOS      : 000000010
+REGISTROS VALIDOS    : 000000010
+REGISTROS REJEITADOS : 000000000
+
+RETURN-CODE: 0
+
+--- Criterios de sucesso ---
+- Todos os 10 registros devem ser validados (RC=0)
+- LANCTO.ESDS deve conter 10 registros
+- REJEITO.SEQ deve estar vazio
+- Linha de totalizacao no arquivo de validos com T***

@@ -1,0 +1,83 @@
+{
+    "workbench.startupEditor": "none",
+    "window.autoDetectColorScheme": true,
+
+    "settingsSync.ignoredSettings": [
+        "zopeneditor.JAVA_HOME",
+        "java.jdt.ls.java.home",
+        "db2forzosdeveloperextension.java.home",
+        "json.schemas"
+    ],
+
+    "files.associations": {
+        "**/*.COBOL*{,/*}": "cobol",
+        "**/*.COB*{,/*}": "cobol",
+        "**/*.COBCOPY*{,/*}": "cobol",
+        "**/*.COPYBOOK*{,/*}": "cobol",
+        "**/*.COPY*{,/*}": "cobol",
+        "**/*.PL1*{,/*}": "pl1",
+        "**/*.PLI*{,/*}": "pl1",
+        "**/*.INC*{,/*}": "pl1",
+        "**/*.INCLUDE*{,/*}": "pl1",
+        "**/*.JCL*{,/*}": "jcl",
+        "**/*.CNTL*{,/*}": "jcl",
+        "**/*.PROC*{,/*}": "jcl",
+        "**/*.ASM*{,/*}": "hlasm",
+        "**/*.ASSEMBLE*{,/*}": "hlasm",
+        "**/*.HLASM*{,/*}": "hlasm",
+        "**/*.HLA*{,/*}": "hlasm",
+        "**/*.MACLIB*{,/*}": "hlasm",
+        "**/*.DBD*{,/*}": "hlasm",
+        "**/*.MFS*{,/*}": "hlasm",
+        "**/*.PCB*{,/*}": "hlasm",
+        "**/*.EXEC*{,/*}": "rexx",
+        "**/*.REXX*{,/*}": "rexx",
+        "**/*.REXXINC*{,/*}": "rexx",
+        "*.rex": "rexx",
+        "*.104": "html"
+    },
+
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "/zapp.json"
+            ],
+            "url": "file:///c%3A/Users/Eliel/.vscode/extensions/ibm.zopeneditor-6.4.0/resources/zapp-schema-1.8.0.json"
+        },
+        {
+            "fileMatch": [
+                "/zcodeformat.json"
+            ],
+            "url": "file:///c%3A/Users/Eliel/.vscode/extensions/ibm.zopeneditor-6.4.0/resources/zcodeformat-schema-0.0.1.json"
+        }
+    ],
+
+    "zopeneditor.welcomePage.show": false,
+    "files.autoSave": "afterDelay",
+    "window.confirmSaveUntitledWorkspace": false,
+
+    "zopeneditor.JAVA_HOME": "C:\\Program Files\\Java\\jdk-21",
+    "java.jdt.ls.java.home": "C:\\Program Files\\Java\\jdk-21",
+
+    "workbench.editor.enablePreview": false,
+    "editor.rulers": [
+        72
+    ],
+    "db2forzosdeveloperextension.java.home": "C:\\Program Files\\AdoptOpenJDK\\jdk-8.0.282.8-openj9\\",
+    "terminal.integrated.enableMultiLinePasteWarning": "never",
+    "workbench.editor.empty.hint": "hidden",
+    "zopeneditor.resourceTable.datasets": {
+        "filters": [],
+        "history": [
+            "Z77948.EMUNAH.ARQ.AUDIT.SEQ"
+        ],
+        "favorites": []
+    },
+    "cobol-lsp.cpy-manager.copybook-extensions": [
+        ".CPY",
+        ".COPY",
+        ".cpy",
+        ".copy",
+        ""
+    ]
+}

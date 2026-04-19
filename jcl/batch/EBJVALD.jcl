@@ -3,26 +3,33 @@
 //* CAMINHO LOCAL: jcl/batch/EBJVALD.jcl
 //* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJVALD)
 //* FINALIDADE:
-//* Validar o lote bruto do dia.
+//* Executar o programa EBVALI01 para validar os lancamentos
+//* do dia recebidos em ARQ.ENTRADA.SEQ.
 //*
 //* FLUXO ESPERADO:
-//* 1. Ler ARQ.ENTRADA.SEQ.
-//* 2. Chamar o programa EBVALI01.
-//* 3. Gravar validos em ARQ.LANCTO.ESDS.
-//* 4. Gravar rejeitos em ARQ.REJEITO.SEQ.
+//* 1. Ler ARQ.ENTRADA.SEQ (ENTRADA).
+//* 2. Validar tipo, valor, agencia e conta.
+//* 3. Gravar lancamentos aprovados em ARQ.LANCTO.ESDS (VALIDOS).
+//* 4. Gravar lancamentos rejeitados em ARQ.REJEITOS.SEQ (REJEITOS).
+//* 5. Registrar eventos no arquivo de auditoria.
 //* ------------------------------------------------------------
 //EBJVALD  JOB ,'EMUNAH VALD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //STEP1    EXEC PGM=EBVALI01
-//* Programa de validacao do lote bruto.
+//* Programa de validacao dos lancamentos de entrada.
 //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
-//* Biblioteca onde esta o executavel EBVALI01.
+//* Biblioteca onde esta o modulo executavel EBVALI01.
 //ENTRADA  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.SEQ,DISP=SHR
-//* Lote bruto do dia.
+//* Arquivo sequencial de entrada com lancamentos do dia.
 //VALIDOS  DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
-//* Saida de lancamentos aprovados pela validacao.
-//REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITO.SEQ,DISP=MOD
-//* Saida dos registros rejeitados.
+//* Arquivo VSAM ESDS de saida para lancamentos validos.
+//REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,
+//             DISP=(MOD,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//* Arquivo sequencial de saida para lancamentos rejeitados.
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//* Arquivo sequencial de auditoria do processamento.
 //SYSOUT   DD SYSOUT=*
-//* Saida geral do programa.
+//* Saida geral do step para o spool.
 //SYSPRINT DD SYSOUT=*
-//* Mensagens tecnicas da execucao.
+//* Saida detalhada, relatorio e mensagens do programa.
