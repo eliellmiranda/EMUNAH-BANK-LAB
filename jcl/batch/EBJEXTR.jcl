@@ -19,10 +19,10 @@
 //* Biblioteca do executavel EBEXTR01.
 //MOVTIN   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
 //* Entrada de movimentos validados/processados.
-//EXTROUT  DD DSN=Z77948.EMUNAH.ARQ.EXTRATO.SEQ,
+//EXTROUT  DD DSN=Z77948.EMUNAH.ARQ.EXTRATO.GDG(+1),
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
-//             DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)
+//             DCB=(MODEL.DSCB,RECFM=FB,LRECL=132,BLKSIZE=0)
 //* Saida com o extrato formatado do dia.
 //SYSOUT   DD SYSOUT=*
 //* Saida geral do programa.
