@@ -71,7 +71,7 @@ O nome *Emunah* (אֱמוּנָה) remete ao conceito hebraico de fidelidade e c
 
 ```
 06:00  PRECHECK   ── verifica ambiente
-06:15  EBBACKUP   ── backup do estado anterior
+06:15  EBJBACKP   ── backup do estado anterior
 06:30  EBJLOAD    ── prepara arquivo do dia
 07:00  EBJVALD    ── valida layout e regras de negócio
 07:30  EBJPOST    ── aplica lançamentos
