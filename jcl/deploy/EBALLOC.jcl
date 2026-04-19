@@ -10,7 +10,7 @@
 //* - PDS de desenvolvimento (COBOL, COPY, JCL, LOADLIB)
 //* - VSAM KSDS (Clientes, Contas)
 //* - VSAM ESDS (Lancamentos)
-//* - Sequenciais de apoio
+//* - Sequenciais de apoio (incluindo STAGE de entrada)
 //* - Sequenciais de seed
 //* ------------------------------------------------------------
 //EBALLOC  JOB ,'EMUNAH ALLOC',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
@@ -102,10 +102,14 @@
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
 //             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
-//REJEITO  DD DSN=Z77948.EMUNAH.ARQ.REJEITO.SEQ,
+//STAGE    DD DSN=Z77948.EMUNAH.STAGE.ENTRADA.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//             DCB=(RECFM=FB,LRECL=150,BLKSIZE=0)
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
