@@ -101,7 +101,7 @@ Saldos iniciais variam de R$ 1.100,00 (contas 1–2) a R$ 4.000,00 (contas 39–
 | `<HLQ>.EMUNAH.ARQ.REJEITO.SEQ`    | PS        | SEQ   | `REJEITO` | Registros rejeitados na validação ou aplicação    |
 | `<HLQ>.EMUNAH.ARQ.AUDIT.SEQ`      | PS        | SEQ   | `AUDIT`   | Trilha de auditoria do dia corrente — arquivada via `EBJHKAUD` em GDG ao fim do ciclo |
 | `<HLQ>.EMUNAH.ARQ.CONCIL.SEQ`     | PS        | SEQ   | `CONCIL`  | Relatório de conciliação do dia — três seções de verificação (ver layout abaixo) |
-| `<HLQ>.EMUNAH.ARQ.AUDIT.GDG`      | GDG Base  | —     | —         | Histórico de trilhas de auditoria por geração — alimentado pelo `EBJHKAUD` |
+| `<HLQ>.EMUNAH.ARQ.BKP.AUDIT.GDG`  | GDG Base  | —     | —         | Histórico de trilhas de auditoria por geração — alimentado pelo `EBJHKAUD` |
 | `<HLQ>.EMUNAH.ARQ.EXTRATO.GDG`    | GDG Base  | —     | —         | Base GDG para histórico de extratos por geração   |
 
 ---
