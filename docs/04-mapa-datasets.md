@@ -99,7 +99,9 @@ Saldos iniciais variam de R$ 1.100,00 (contas 1–2) a R$ 4.000,00 (contas 39–
 | `<HLQ>.EMUNAH.ARQ.LANCTO.ESDS`    | VSAM      | ESDS  | `VALIDOS` | Lançamentos aprovados (append-only, imutável)     |
 | `<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ`    | PS        | SEQ   | `ENTRADA` | Arquivo de lançamentos do dia (entrada batch)     |
 | `<HLQ>.EMUNAH.ARQ.REJEITO.SEQ`    | PS        | SEQ   | `REJEITO` | Registros rejeitados na validação ou aplicação    |
-| `<HLQ>.EMUNAH.ARQ.AUDIT.SEQ`      | PS        | SEQ   | `AUDIT`   | Trilha de auditoria e mensagens de log            |
+| `<HLQ>.EMUNAH.ARQ.AUDIT.SEQ`      | PS        | SEQ   | `AUDIT`   | Trilha de auditoria do dia corrente — arquivada via `EBJHKAUD` em GDG ao fim do ciclo |
+| `<HLQ>.EMUNAH.ARQ.CONCIL.SEQ`     | PS        | SEQ   | `CONCIL`  | Relatório de conciliação do dia — três seções de verificação (ver layout abaixo) |
+| `<HLQ>.EMUNAH.ARQ.AUDIT.GDG`      | GDG Base  | —     | —         | Histórico de trilhas de auditoria por geração — alimentado pelo `EBJHKAUD` |
 | `<HLQ>.EMUNAH.ARQ.EXTRATO.GDG`    | GDG Base  | —     | —         | Base GDG para histórico de extratos por geração   |
 
 ---
@@ -117,3 +119,5 @@ O arquivo [`mapa-emunah-bank-lab.html`](mapa-emunah-bank-lab.html) consolida tod
 - Os arquivos KSDS devem ser alocados via IDCAMS antes da primeira execução de qualquer job que os utilize
 - O prefixo `<HLQ>` corresponde ao userid do ambiente zXplore e deve ser ajustado se o lab migrar para outro ambiente
 - Os dados seed são ficcionais e não contêm informações pessoais reais
+- `ARQ.AUDIT.SEQ` é reiniciado a cada ciclo pelo job `EBJHKAUD`, que arquiva a geração corrente em `ARQ.AUDIT.GDG` antes de recriar o sequencial
+- `ARQ.CONCIL.SEQ` possui três seções no layout: (1) entradas recebidas vs. válidos + rejeitos, (2) válidos vs. postados, (3) saldo inicial + líquidos vs. saldo final
