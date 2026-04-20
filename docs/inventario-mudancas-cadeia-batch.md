@@ -121,7 +121,7 @@ Nenhum. Tudo que era útil vira utilitário ou é alterado.
 | Dataset | O que muda |
 |---------|------------|
 | `ARQ.AUDIT.SEQ`  | Nome e layout mantidos; passa a ter ciclo de vida com rotacao via EBJHKAUD (archive -> GDG + truncate). |
-| `ARQ.CONCIL.SEQ` | Nome igual, layout novo: três seções (entrada vs válidos+rejeitos, válidos vs postados, saldo inicial+líquidos vs saldo final). |
+| `ARQ.CONCIL.SEQ` | DSN mantido. Layout novo (LRECL 132). Passa a ter 3 secoes de conciliacao: S1: ENTRADA vs VALIDOS + REJEITOS S2: VALIDOS vs POSTADOS; S3: SALDO INICIAL + LIQUIDOS vs SALDO FINAL. Cada secao grava linhas tipadas (H/D/R) + rodape (T98/T99). Layout detalhado sera registrado em copy CONCILR.cpy na Onda 4, junto com a refatoracao do EBCONC01. |
 
 ### 3.3 Renomeados
 
