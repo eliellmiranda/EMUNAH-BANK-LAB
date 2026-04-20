@@ -120,7 +120,7 @@ Nenhum. Tudo que era útil vira utilitário ou é alterado.
 
 | Dataset | O que muda |
 |---------|------------|
-| `ARQ.AUDIT.SEQ` | Continua com mesmo nome e layout, mas ganha rotação via `EBJHKAUD` (arquiva em GDG e reinicia). |
+| `ARQ.AUDIT.SEQ`  | Nome e layout mantidos; passa a ter ciclo de vida com rotacao via EBJHKAUD (archive -> GDG + truncate). |
 | `ARQ.CONCIL.SEQ` | Nome igual, layout novo: três seções (entrada vs válidos+rejeitos, válidos vs postados, saldo inicial+líquidos vs saldo final). |
 
 ### 3.3 Renomeados
