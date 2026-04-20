@@ -1,7 +1,0 @@
-reports/
-tests/actual/
-data/saida/
-data/rejeito/
-.zowe/*.yaml
-.zowe/*.log
-.claude/
