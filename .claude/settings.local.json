@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python ebops/ebops.py where)",
+      "Bash(set PYTHONIOENCODING=utf-8)",
+      "Bash(python -c ':*)"
+    ]
+  }
+}
