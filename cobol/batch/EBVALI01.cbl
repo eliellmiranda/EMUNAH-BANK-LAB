@@ -33,8 +33,12 @@
       * - ON OVERFLOW no STRING de rejeicao                           *
       * - Nivel 88 para EOF e flags                                   *
       * - OPEN e CLOSE unificados                                     *
-      * - Linha de totalizacao gravada no arquivo de validos          *
-      *===============================================================*
+      * - Linha de totalizacao gravada no arquivo de validos  
+      * - Trailer T*** removido do arquivo VALIDOS (saida vai para   *
+      *   SYSOUT). Registro final do VALIDOS agora e puro dado.      *
+      * - DDNAME REJEITOS (plural) e DSN ARQ.REJEITOS.SEQ            *
+      *   confirmados como padrao.                                   *        *
+      *==============================================================*
 
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
@@ -207,8 +211,7 @@
        0000-PRINCIPAL.
            PERFORM 1000-ABRIR-ARQUIVOS
            IF NOT OCORREU-ERRO-IO
-               PERFORM 2000-PROCESSAR-ENTRADA
-               PERFORM 3000-GRAVAR-TOTAIS
+               PERFORM 2000-PROCESSAR-ENTRADA               
            END-IF
            PERFORM 9000-FECHAR-ARQUIVOS
            PERFORM 9100-EXIBIR-RESUMO-E-DEFINIR-RC
@@ -419,35 +422,7 @@
                    ADD 1 TO WS-REJEITADOS
                END-IF
            END-IF.
-
-      *---------------------------------------------------------------*
-      * Grava rodape de totalizacao no arquivo de validos             *
-      * O registro e identificado por 'T' na primeira posicao.        *
-      *---------------------------------------------------------------*
-       3000-GRAVAR-TOTAIS.
-           IF NOT OCORREU-ERRO-IO
-              AND VALIDOS-ABERTO
-               MOVE WS-LIDOS      TO WS-EDIT-LIDOS
-               MOVE WS-VALIDOS    TO WS-EDIT-VALIDOS
-               MOVE WS-REJEITADOS TO WS-EDIT-REJEIT
-               MOVE SPACES TO VALIDOS-RAW
-               STRING 'T*** TOTAIS - LIDOS: '
-                      WS-EDIT-LIDOS
-                      ' VALIDOS: '
-                      WS-EDIT-VALIDOS
-                      ' REJEITADOS: '
-                      WS-EDIT-REJEIT
-                      DELIMITED BY SIZE
-                      INTO VALIDOS-RAW
-               END-STRING
-               WRITE VALIDOS-RAW
-               IF NOT FS-VALIDOS-OK
-                   DISPLAY '*** ERRO WRITE TOTAIS VALIDOS - STATUS: '
-                           WS-FS-VALIDOS
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
-           END-IF.
-
+                 
       *---------------------------------------------------------------*
       * Fecha arquivos e verifica status                              *
       *---------------------------------------------------------------*
