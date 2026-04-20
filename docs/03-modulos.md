@@ -113,3 +113,84 @@ foram rejeitados em execuções anteriores.
 - **Job:** `EBJREPR`
 - **Papel na cadeia:** fora da cadeia principal; executado
   somente sob demanda após correção da massa ou do programa
+
+---
+
+## utilitários
+
+Programas de apoio operacional que **não pertencem à cadeia
+batch automática**. São executados manualmente, sob demanda,
+para diagnóstico, auditoria e conferência de dados.
+
+---
+
+### EBSALD01 — Consulta Manual de Saldo por Conta
+
+Utilitário batch de consulta pontual ao arquivo master de contas.
+Permite verificar o saldo de uma ou mais contas específicas sem
+interferir na cadeia principal de processamento.
+
+**Localização:** `cobol/util/EBSALD01.cbl`
+
+**Quando usar:**
+- conferência de saldo após aplicação de lançamentos
+- diagnóstico de inconsistências relatadas por operação ou suporte
+- validação de registros antes de um reprocessamento
+- auditoria manual de contas específicas durante ou após o batch
+
+**Arquivos envolvidos:**
+
+| DD Name   | Dataset / Tipo             | Papel                                    |
+|-----------|----------------------------|------------------------------------------|
+| `SALDIN`  | Sequencial (entrada)       | Lista de contas a consultar (agência + conta, 80 bytes) |
+| `CONTA`   | `EMUNAH.ARQ.CONTA.KSDS`   | Arquivo master VSAM KSDS — fonte do saldo |
+| `SALDOUT` | Sequencial (saída)         | Relatório com saldos encontrados e rejeições |
+
+**Layout do registro de entrada (`SALDIN`):**
+
+```
+Posição  01–04  →  Agência   (PIC 9(4))
+Posição  05–12  →  Conta     (PIC 9(8))
+Posição  13–80  →  FILLER    (não utilizado)
+```
+
+**Copybook utilizado:** `CPCNT001` — fornece `CNT-CHAVE` e `CNT-SALDO`
+a partir do registro do arquivo `CONTA-KSDS`.
+
+**Fluxo de execução:**
+
+1. Abre `SALDIN`, `CONTA-KSDS` e `SALDOUT`
+2. Lê registros de `SALDIN` sequencialmente
+3. Para cada conta lida, monta a chave composta (agência + número)
+   e executa leitura direta no KSDS
+4. Se encontrada: formata e grava linha com saldo no `SALDOUT`
+5. Se não encontrada: grava linha de rejeição com identificação
+   da conta
+6. Ao fim: exibe resumo no SYSOUT e fecha os arquivos
+
+**Saída de console (DISPLAY):**
+
+```
+*** RESUMO CONSULTA SALDOS ***
+CONTAS LIDAS          : NNNNN
+CONTAS ENCONTRADAS    : NNNNN
+CONTAS NAO ENCONTRADAS: NNNNN
+```
+
+**Contadores internos:**
+
+| Campo              | Descrição                               |
+|--------------------|-----------------------------------------|
+| `WS-LIDOS`         | Total de registros lidos do `SALDIN`    |
+| `WS-ENCONTRADOS`   | Contas localizadas no KSDS              |
+| `WS-NAO-ENCONTRADOS` | Contas não encontradas (rejeições)    |
+
+**Observações importantes:**
+- Este programa é **somente leitura** — não altera nenhum registro
+  no arquivo master de contas
+- Não possui job automático associado; deve ser submetido
+  manualmente com JCL próprio
+- O arquivo `SALDIN` deve ser preparado antes da execução com
+  as contas que se deseja consultar
+- A saída `SALDOUT` substitui qualquer versão anterior a cada
+  execução (OPEN OUTPUT)
