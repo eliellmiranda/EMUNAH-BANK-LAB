@@ -1,0 +1,192 @@
+﻿Execucao iniciada em 2026-04-20T20:02:09.6775695-03:00
+[2026-04-20 20:02:09] [STEP] >>> PRE-FLIGHT: verificando Zowe CLI
+[2026-04-20 20:02:10] [INFO] Zowe CLI versao: CLI Version: 8.31.2
+[2026-04-20 20:02:12] [INFO] Zowe OK - perfil ativo e conexao com mainframe funcionando.
+[2026-04-20 20:02:12] [STEP] >>> BLOCO 1: PDS (CODIGO E CONFIGURACAO)
+[2026-04-20 20:02:12] [INFO] PDS: Z77948.EMUNAH.DEV.COBOL
+CMD: zowe zos-files download all-members Z77948.EMUNAH.DEV.COBOL --directory C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_DEV_COBOL --extension cbl
+EXIT: 0
+OUTPUT: 11 member(s) downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_DEV_COBOL
+
+[2026-04-20 20:02:18] [INFO] OK  Z77948.EMUNAH.DEV.COBOL (11 membros (ext: .cbl))
+[2026-04-20 20:02:18] [INFO] PDS: Z77948.EMUNAH.DEV.COPY
+CMD: zowe zos-files download all-members Z77948.EMUNAH.DEV.COPY --directory C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_DEV_COPY --extension cpy
+EXIT: 0
+OUTPUT: 5 member(s) downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_DEV_COPY
+
+[2026-04-20 20:02:22] [INFO] OK  Z77948.EMUNAH.DEV.COPY (5 membros (ext: .cpy))
+[2026-04-20 20:02:22] [INFO] PDS: Z77948.EMUNAH.DEV.JCL
+CMD: zowe zos-files download all-members Z77948.EMUNAH.DEV.JCL --directory C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_DEV_JCL --extension jcl
+EXIT: 0
+OUTPUT: 36 member(s) downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_DEV_JCL
+
+[2026-04-20 20:02:39] [INFO] OK  Z77948.EMUNAH.DEV.JCL (36 membros (ext: .jcl))
+[2026-04-20 20:02:39] [INFO] PDS: Z77948.EMUNAH.DEV.REXX
+CMD: zowe zos-files download all-members Z77948.EMUNAH.DEV.REXX --directory C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_DEV_REXX --extension rexx
+EXIT: 0
+OUTPUT: 2 member(s) downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_DEV_REXX
+
+[2026-04-20 20:02:41] [INFO] OK  Z77948.EMUNAH.DEV.REXX (2 membros (ext: .rexx))
+[2026-04-20 20:02:41] [INFO] PDS: Z77948.EMUNAH.DEV.LOADLIB
+CMD: zowe zos-files download all-members Z77948.EMUNAH.DEV.LOADLIB --directory C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_DEV_LOADLIB --binary
+EXIT: 0
+OUTPUT: 2 member(s) downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_DEV_LOADLIB
+
+[2026-04-20 20:02:44] [INFO] OK  Z77948.EMUNAH.DEV.LOADLIB (2 membros (binario))
+[2026-04-20 20:02:44] [INFO] PDS: Z77948.EMUNAH.HML.COBOL
+CMD: zowe zos-files download all-members Z77948.EMUNAH.HML.COBOL --directory C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_HML_COBOL --extension cbl
+EXIT: 0
+OUTPUT: 1 member(s) downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_HML_COBOL
+
+[2026-04-20 20:02:46] [INFO] OK  Z77948.EMUNAH.HML.COBOL (1 membros (ext: .cbl))
+[2026-04-20 20:02:46] [INFO] PDS: Z77948.EMUNAH.HML.JCL
+CMD: zowe zos-files download all-members Z77948.EMUNAH.HML.JCL --directory C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_HML_JCL --extension jcl
+EXIT: 0
+OUTPUT: 2 member(s) downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_HML_JCL
+
+[2026-04-20 20:02:49] [INFO] OK  Z77948.EMUNAH.HML.JCL (2 membros (ext: .jcl))
+[2026-04-20 20:02:49] [INFO] PDS: Z77948.EMUNAH.PRD.JCL
+CMD: zowe zos-files download all-members Z77948.EMUNAH.PRD.JCL --directory C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_PRD_JCL --extension jcl
+EXIT: 0
+OUTPUT: 2 member(s) downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_PRD_JCL
+
+[2026-04-20 20:02:51] [INFO] OK  Z77948.EMUNAH.PRD.JCL (2 membros (ext: .jcl))
+[2026-04-20 20:02:51] [INFO] PDS: Z77948.EMUNAH.PRD.PARMLIB
+CMD: zowe zos-files download all-members Z77948.EMUNAH.PRD.PARMLIB --directory C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_PRD_PARMLIB --extension parm
+EXIT: 0
+OUTPUT: 2 member(s) downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\pds\Z77948_EMUNAH_PRD_PARMLIB
+
+[2026-04-20 20:02:53] [INFO] OK  Z77948.EMUNAH.PRD.PARMLIB (2 membros (ext: .parm))
+[2026-04-20 20:02:53] [STEP] >>> BLOCO 2: ARQUIVOS SEQUENCIAIS
+CMD: zowe zos-files download data-set Z77948.EMUNAH.ARQ.ENTRADA.SEQ --file C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\seq\ARQ_ENTRADA_SEQ.txt
+EXIT: 0
+OUTPUT: Data set downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\seq\ARQ_ENTRADA_SEQ.txt
+
+[2026-04-20 20:02:55] [INFO] OK  Z77948.EMUNAH.ARQ.ENTRADA.SEQ
+CMD: zowe zos-files download data-set Z77948.EMUNAH.ARQ.REJEITO.SEQ --file C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\seq\ARQ_REJEITO_SEQ.txt
+EXIT: 1
+OUTPUT: node.exe : Unable to perform this operation due to the following problem.
+No C:\Users\eliel.filho\AppData\Roaming\npm\zowe.ps1:24 caractere:5
++     & "node$exe"  "$basedir/node_modules/@zowe/cli/lib/main.js" $args
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Unable to perfo...lowing problem.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+IKJ56228I DATA SET Z77948.EMUNAH.ARQ.REJEITO.SEQ NOT IN CATALOG OR CATALOG CAN NOT BE ACCESSED    
+Data set not found.
+
+Response From Service
+category: 6
+rc:       8
+reason:   386400778
+message:  Data set not found.
+details: 
+  - IKJ56228I DATA SET Z77948.EMUNAH.ARQ.REJEITO.SEQ NOT IN CATALOG OR CATALOG CAN NOT BE ACCESSED    
+
+Diagnostic Information
+Received HTTP(S) error 404 = Not Found.
+
+Protocol:          https
+Host:              204.90.115.200
+Port:              10443
+Base Path:         
+Resource:          /zosmf/restfiles/ds/Z77948.EMUNAH.ARQ.REJEITO.SEQ
+Request:           GET
+Headers:           [{"Accept-Encoding":"gzip"},{"Content-Type":"text/plain"},{"X-CSRF-ZOSMF-HEADER":true}]
+Payload:           undefined
+Allow Unauth Cert: true
+Available creds:   user,password,base64EncodedAuth
+Your auth order:   basic,token,bearer,cert-pem
+Auth type used:    basic
+
+[2026-04-20 20:02:56] [ERROR] FALHA Z77948.EMUNAH.ARQ.REJEITO.SEQ (RC=1)
+CMD: zowe zos-files download data-set Z77948.EMUNAH.ARQ.AUDIT.SEQ --file C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\seq\ARQ_AUDIT_SEQ.txt
+EXIT: 0
+OUTPUT: Data set downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\seq\ARQ_AUDIT_SEQ.txt
+
+[2026-04-20 20:02:58] [INFO] OK  Z77948.EMUNAH.ARQ.AUDIT.SEQ
+CMD: zowe zos-files download data-set Z77948.EMUNAH.ARQ.CONCIL.SEQ --file C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\seq\ARQ_CONCIL_SEQ.txt
+EXIT: 0
+OUTPUT: Data set downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\seq\ARQ_CONCIL_SEQ.txt
+
+[2026-04-20 20:03:00] [INFO] OK  Z77948.EMUNAH.ARQ.CONCIL.SEQ
+CMD: zowe zos-files download data-set Z77948.EMUNAH.SEED.CLIENTES.SEQ --file C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\seq\SEED_CLIENTES_SEQ.txt
+EXIT: 0
+OUTPUT: Data set downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\seq\SEED_CLIENTES_SEQ.txt
+
+[2026-04-20 20:03:01] [INFO] OK  Z77948.EMUNAH.SEED.CLIENTES.SEQ
+CMD: zowe zos-files download data-set Z77948.EMUNAH.SEED.CONTAS.SEQ --file C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\seq\SEED_CONTAS_SEQ.txt
+EXIT: 0
+OUTPUT: Data set downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\seq\SEED_CONTAS_SEQ.txt
+
+[2026-04-20 20:03:02] [INFO] OK  Z77948.EMUNAH.SEED.CONTAS.SEQ
+[2026-04-20 20:03:02] [STEP] >>> BLOCO 3: VSAM (VIA EBJBKUP)
+[2026-04-20 20:03:02] [INFO] Submetendo job: Z77948.EMUNAH.DEV.JCL(EBJBKUP)
+CMD: zowe jobs submit data-set Z77948.EMUNAH.DEV.JCL(EBJBKUP) --wait-for-output --rfj
+EXIT: 1
+OUTPUT: {
+  "success": false,
+  "exitCode": 1,
+  "message": "Rest API failure with HTTP(S) status 500\nError opening input data set: //'Z77948.EMUNAH.DEV.JCL(EBJBKUP)'",
+  "stdout": "",
+  "stderr": "Unable to perform this operation due to the following problem.\nError opening input data set: //'Z77948.EMUNAH.DEV.JCL(EBJBKUP)'\n\nResponse From Service\nrc:       8\nreason:   5\ncategory: 6\nmessage:  Error opening input data set: //'Z77948.EMUNAH.DEV.JCL(EBJBKUP)'\n\nDiagnostic Information\nReceived HTTP(S) error 500 = Internal Server Error.\n\nProtocol:          https\nHost:              204.90.115.200\nPort:              10443\nBase Path:         \nResource:          /zosmf/restjobs/jobs\nRequest:           PUT\nHeaders:           [{\"Content-Type\":\"application/json\"},{\"X-CSRF-ZOSMF-HEADER\":true}]\nPayload:           { file: \"//'Z77948.EMUNAH.DEV.JCL(EBJBKUP)'\" }\nAllow Unauth Cert: true\nAvailable creds:   user,password,base64EncodedAuth\nYour auth order:   basic,token,bearer,cert-pem\nAuth type used:    basic\n",
+  "data": {},
+  "error": {
+    "msg": "Rest API failure with HTTP(S) status 500\nError opening input data set: //'Z77948.EMUNAH.DEV.JCL(EBJBKUP)'",
+    "causeErrors": "{\"rc\":8,\"reason\":5,\"category\":6,\"message\":\"Error opening input data set: \\/\\/'Z77948.EMUNAH.DEV.JCL(EBJBKUP)'\"}",
+    "source": "http",
+    "errorCode": 500,
+    "protocol": "https",
+    "port": 10443,
+    "host": "204.90.115.200",
+    "basePath": "",
+    "httpStatus": 500,
+    "payload": {
+      "file": "//'Z77948.EMUNAH.DEV.JCL(EBJBKUP)'"
+    },
+    "headers": [
+      {
+        "Content-Type": "application/json"
+      },
+      {
+        "X-CSRF-ZOSMF-HEADER": true
+      }
+    ],
+    "resource": "/zosmf/restjobs/jobs",
+    "request": "PUT",
+    "additionalDetails": "Received HTTP(S) error 500 = Internal Server Error.\n\nProtocol:          https\nHost:              204.90.115.200\nPort:              10443\nBase Path:         \nResource:          /zosmf/restjobs/jobs\nRequest:           PUT\nHeaders:           [{\"Content-Type\":\"application/json\"},{\"X-CSRF-ZOSMF-HEADER\":true}]\nPayload:           { file: \"//'Z77948.EMUNAH.DEV.JCL(EBJBKUP)'\" }\nAllow Unauth Cert: true\nAvailable creds:   user,password,base64EncodedAuth\nYour auth order:   basic,token,bearer,cert-pem\nAuth type used:    basic"
+  }
+}
+
+[2026-04-20 20:03:04] [ERROR] Submit falhou (RC=1)
+[2026-04-20 20:03:04] [ERROR] EBJBKUP: submit falhou. Flats nao serao baixados.
+[2026-04-20 20:03:04] [STEP] >>> BLOCO 4: GDG (ARQ.EXTRATO)
+[2026-04-20 20:03:05] [INFO] Geracoes selecionadas (2): Z77948.EMUNAH.ARQ.EXTRATO.GDG.G0002V00, Z77948.EMUNAH.ARQ.EXTRATO.GDG.G0001V00
+CMD: zowe zos-files download data-set Z77948.EMUNAH.ARQ.EXTRATO.GDG.G0002V00 --file C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\gdg\extrato_g0002v00.txt
+EXIT: 0
+OUTPUT: Data set downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\gdg\extrato_g0002v00.txt
+
+[2026-04-20 20:03:07] [INFO] OK  Z77948.EMUNAH.ARQ.EXTRATO.GDG.G0002V00
+CMD: zowe zos-files download data-set Z77948.EMUNAH.ARQ.EXTRATO.GDG.G0001V00 --file C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\gdg\extrato_g0001v00.txt
+EXIT: 0
+OUTPUT: Data set downloaded successfully.
+Destination: C:\Users\eliel.filho\EMUNAH-BANK-LAB\backup\20260420_200209\arq\gdg\extrato_g0001v00.txt
+
+[2026-04-20 20:03:08] [INFO] OK  Z77948.EMUNAH.ARQ.EXTRATO.GDG.G0001V00
+Execucao finalizada em 2026-04-20T20:03:08.6594040-03:00
+Sucessos: 16 | Falhas: 5 | Ignorados: 0
