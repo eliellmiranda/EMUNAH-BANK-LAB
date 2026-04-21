@@ -14,11 +14,11 @@ A camada remota armazena os datasets separados em categorias funcionais — `ARQ
 - **Responsabilidade:** edição de código-fonte, documentação,
   controle de versão e preparação de automações e cenários
 - **O que reside aqui:** arquivos .cbl, .jcl, copybooks, scripts
-  REXX, arquivos de massa (data/), documentação Markdown
+  REXX, arquivos de massa, documentação Markdown
 
 ### Camada Remota — Mainframe IBM zXplore
 - **Ambiente:** IBM zXplore (z/OS compartilhado)
-- **Ferramentas:** JES2, ISPF, SDSF, IDCAMS, compilador COBOL,
+- **Ferramentas:** VS Codee, JES2, IDCAMS, compilador COBOL,
   link-editor
 - **Responsabilidade:** armazenamento de datasets e membros,
   compilação, execução de jobs batch, manutenção dos arquivos
@@ -27,8 +27,7 @@ A camada remota armazena os datasets separados em categorias funcionais — `ARQ
   VSAM, GDG, sequenciais, spool de jobs
 
 ### Camada de Operação — Terminal 3270
-- **Ambiente:** Emulador TN3270 (ex: IBM Personal Communications,
-  Mocha TN3270 ou similar)
+- **Ambiente:** Emulador TN3270
 - **Ferramentas:** ISPF, SDSF, TSO, IDCAMS interativo
 - **Responsabilidade:** operação clássica, troubleshooting
   aprofundado, análise de spool, consulta a datasets e
