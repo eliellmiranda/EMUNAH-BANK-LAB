@@ -1,6 +1,6 @@
 # [01] - VISÃO GERAL - EMUNAH BANK LAB
 
-Ambiente pessoal de simulação bancária em **IBM z/OS**, criado para estudo prático de rotinas, arquitetura e troubleshooting em **mainframe**.
+Ambiente pessoal de simulação bancária em **IBM z/OS**, criado para a prática de rotinas, arquitetura e troubleshooting em **mainframe**.
 
 O projeto reproduz, em escala controlada, elementos comuns de ambientes bancários legados que operam cargas críticas em mainframe, combinando tecnologias clássicas do ecossistema z/OS com ferramentas modernas de automação e operação.
 
@@ -10,7 +10,7 @@ O projeto reproduz, em escala controlada, elementos comuns de ambientes bancári
 
 O **Emunah Bank Lab** é um laboratório de prática técnica mainframe em contexto bancário.
 
-A proposta é estudar, de forma prática, o funcionamento de aplicações e processos típicos desse ambiente, incluindo:
+A proposta é dominar o funcionamento de aplicações e processos típicos desse ambiente, incluindo:
 
 - desenvolvimento de programas de negócio em **COBOL**;
 - execução e controle de rotinas **batch** com **JCL**;
@@ -43,7 +43,7 @@ Este laboratório busca simular práticas reais de desenvolvimento, operação e
 | Armazenamento | VSAM |
 | Banco de Dados | DB2 |
 | Ambiente interativo | TSO / ISPF |
-| Acesso ao ambiente | Terminal TN3270 emulado / Zowe |
+| Acesso ao ambiente | Terminal TN3270 (emulado) e Zowe |
 | Tooling moderno | Zowe CLI |
 | Simulação operacional | EBOPS (Python) |
 
@@ -145,7 +145,7 @@ Este laboratório é orientado à reprodução de situações comuns em ambiente
 
 O **Emunah Bank Lab** combina dois elementos importantes:
 
-1. **fidelidade ao ambiente mainframe tradicional**, com tecnologias amplamente usadas em instituições financeiras;
+1. **fidelidade ao ambiente mainframe tradicional**, com tecnologias amplamente usadas em instituições financeiras, ou simulação dessas tecnologias;
 2. **abordagem moderna de estudo e operação**, incorporando ferramentas atuais para automação, consulta e produtividade.
 
 Isso permite explorar tanto a base clássica do ecossistema z/OS quanto práticas mais atuais de interação com o ambiente.
@@ -156,6 +156,6 @@ Isso permite explorar tanto a base clássica do ecossistema z/OS quanto prática
 
 Este projeto tem como objetivo servir como laboratório contínuo de aprendizado, documentação e evolução técnica em **mainframe bancário**, com ênfase em prática realista, disciplina operacional e aprofundamento técnico.
 
-O laboratório também responde a uma necessidade concreta do mercado: instituições financeiras e empresas que operam sistemas críticos em mainframe enfrentam crescente dificuldade em encontrar profissionais qualificados e treinados nessas tecnologias. O **Emunah Bank Lab** busca ser um ambiente de formação prática que contribui para reduzir essa lacuna — preparando quem o utiliza com experiência concreta nos processos, ferramentas e dinâmicas operacionais exigidas por essas organizações.
+O laboratório também responde a uma necessidade concreta do mercado: instituições financeiras e empresas que operam sistemas críticos em mainframe enfrentam crescente dificuldade em encontrar profissionais qualificados e treinados. O **Emunah Bank Lab** busca ser um ambiente de formação prática que contribui para reduzir essa lacuna — preparando quem o utiliza com experiência concreta nos processos, ferramentas e dinâmicas operacionais exigidas por essas organizações.
 
 ---
