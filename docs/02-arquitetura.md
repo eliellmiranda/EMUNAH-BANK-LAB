@@ -2,9 +2,9 @@
 
 ## Visão Geral
 
-O laboratório é organizado em três camadas independentes que se
-comunicam por meio do Zowe. Cada camada tem um papel bem definido
-e não deve ser usada fora do seu escopo principal.
+O laboratório é organizado em três camadas independentes que se comunicam por meio do Zowe. Cada camada tem um papel bem definido e não deve ser usada fora do seu escopo principal.
+
+A camada remota armazena os datasets separados em categorias funcionais — `ARQ` (operacionais do dia), `BKP` (backups versionados em GDG), `STAGE` (staging antes de `ARQ`), `PARM` (parâmetros), `SEED` (carga inicial), e `DEV`/`HML`/`PRD` (bibliotecas por ambiente). Esta separação espelha a prática bancária real de isolar arquivos transacionais de backups, histórico e configuração.
 
 ## Camadas
 

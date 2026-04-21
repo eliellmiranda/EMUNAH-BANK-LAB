@@ -3,13 +3,17 @@
 ## Convenção de Nomenclatura
 
 Todos os datasets seguem o padrão:
-```
-<HLQ>.<PROJETO>.<AMBIENTE>.<TIPO/FUNÇÃO>
-```
+<HLQ>.EMUNAH.< CATEGORIA >.< FUNÇÃO >
 
 - **HLQ:** `<HLQ>` (userid no zXplore)
 - **PROJETO:** `EMUNAH`
-- **AMBIENTE:** `DEV`, `HML`, `PRD`, `ARQ` (negócio) ou `SEED` (carga inicial)
+- **CATEGORIAS:**
+  - `DEV`, `HML`, `PRD` — bibliotecas por ambiente
+  - `ARQ` — arquivos operacionais do dia
+  - `BKP` — backups e históricos versionados
+  - `STAGE` — staging (antes de entrar em ARQ)
+  - `PARM` — parâmetros e configuração
+  - `SEED` — massa de carga inicial
 
 ---
 
@@ -17,9 +21,9 @@ Todos os datasets seguem o padrão:
 
 | Dataset                      | Tipo     | Membros principais                                              | Finalidade                            |
 |------------------------------|----------|-----------------------------------------------------------------|---------------------------------------|
-| `<HLQ>.EMUNAH.DEV.COBOL`    | PDS/PDSE | EBCLLOAD, EBVALI01, EBPOST01, EBSALD01, EBEXTR01, EBCONC01, EBREPR01, EBJEOD01 | Fontes COBOL de desenvolvimento |
-| `<HLQ>.EMUNAH.DEV.COPY`     | PDS/PDSE | CPAUD001, CPCLI001, CPCNT001, CPLCT001, CPSLD001               | Copybooks e layouts de registro       |
-| `<HLQ>.EMUNAH.DEV.JCL`      | PDS/PDSE | EBJPRECK, EBJBACKP, EBJLOAD, EBJVALD, EBJPOST, EBJSALD, EBJEXTR, EBJCONC, EBJEOD, EBJREPR, EBSEED | JCLs de compilação e execução em DEV |
+| `<HLQ>.EMUNAH.DEV.COBOL`    | PDS/PDSE | EBCLLOAD, EBVALI01, EBPOST01, EBACCR01, EBSNAP01, EBCONC01, EBEXTR01, EBREPR01, EBCTL01, EBJEOD01, EBSALD01 | Fontes COBOL de desenvolvimento |
+| `<HLQ>.EMUNAH.DEV.COPY`     | PDS/PDSE | CPCLI001, CPCNT001, CPLCT001, CPAUD001, CPSLD001, CPACR001, CPCTL001 | Copybooks e layouts de registro |
+| `<HLQ>.EMUNAH.DEV.JCL`      | PDS/PDSE | EBALLOC, EBALLOC2, EBDEFGDG, EBDEPLOY, EBJPRECK, EBJSOD, EBJBCKPD, EBJWAIT, EBJLOAD, EBJVALD, EBJPOST, EBJCUTF, EBJSNAP, EBJCUTE, EBJCONC, EBJEXTR, EBJEOD, EBJREPR, EBJRPOST, EBJHKGDG, EBJHKAUD, EBJHKREJ, EBJCLLD, EBSEED, EBLISTDS, EBRESET | JCLs de alocação, cadeia batch e utilidades |
 | `<HLQ>.EMUNAH.DEV.REXX`     | PDS/PDSE | Scripts utilitários                                             | Scripts REXX e automações             |
 | `<HLQ>.EMUNAH.DEV.LOADLIB`  | PDS/PDSE | Load modules compilados                                         | Executáveis gerados no build DEV      |
 
@@ -45,79 +49,112 @@ Todos os datasets seguem o padrão:
 
 ---
 
-## Arquivos de Seed (Carga Inicial)
+## Arquivos Operacionais (ARQ)
 
-Estes arquivos contêm a massa de dados real utilizada para população inicial dos VSAM via job `EBSEED`. **Não são placeholders** — os registros estão completos e prontos para execução.
+Datasets do dia corrente. O ciclo bate todos os dias sobre estes datasets.
 
-| Dataset                           | Tipo | DDNAME     | Registros | Finalidade                        |
-|-----------------------------------|------|------------|-----------|-----------------------------------|
-| `<HLQ>.EMUNAH.SEED.CLIENTES.SEQ` | PS   | `CLIENTIN` | 20        | Massa inicial de clientes         |
-| `<HLQ>.EMUNAH.SEED.CONTAS.SEQ`   | PS   | `CONTAIN`  | 40        | Massa inicial de contas (2/cliente) |
+### VSAM
 
-### Clientes cadastrados (20 registros)
+| Dataset                         | Tipo | Org. | DDNAME    | Finalidade                                     |
+|---------------------------------|------|------|-----------|------------------------------------------------|
+| `<HLQ>.EMUNAH.ARQ.CLIENTE.KSDS` | VSAM | KSDS | `CLIENTE` | Cadastro master de clientes (chave: nº cliente) |
+| `<HLQ>.EMUNAH.ARQ.CONTA.KSDS`   | VSAM | KSDS | `CONTA`   | Cadastro master de contas (chave: nº conta)    |
+| `<HLQ>.EMUNAH.ARQ.LANCTO.ESDS`  | VSAM | ESDS | `VALIDOS` | Lançamentos aprovados (append-only, imutável)  |
 
-| Nº | Nome               | CPF fictício  | Dt. Nascimento | Dt. Abertura |
-|----|--------------------|---------------|----------------|--------------|
-| 01 | João Silva         | 12345678901   | 01/01/1990     | 12/03/2026   |
-| 02 | Maria Souza        | 12345678902   | 15/02/1985     | 12/03/2026   |
-| 03 | Pedro Santos       | 12345678903   | 10/03/1992     | 12/03/2026   |
-| 04 | Ana Costa          | 12345678904   | 11/04/1988     | 12/03/2026   |
-| 05 | Carla Moraes       | 12345678905   | 09/05/1991     | 12/03/2026   |
-| 06 | Lucas Barbosa      | 12345678906   | 12/06/1987     | 12/03/2026   |
-| 07 | Bruno Lima         | 12345678907   | 18/07/1990     | 12/03/2026   |
-| 08 | Paula Almeida      | 12345678908   | 23/08/1986     | 12/03/2026   |
-| 09 | Renata Araujo      | 12345678909   | 14/09/1993     | 12/03/2026   |
-| 10 | Fábio Pereira      | 12345678910   | 11/10/1989     | 12/03/2026   |
-| 11 | Marta Fernandes    | 12345678911   | 03/11/1984     | 12/03/2026   |
-| 12 | Gustavo Rocha      | 12345678912   | 07/12/1990     | 12/03/2026   |
-| 13 | Juliana Teixeira   | 12345678913   | 12/01/1991     | 12/03/2026   |
-| 14 | Thiago Ribeiro     | 12345678914   | 18/02/1987     | 12/03/2026   |
-| 15 | Fernanda Melo      | 12345678915   | 05/03/1992     | 12/03/2026   |
-| 16 | Daniel Oliveira    | 12345678916   | 22/04/1988     | 12/03/2026   |
-| 17 | Amanda Martins     | 12345678917   | 17/05/1989     | 12/03/2026   |
-| 18 | Rodrigo Nunes      | 12345678918   | 26/06/1986     | 12/03/2026   |
-| 19 | Camila Gomes       | 12345678919   | 10/07/1990     | 12/03/2026   |
-| 20 | Rafael Duarte      | 12345678920   | 19/08/1991     | 12/03/2026   |
+### Sequenciais — entrada e trilhas
 
-### Estrutura de contas (40 registros)
+| Dataset                                    | LRECL | DDNAME       | Finalidade                                                |
+|--------------------------------------------|-------|--------------|-----------------------------------------------------------|
+| `<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ`             | 120   | `ENTRADA`    | Arquivo do dia aceito para processamento                  |
+| `<HLQ>.EMUNAH.ARQ.ENTRADA.TRAILER.SEQ`     | 80    | `TRAILER`    | Trailer/hash do arquivo de entrada (futuro)               |
+| `<HLQ>.EMUNAH.ARQ.REJEITOS.SEQ`            | 120   | `REJEITOS`   | Registros rejeitados na validação ou aplicação            |
+| `<HLQ>.EMUNAH.ARQ.AUDIT.SEQ`               | 120   | `AUDIT`      | Trilha de auditoria do dia — arquivada via `EBJHKAUD`     |
+| `<HLQ>.EMUNAH.ARQ.CONCIL.SEQ`              | 132   | `CONCIL`     | Relatório de conciliação three-way (três seções)          |
+| `<HLQ>.EMUNAH.ARQ.REPR.LANCTO.SEQ`         | 120   | `MOVTIN`     | Lançamentos reprocessados, consumidos por `EBJRPOST`      |
+| `<HLQ>.EMUNAH.ARQ.ACCR.MOV.SEQ`            | 120   | `ACCROUT`   | Movimentos de accrual (juros e tarifas)                   |
 
-Cada cliente possui duas contas:
-- **Conta Corrente (C):** número de conta par, DDNAME `CONTAIN`
-- **Poupança (P):** número de conta ímpar, DDNAME `CONTAIN`
+### Sequenciais — controle
 
-Saldos iniciais variam de R$ 1.100,00 (contas 1–2) a R$ 4.000,00 (contas 39–40), com limite de crédito fixo de R$ 5.000,00 para todas as contas.
+| Dataset                              | LRECL | Finalidade                                             |
+|--------------------------------------|-------|--------------------------------------------------------|
+| `<HLQ>.EMUNAH.ARQ.CTL.STATUS`        | 80    | Estado atual do ciclo (`OPEN`/`EOTI`/`EOFI`/`CLOSED`)  |
+| `<HLQ>.EMUNAH.ARQ.CTL.PROCDATE`      | 80    | Data de processamento do ciclo atual                   |
+
+### GDGs operacionais
+
+| Dataset                         | Tipo     | Finalidade                                                |
+|---------------------------------|----------|-----------------------------------------------------------|
+| `<HLQ>.EMUNAH.ARQ.EXTRATO.GDG`  | GDG Base | Histórico de extratos por geração (`EBJEXTR`)             |
+| `<HLQ>.EMUNAH.ARQ.SALDO.GDG`    | GDG Base | Snapshot diário de saldo (`EBJSNAP`)                      |
 
 ---
 
-## Arquivos de Negócio (ARQ)
+## Layout — `CONCIL.SEQ` (LRECL=132)
 
-| Dataset                            | Tipo      | Org.  | DDNAME    | Finalidade                                        |
-|------------------------------------|-----------|-------|-----------|---------------------------------------------------|
-| `<HLQ>.EMUNAH.ARQ.CLIENTE.KSDS`   | VSAM      | KSDS  | `CLIENTE` | Cadastro master de clientes (chave: nº cliente)   |
-| `<HLQ>.EMUNAH.ARQ.CONTA.KSDS`     | VSAM      | KSDS  | `CONTA`   | Cadastro master de contas (chave: nº conta)       |
-| `<HLQ>.EMUNAH.ARQ.SALDO.KSDS`     | VSAM      | KSDS  | `SALDO`   | Saldo consolidado por conta                       |
-| `<HLQ>.EMUNAH.ARQ.LANCTO.ESDS`    | VSAM      | ESDS  | `VALIDOS` | Lançamentos aprovados (append-only, imutável)     |
-| `<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ`    | PS        | SEQ   | `ENTRADA` | Arquivo de lançamentos do dia (entrada batch)     |
-| `<HLQ>.EMUNAH.ARQ.REJEITO.SEQ`    | PS        | SEQ   | `REJEITO` | Registros rejeitados na validação ou aplicação    |
-| `<HLQ>.EMUNAH.ARQ.AUDIT.SEQ`      | PS        | SEQ   | `AUDIT`   | Trilha de auditoria do dia corrente — arquivada via `EBJHKAUD` em GDG ao fim do ciclo |
-| `<HLQ>.EMUNAH.ARQ.CONCIL.SEQ`     | PS        | SEQ   | `CONCIL`  | Relatório de conciliação do dia — três seções de verificação (ver layout abaixo) |
-| `<HLQ>.EMUNAH.ARQ.BKP.AUDIT.GDG`  | GDG Base  | —     | —         | Histórico de trilhas de auditoria por geração — alimentado pelo `EBJHKAUD` |
-| `<HLQ>.EMUNAH.ARQ.EXTRATO.GDG`    | GDG Base  | —     | —         | Base GDG para histórico de extratos por geração   |
+| Posição   | Campo         | Descrição                                              |
+|-----------|---------------|--------------------------------------------------------|
+| 1–3       | TIPO-REG      | `H11`/`D11..14`/`R11` = seção 1; `H21`/`D21..22`/`R21` = seção 2; `H31`/`D31..34`/`R31` = seção 3; `T98`, `T99` = trailers |
+| 4         | FILLER        | —                                                      |
+| 5–54      | DESCRICAO     | 50 chars                                               |
+| 55        | FILLER        | —                                                      |
+| 56–70     | VALOR         | 15 chars (PIC `-Z(10)9,99`)                            |
+| 71–75     | FILLER        | —                                                      |
+| 76–125    | STATUS        | 50 chars — `OK`, `DIVERGENTE`, timestamps              |
+| 126–132   | FILLER        | —                                                      |
+
+Seções: **S1** entrada vs válidos+rejeitos · **S2** válidos vs postados · **S3** saldo inicial + líquidos vs saldo final.
+
+---
+
+## Backups e Históricos (BKP)
+
+| Dataset                              | Tipo     | Alimentado por | Finalidade                                  |
+|--------------------------------------|----------|----------------|---------------------------------------------|
+| `<HLQ>.EMUNAH.BKP.CLIENTE.GDG`       | GDG Base | `EBJBCKPD`     | Backup pré-batch do `CLIENTE.KSDS`          |
+| `<HLQ>.EMUNAH.BKP.CONTA.GDG`         | GDG Base | `EBJBCKPD`     | Backup pré-batch do `CONTA.KSDS`            |
+| `<HLQ>.EMUNAH.BKP.AUDIT.GDG`         | GDG Base | `EBJBCKPD`, `EBJHKAUD` | Histórico de trilhas de auditoria    |
+| `<HLQ>.EMUNAH.BKP.REJEITOS.GDG`      | GDG Base | `EBJHKREJ`     | Histórico de rejeitos arquivados            |
+
+---
+
+## Staging (STAGE)
+
+| Dataset                               | LRECL | Finalidade                                                |
+|---------------------------------------|-------|-----------------------------------------------------------|
+| `<HLQ>.EMUNAH.STAGE.ENTRADA.SEQ`      | 120   | Arquivo do dia recebido, aguardando promoção para ARQ     |
+
+Promovido para `ARQ.ENTRADA.SEQ` pelo `EBJLOAD` após validação do `EBJWAIT`.
+
+---
+
+## Parâmetros (PARM)
+
+| Dataset                              | Tipo     | Finalidade                                      |
+|--------------------------------------|----------|-------------------------------------------------|
+| `<HLQ>.EMUNAH.PARM.JUROS.CONFIG`     | PDS      | Taxas, tarifas e datas-base consumidas por `EBACCR01` |
+
+---
+
+## Arquivos de Seed (Carga Inicial)
+
+Massa real para população inicial dos VSAM via `EBJCLLD` (executa `EBCLLOAD`).
+
+| Dataset                           | DDNAME     | Registros | Finalidade                        |
+|-----------------------------------|------------|-----------|-----------------------------------|
+| `<HLQ>.EMUNAH.SEED.CLIENTES.SEQ`  | `CLIENTIN` | 20        | Massa inicial de clientes         |
+| `<HLQ>.EMUNAH.SEED.CONTAS.SEQ`    | `CONTAIN`  | 40        | Massa inicial de contas (2/cliente) |
 
 ---
 
 ## Mapa Visual
 
-O arquivo [`mapa-emunah-bank-lab.html`](mapa-emunah-bank-lab.html) consolida todos os datasets acima em um painel interativo navegável com abas por categoria (DEV, HML, PRD, ARQ, SEED), exibindo tipos, DDNAMEs, fluxos e dependências entre artefatos. Abre diretamente no navegador.
+O arquivo [`mapa-emunah-bank-lab.html`](mapa-emunah-bank-lab.html) consolida os datasets acima em um painel interativo navegável com abas por categoria.
 
 ---
 
 ## Observações
 
-- `ARQ.LANCTO.ESDS` usa organização ESDS (sequential append-only) por design — representa o histórico imutável de movimentos do dia
-- `ARQ.EXTRATO.GDG` gera uma nova geração (`G000xV00`) a cada execução do job `EBJEXTR`
-- Os arquivos KSDS devem ser alocados via IDCAMS antes da primeira execução de qualquer job que os utilize
-- O prefixo `<HLQ>` corresponde ao userid do ambiente zXplore e deve ser ajustado se o lab migrar para outro ambiente
-- Os dados seed são ficcionais e não contêm informações pessoais reais
-- `ARQ.AUDIT.SEQ` é reiniciado a cada ciclo pelo job `EBJHKAUD`, que arquiva a geração corrente em `ARQ.AUDIT.GDG` antes de recriar o sequencial
-- `ARQ.CONCIL.SEQ` possui três seções no layout: (1) entradas recebidas vs. válidos + rejeitos, (2) válidos vs. postados, (3) saldo inicial + líquidos vs. saldo final
+- `ARQ.LANCTO.ESDS` usa organização ESDS por design — histórico imutável de movimentos aprovados do dia
+- Não existe mais `ARQ.SALDO.KSDS`. O saldo consolidado é versionado em `ARQ.SALDO.GDG`
+- `ARQ.AUDIT.SEQ` e `ARQ.REJEITOS.SEQ` são sequenciais de curta vida útil: housekeeping arquiva e recria vazios
+- GDGs herdam DCB de `MODEL.DSCB` e devem ser definidos antes do primeiro uso (`EBDEFGDG`)
