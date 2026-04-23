@@ -1,0 +1,20 @@
+{
+  "quantidade": 25,
+  "output": "data/entrada/lancamentos_simulados.txt",
+  "data": "20260423",
+  "valor-min": "25.00",
+  "valor-max": "2500.00",
+  "clientes": ["1", "5", "10"],
+  "tipos": ["C", "D"],
+  "canais": ["APP", "PIX", "INTERNET", "ATM"],
+  "historicos": [
+    "PIX RECEBIDO",
+    "PIX ENVIADO",
+    "PAGAMENTO BOLETO",
+    "DEPOSITO",
+    "AJUSTE FINANCEIRO"
+  ],
+  "status": "P",
+  "lote-inicial": 1,
+  "seed": 42
+}
