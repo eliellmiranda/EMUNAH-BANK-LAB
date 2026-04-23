@@ -25,7 +25,7 @@ O simulador reproduz 7 ferramentas corporativas usadas diariamente em ambientes 
 - Libera jobs manualmente quando necessário (após resolução de incidente)
 - Monitora tempo de execução versus janela permitida
 
-**Como o EBOPS simula:** O painel "Control-M" mostra a grade batch de 9 jobs encadeados (PRECHECK → EBJEOD) com status visual por job. Botões de "Simular Normal" e "Simular Falha" geram cenários realistas onde jobs ficam com status OK, WARNING, ERROR, HOLD ou PENDING. O encadeamento visual mostra a dependência entre jobs.
+**Como o EBOPS simula:** O painel "Control-M" mostra a grade batch de 14 jobs encadeados (EBJPRECK → EBJEOD) com status visual por job e transições explícitas de CTL.STATUS (OPEN → EOTI → EOFI → CLOSED). [...]
 
 **Artefatos do lab relacionados:** EBBATCHP.txt (grade batch documentada), cada JCL de execução (EBJVALD, EBJPOST, etc.), EBCHKLAB.rexx (precheck).
 
@@ -78,7 +78,7 @@ O simulador reproduz 7 ferramentas corporativas usadas diariamente em ambientes 
 
 **Como o EBOPS simula:** Templates de investigação envolvem comparação de VSAM antes/depois, análise de registros com layout, verificação de campos específicos. No lab, a simulação é feita com IDCAMS PRINT, REPRO para exportação, Zowe CLI para download e Notepad++ com régua de colunas fixa. O processo é manual mas a lógica é idêntica.
 
-**Artefatos do lab relacionados:** Todos os VSAM (ARQ.CLIENTE.KSDS, ARQ.CONTA.KSDS, ARQ.SALDO.KSDS, ARQ.LANCTO.ESDS), copybooks (CPCLI001, CPCNT001, CPSLD001, CPLCT001), sequenciais (ARQ.REJEITO.SEQ, ARQ.AUDIT.SEQ).
+**Artefatos do lab relacionados:** VSAM (ARQ.CLIENTE.KSDS, ARQ.CONTA.KSDS, ARQ.LANCTO.ESDS), GDGs (ARQ.SALDO.GDG, ARQ.EXTRATO.GDG, BKP.CLIENTE.GDG, BKP.CONTA.GDG, BKP.AUDIT.GDG), copybooks (CPCLI001, CPCNT001, CPLCT001, CPAUD001, CPSLD001, CPACR001, CPCTL001), sequenciais (ARQ.REJEITOS.SEQ, ARQ.AUDIT.SEQ, ARQ.CONCIL.SEQ, ARQ.CTL.STATUS, ARQ.CTL.PROCDATE).
 
 ---
 
@@ -163,7 +163,7 @@ Simulam falhas que acontecem durante a execução batch. O desenvolvedor recebe 
 
 **Exemplos incluídos no pacote:**
 - Abend S0C7 em EBPOST01 (dado inválido em campo numérico)
-- Abend S0C4 em EBSALD01 (referência inválida de memória)
+- Abend S0C4 no utilitário EBSALD01 (consulta manual de saldo)
 - Abend S806 em EBJPOST (módulo não encontrado na LOADLIB)
 - RC=08 em EBJVALD (rejeição acima de 30%)
 - FILE STATUS 35 ao abrir VSAM (dataset não catalogado)
