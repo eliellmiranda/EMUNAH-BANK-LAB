@@ -1,0 +1,156 @@
+[
+  {
+    "id": "INC-023",
+    "titulo": "EBJPRECK aborta com RC=12 — CTL.STATUS inconsistente no início do ciclo",
+    "ferramenta": "SDSF / IDCAMS",
+    "categoria": "incidente",
+    "severidade": "alta",
+    "descricao": "No primeiro job da cadeia (EBJPRECK), o STEP CHKCTL encerra com RC=12 informando que o ARQ.CTL.STATUS contém um valor fora do esperado. A cadeia inteira fica bloqueada antes mesmo do EBJSOD autorizar o dia.",
+    "contexto": "O desenho FLEXCUBE-inspirado do lab prevê quatro estados em CTL.STATUS: OPEN (após EBJSOD), EOTI (após EBJCUTF), EOFI (após EBJCUTE) e CLOSED (após EBJEOD). O EBJPRECK de D+1 só aceita entrar em produção se CTL.STATUS estiver em CLOSED (dia anterior fechado) ou vazio (primeira execução). Qualquer estado intermediário ou errado sinaliza que o ciclo anterior não terminou corretamente — ou que alguém gravou o status errado manualmente.",
+    "o_que_investigar": [
+      "Rodar LISTCAT e IDCAMS PRINT em Z77948.EMUNAH.ARQ.CTL.STATUS para ler o valor atual",
+      "Rastrear qual job foi o último a gravar CTL.STATUS (EBJSOD? EBJCUTF? EBJCUTE? EBJEOD?)",
+      "Conferir o SYSUT1 inline do último job executado — pode ter sido mutado para um valor inválido",
+      "Verificar se o valor atual é uma das 4 fases válidas (OPEN/EOTI/EOFI/CLOSED) ou um label corrompido",
+      "Se o valor estiver errado, decidir: reexecutar o job correto (não editar manualmente) ou fazer REPRO emergencial documentado",
+      "Documentar no runbook qual fase era esperada e qual foi encontrada"
+    ],
+    "entregavel": "Causa raiz identificada (qual job gravou o valor errado), CTL.STATUS corrigido para o estado esperado, cadeia retomada com EBJPRECK OK, anotação no runbook de governança.",
+    "tags": ["CTL.STATUS", "EBJPRECK", "IEBGENER", "governança", "FLEXCUBE", "fases"],
+    "dificuldade": "pleno",
+    "tempo_estimado": "30min",
+    "inj": "INJ-035"
+  },
+  {
+    "id": "INC-024",
+    "titulo": "EBJWAIT estoura em CHKEXST mesmo com o arquivo no staging",
+    "ferramenta": "SDSF / IDCAMS LISTCAT",
+    "categoria": "incidente",
+    "severidade": "alta",
+    "descricao": "O operador confirma que o arquivo de lançamentos do dia chegou e foi carregado em STAGE.ENTRADA.SEQ. Ainda assim, o step CHKEXST do EBJWAIT termina com RC=12 e mensagem de catálogo não encontrado, travando o início da cadeia diária.",
+    "contexto": "No redesenho, o EBJWAIT é o file-watcher do laboratório. Ele olha especificamente para STAGE.ENTRADA.SEQ — a área de staging onde o operador deposita o arquivo bruto do dia — e, uma vez validado, o EBJLOAD promove o conteúdo para ARQ.ENTRADA.SEQ. Confundir staging com área operacional é um erro clássico: se o LISTCAT do EBJWAIT for redirecionado para ARQ.ENTRADA.SEQ, ele nunca vai achar nada, porque aquela posição só é populada mais adiante na cadeia.",
+    "o_que_investigar": [
+      "Abrir EBJWAIT.jcl e conferir exatamente qual DSN o CHKEXST está consultando",
+      "Comparar com o fluxo esperado: staging é STAGE.ENTRADA.SEQ; operacional é ARQ.ENTRADA.SEQ",
+      "Rodar LISTCAT manual nos dois datasets e confirmar onde o arquivo do dia está",
+      "Se o JCL estiver apontando para ARQ.ENTRADA.SEQ, corrigir para STAGE.ENTRADA.SEQ",
+      "Conferir se o CHKCNT (STEP 2) também aponta para o mesmo dataset do CHKEXST",
+      "Submeter de novo e registrar no runbook que o EBJWAIT sempre olha para STAGE, nunca para ARQ"
+    ],
+    "entregavel": "DD/DSN do EBJWAIT corrigido, file-watcher voltando a liberar a cadeia, anotação no runbook sobre o contrato STAGE → ARQ.",
+    "tags": ["EBJWAIT", "STAGE", "file-watcher", "LISTCAT", "staging"],
+    "dificuldade": "junior",
+    "tempo_estimado": "15min",
+    "inj": "INJ-036"
+  },
+  {
+    "id": "OPS-012",
+    "titulo": "Cutoff financeiro gravou fase inconsistente em CTL.STATUS",
+    "ferramenta": "SDSF / IDCAMS PRINT",
+    "categoria": "operação",
+    "severidade": "alta",
+    "descricao": "O EBJCUTF rodou com RC=00 mas, ao inspecionar CTL.STATUS para evidência do cutoff, o valor gravado não é EOTI. Downstream, o EBJCUTE vai recusar a transição porque o estado anterior exigido (EOTI) não foi observado.",
+    "contexto": "A transição válida no desenho do lab é OPEN → EOTI → EOFI → CLOSED. Cada job só grava seu status se o anterior estiver na fase esperada. Se o EBJCUTF, por erro operacional ou mutação no SYSUT1, gravar direto 'EOFI' (ou outro label), a máquina de estados pula a fase EOTI. O EBJACCR pode até rodar, mas a evidência contábil fica inconsistente: a janela de entrada de movimentos nunca é formalmente fechada no histórico.",
+    "o_que_investigar": [
+      "Rodar IDCAMS PRINT em Z77948.EMUNAH.ARQ.CTL.STATUS para ler o valor corrente",
+      "Abrir EBJCUTF.jcl e conferir o SYSUT1 inline do step WRTSTAT — deve conter exatamente 'EOTI'",
+      "Comparar com EBJSOD.jcl (deve ser 'OPEN'), EBJCUTE.jcl ('EOFI') e EBJEOD.jcl ('CLOSED')",
+      "Se encontrar outro label, reverter para EOTI e reexecutar EBJCUTF",
+      "Avaliar se algum job downstream já consumiu o status errado e precisa ser reprocessado",
+      "Documentar a tabela canônica de transições no runbook de governança"
+    ],
+    "entregavel": "CTL.STATUS corrigido para EOTI, EBJCUTF reexecutado com evidência, tabela de transições documentada no runbook.",
+    "tags": ["CTL.STATUS", "EBJCUTF", "EOTI", "cutoff", "máquina de estados", "FLEXCUBE"],
+    "dificuldade": "pleno",
+    "tempo_estimado": "25min",
+    "inj": "INJ-037"
+  },
+  {
+    "id": "INC-025",
+    "titulo": "EBJACCR falha ao abrir PARMLIB — accruals não aplicados",
+    "ferramenta": "SDSF / JCL",
+    "categoria": "incidente",
+    "severidade": "alta",
+    "descricao": "O job EBJACCR termina com FILE STATUS 35 no OPEN do DD PARMLIB. O programa EBACCR01 não consegue ler os parâmetros de juros e tarifas e, dependendo do tratamento, ou abenda ou emite accruals zerados — o que desequilibra a conciliação.",
+    "contexto": "O EBACCR01 lê PARM.JUROS.CONFIG (PDS de 80 bytes) onde estão as taxas por tipo de conta, data-base, e teto de tarifa. Se o PARMLIB DD apontar para o ambiente errado (HML em vez de PRD/DEV), o OPEN falha. Ambientes de juros costumam estar separados em diferentes HLQs e a promoção de uma versão nova de PARMLIB costuma passar por DEV→HML→PRD — é exatamente onde o cartão DD ‘esquece’ de ser atualizado.",
+    "o_que_investigar": [
+      "Abrir o SYSPRINT do EBJACCR no SDSF — localizar a mensagem FILE STATUS 35 ou IEF212I",
+      "Abrir EBJACCR.jcl e conferir o DSN do DD PARMLIB",
+      "Rodar LISTCAT nos candidatos: PARM.JUROS.CONFIG, PARM.JUROS.HML, PARM.JUROS.DEV",
+      "Confirmar qual ambiente o lab deveria apontar (geralmente PARM.JUROS.CONFIG)",
+      "Corrigir o JCL e resubmeter — validar que ACCR.MOV.SEQ tem registros e CONTA.KSDS teve REWRITE",
+      "Avaliar se a conciliação S3 (saldo inicial + líquido vs saldo final) precisa ser reexecutada"
+    ],
+    "entregavel": "DD PARMLIB do EBJACCR apontando para o DSN correto, accruals aplicados, evidência de REWRITE em CONTA.KSDS, S3 da conciliação zerada.",
+    "tags": ["EBJACCR", "EBACCR01", "PARMLIB", "FILE STATUS 35", "promoção de ambiente", "juros"],
+    "dificuldade": "pleno",
+    "tempo_estimado": "30min",
+    "inj": "INJ-038"
+  },
+  {
+    "id": "OPS-013",
+    "titulo": "EBJSNAP falha na alocação — geração do SALDO.GDG não encontrada",
+    "ferramenta": "SDSF / JCL / IDCAMS",
+    "categoria": "operação",
+    "severidade": "alta",
+    "descricao": "O EBJSNAP aborta no JCL ERROR/alocação com mensagem IEF212I informando que a geração solicitada do ARQ.SALDO.GDG não existe. Sem o snapshot do dia, o EBJCONC não tem como formar a seção S3 da conciliação (saldo inicial + líquido vs saldo final).",
+    "contexto": "O EBJSNAP é o único job que grava em ARQ.SALDO.GDG(+1). A convenção saudável é sempre usar notação relativa — (+1) para criar geração nova, (0) para a corrente, (-1) para a anterior. Quando alguém substitui por geração absoluta (tipo G0001V00), o JCL vira um alvo fixo: se o LIMIT do GDG base já passou daquela geração, IEF212I é certo. Também há o risco de o LIMIT do GDG base estar esgotado sem SCRATCH, o que impede a criação do +1.",
+    "o_que_investigar": [
+      "Abrir EBJSNAP.jcl e conferir se o DD de saída usa notação relativa (+1) ou absoluta (G####V##)",
+      "Rodar LISTCAT ENT('...ARQ.SALDO.GDG') ALL para ver o LIMIT do GDG base e as gerações ativas",
+      "Se for notação absoluta, substituir por (+1) — esta é a convenção do lab",
+      "Se o LIMIT estiver esgotado, avaliar SCRATCH automático ou aumentar LIMIT via IDCAMS ALTER",
+      "Reexecutar EBJSNAP e confirmar ARQ.SALDO.GDG(+1) criado com volume esperado",
+      "Documentar a convenção de notação relativa no runbook de GDG"
+    ],
+    "entregavel": "EBJSNAP rodando e criando ARQ.SALDO.GDG(+1), cadeia destravada para EBJCONC, runbook atualizado com a convenção de notação relativa.",
+    "tags": ["EBJSNAP", "GDG", "geração absoluta", "IEF212I", "LIMIT", "SALDO"],
+    "dificuldade": "pleno",
+    "tempo_estimado": "35min",
+    "inj": "INJ-039"
+  },
+  {
+    "id": "OPS-014",
+    "titulo": "Arquivo de conciliação ARQ.CONCIL.SEQ foi truncado a cada execução",
+    "ferramenta": "SDSF / JCL / ISPF 3.4",
+    "categoria": "operação",
+    "severidade": "media",
+    "descricao": "Após um reprocessamento do EBJCONC, descobriu-se que o histórico de conciliação do dia foi perdido: o arquivo ARQ.CONCIL.SEQ mostra apenas a execução mais recente, apagando as anteriores. A evidência de auditoria ficou incompleta.",
+    "contexto": "O DD CONCOUT do EBJCONC deveria usar DISP=MOD: isso garante que cada execução acrescente (append) os blocos das três seções (S1, S2, S3) sem sobrescrever o conteúdo anterior. Se o DISP for OLD, cada execução abre o arquivo como sequencial em modo substituição e a gravação começa do offset zero — o histórico desaparece. O impacto é silencioso: o job termina RC=00, mas a trilha contábil fica parcial.",
+    "o_que_investigar": [
+      "Abrir EBJCONC.jcl e conferir o DISP do DD CONCOUT",
+      "Confirmar que a convenção para arquivos append-only do lab é DISP=MOD (como AUDIT.SEQ)",
+      "Se estiver OLD, corrigir para MOD",
+      "Avaliar se é viável recompor o histórico perdido reexecutando EBJCONC com CONCOUT=MOD a partir de BKP.CONCIL.GDG (se existir)",
+      "Verificar se outros DDs append-only da cadeia (AUDIT, LOG) não estão com o mesmo problema",
+      "Escrever no runbook a tabela 'DD append-only → DISP esperado'"
+    ],
+    "entregavel": "DD CONCOUT corrigido para DISP=MOD, política append documentada no runbook, revisão cruzada dos outros DDs append.",
+    "tags": ["EBJCONC", "DISP", "MOD", "append", "conciliação", "append-only"],
+    "dificuldade": "junior",
+    "tempo_estimado": "20min",
+    "inj": "INJ-040"
+  },
+  {
+    "id": "CHG-006",
+    "titulo": "Housekeeping de AUDIT rodou fora da janela e apagou trilha do dia",
+    "ferramenta": "SDSF / JCL / change-log",
+    "categoria": "change",
+    "severidade": "alta",
+    "descricao": "O EBJHKAUD, que deveria rodar off-cycle (após o EBJEOD, na janela de housekeeping), foi disparado no meio da cadeia diária. Como consequência, o STEP DELAUD apagou o ARQ.AUDIT.SEQ e o STEP ALLOCAUD recriou o arquivo vazio — perdendo todos os registros que EBJVALD, EBJPOST e EBJACCR já haviam gravado naquele dia.",
+    "contexto": "O ciclo de auditoria é: programas escrevem em AUDIT.SEQ com DISP=MOD durante todo o dia; ao fim do EBJEOD, o EBJHKAUD arquiva em BKP.AUDIT.GDG(+1) e recria AUDIT.SEQ vazio. Isso só é seguro quando o dia está fechado. Se o EBJHKAUD disparar no meio do ciclo — por erro de scheduler ou retirada do guard COND=(0,NE) — o arquivo é arquivado parcialmente e, pior, recriado vazio. Todos os novos registros a partir dali convivem com uma trilha órfã e incompleta.",
+    "o_que_investigar": [
+      "Conferir no SDSF/CA-7 a janela em que o EBJHKAUD foi submetido",
+      "Abrir EBJHKAUD.jcl e verificar se os steps DELAUD e ALLOCAUD têm COND=(0,NE) de guarda",
+      "Rodar LISTCAT em BKP.AUDIT.GDG para ver se a geração recém-arquivada é do dia corrente (ruim) ou do dia anterior (ok)",
+      "Confirmar que o runbook marca EBJHKAUD como 'off-cycle — só após EBJEOD'",
+      "Avaliar se dá para reconstruir a trilha perdida a partir dos SYSOUTs do spool ou de backups anteriores",
+      "Adicionar no scheduler uma regra que impeça EBJHKAUD de ser submetido antes de EBJEOD concluir"
+    ],
+    "entregavel": "EBJHKAUD voltando para a janela off-cycle, guard COND=(0,NE) restaurado, regra de scheduler adicionada, change-log atualizado, análise de impacto da trilha perdida.",
+    "tags": ["EBJHKAUD", "housekeeping", "AUDIT.SEQ", "off-cycle", "scheduler", "trilha"],
+    "dificuldade": "pleno",
+    "tempo_estimado": "45min",
+    "inj": "INJ-041"
+  }
+]

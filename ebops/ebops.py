@@ -123,12 +123,11 @@ TEMPLATES = [
 {"id":"INC-003","t":"Arquivo de entrada ausente — cadeia bloqueada","cat":"incidente","sev":"critica","dif":"junior","tmp":"20min","fer":"Zowe CLI / TSO","desc":"EBJLOAD falhou. ARQ.ENTRADA.SEQ não existe. Cadeia bloqueada.","tags":["arquivo","bloqueio","cadeia"],"inj":"INJ-019"},
 {"id":"INC-004","t":"Conciliação divergente — R$ 150,00","cat":"incidente","sev":"alta","dif":"pleno","tmp":"60min","fer":"SDSF / File Manager","desc":"EBJCONC detectou divergência de R$ 150,00. EBJEOD bloqueado.","tags":["conciliação","saldo","fechamento"],"inj":"INJ-005"},
 {"id":"INC-005","t":"FILE STATUS 35 ao abrir ARQ.CONTA.KSDS","cat":"incidente","sev":"alta","dif":"junior","tmp":"25min","fer":"IDCAMS / Zowe CLI","desc":"EBPOST01 retornou FILE STATUS 35. VSAM não catalogado.","tags":["VSAM","FILE STATUS","IDCAMS"],"inj":"INJ-028"},
-{"id":"INC-006","t":"Job EBJSALD em HOLD","cat":"incidente","sev":"media","dif":"junior","tmp":"15min","fer":"SDSF / Zowe Explorer","desc":"EBJSALD em HOLD. Consolidação não aconteceu, cadeia parada.","tags":["HOLD","scheduler","SDSF"],"inj":"INJ-020"},
-{"id":"INC-007","t":"Layout divergente — TIPO-LANCTO errado","cat":"incidente","sev":"media","dif":"pleno","tmp":"40min","fer":"File Manager / Notepad++","desc":"Copybook CPLCT001 alterado mas massa não ajustada. Campos deslocados.","tags":["layout","copybook","compilação"],"inj":"INJ-015"},
+{"id":"INC-006","t":"Job EBJSNAP em HOLD","cat":"incidente","sev":"media","dif":"junior","tmp":"15min","fer":"SDSF / Zowe Explorer","desc":"EBJSNAP em HOLD. Snapshot de saldo não rodou, EBJCUTE/EBJCONC ficaram presos.","tags":["HOLD","scheduler","SDSF"],"inj":"INJ-020"},{"id":"INC-007","t":"Layout divergente — TIPO-LANCTO errado","cat":"incidente","sev":"media","dif":"pleno","tmp":"40min","fer":"File Manager / Notepad++","desc":"Copybook CPLCT001 alterado mas massa não ajustada. Campos deslocados.","tags":["layout","copybook","compilação"],"inj":"INJ-015"},
 {"id":"INC-008","t":"Abend S806 — módulo não na LOADLIB","cat":"incidente","sev":"alta","dif":"junior","tmp":"20min","fer":"SDSF / JCL","desc":"EBJPOST abendou S806-04. Módulo não encontrado na LOADLIB.","tags":["S806","LOADLIB","link-edit"],"inj":"INJ-007"},
 {"id":"INC-009","t":"Saldo negativo em conta corrente","cat":"incidente","sev":"critica","dif":"pleno","tmp":"50min","fer":"File Manager / COBOL","desc":"Conta com -R$ 2.300,00. Regra não permite saldo negativo em CC.","tags":["saldo","regra de negócio","estorno"],"inj":"INJ-005"},
 {"id":"INC-010","t":"GDG sem nova geração","cat":"incidente","sev":"media","dif":"junior","tmp":"25min","fer":"IDCAMS / JCL","desc":"EBJEXTR RC=00 mas GDG não criou geração. Limite atingido?","tags":["GDG","IDCAMS","extrato"]},
-{"id":"INC-011","t":"Abend S0C4 em EBSALD01","cat":"incidente","sev":"alta","dif":"pleno","tmp":"50min","fer":"Abendaid / SDSF","desc":"S0C4 — referência inválida de memória. Tabela OCCURS fora do limite?","tags":["S0C4","memória","COBOL"],"inj":"INJ-032"},
+{"id":"INC-011","t":"Abend S0C4 no utilitário EBSALD01","cat":"incidente","sev":"alta","dif":"pleno","tmp":"50min","fer":"Abendaid / SDSF","desc":"Utilitário de consulta manual de saldo (cobol/util) abendou S0C4. Referência inválida de memória, possivelmente OCCURS fora do limite ou READ em KSDS sem checar FILE STATUS.","tags":["S0C4","memória","COBOL","utilitário"],"inj":"INJ-032"},
 {"id":"INC-012","t":"REGION S878 no EBJPOST","cat":"incidente","sev":"media","dif":"junior","tmp":"15min","fer":"JCL / SDSF","desc":"REGION insuficiente. Massa com 10.000 registros, REGION=4M.","tags":["REGION","S878","JCL"],"inj":"INJ-022"},
 {"id":"INC-013","t":"Dataset locked — ENQ em CONTA.KSDS","cat":"incidente","sev":"alta","dif":"pleno","tmp":"25min","fer":"SDSF / TSO","desc":"EBJPOST em WAIT. Outro job com DISP=OLD travando o VSAM.","tags":["ENQ","lock","concorrência"]},
 {"id":"INC-014","t":"JCL ERROR — sintaxe inválida no EXEC","cat":"incidente","sev":"media","dif":"junior","tmp":"10min","fer":"SDSF / JCL","desc":"EBJVALD nem executou. JCL ERROR com IEF631I.","tags":["JCL ERROR","sintaxe"],"inj":"INJ-009"},
@@ -137,8 +136,10 @@ TEMPLATES = [
 {"id":"INC-017","t":"Timestamp de auditoria gravando zeros","cat":"incidente","sev":"media","dif":"junior","tmp":"25min","fer":"COBOL / File Manager","desc":"ACCEPT FROM DATE gerando zeros. PIC X em vez de PIC 9?","tags":["ACCEPT","timestamp","auditoria"],"inj":"INJ-023"},
 {"id":"INC-018","t":"VSAM I/O ERROR em ESDS","cat":"incidente","sev":"alta","dif":"pleno","tmp":"45min","fer":"IDCAMS / VSAM","desc":"Performance degradada e I/O error no ARQ.LANCTO.ESDS.","tags":["VSAM","ESDS","I/O"]},
 {"id":"INC-019","t":"SQLCODE -805 — DBRM não no PLAN","cat":"incidente","sev":"alta","dif":"pleno","tmp":"35min","fer":"DB2 / BIND","desc":"EBAUDB01 abendou com -805. BIND não executado após pré-compilação.","tags":["DB2","-805","BIND"]},
-{"id":"INC-020","t":"SQLCODE -911 — deadlock em TB_SALDO","cat":"incidente","sev":"critica","dif":"pleno","tmp":"50min","fer":"DB2","desc":"Deadlock entre dois jobs disputando TB_SALDO.","tags":["DB2","-911","deadlock"]},
-{"id":"INC-021","t":"SQLCODE -811 — SELECT INTO múltiplas linhas","cat":"incidente","sev":"media","dif":"junior","tmp":"25min","fer":"DB2 / SPUFI","desc":"SELECT INTO retornou mais de um registro. Duplicidade?","tags":["DB2","-811","SELECT INTO"]},
+{"id":"INJ-020","t":"EBJSNAP com TYPRUN=HOLD","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJSNAP.jcl"],
+ "desc":"TYPRUN=HOLD adicionado ao cartão JOB do EBJSNAP. Snapshot de saldo não dispara, cadeia trava antes de EBJCUTE.",
+ "sintoma":"Job submetido fica em HOLD no SDSF. EBJCUTE e EBJCONC nunca rodam porque SALDO.GDG não ganhou geração nova.",
+ "dica":"Verifique o cartão JOB do JCL. Procure por TYPRUN=HOLD."},{"id":"INC-021","t":"SQLCODE -811 — SELECT INTO múltiplas linhas","cat":"incidente","sev":"media","dif":"junior","tmp":"25min","fer":"DB2 / SPUFI","desc":"SELECT INTO retornou mais de um registro. Duplicidade?","tags":["DB2","-811","SELECT INTO"]},
 {"id":"INC-022","t":"Encoding corrompido após upload","cat":"incidente","sev":"media","dif":"junior","tmp":"25min","fer":"Zowe CLI / iconv","desc":"Caracteres acentuados corrompidos. EBCDIC vs UTF-8.","tags":["encoding","EBCDIC","Zowe CLI"],"inj":"INJ-024"},
 
 # ── DESENVOLVIMENTO ──
@@ -299,10 +300,10 @@ INJECTIONS = [
  "desc":"DD MOVTIN no EBJCONC aponta para ARQ.ENTRADA.SEQ em vez de ARQ.LANCTO.ESDS.",
  "sintoma":"EBJCONC lê arquivo errado. Conciliação diverge completamente.",
  "dica":"Compare o DD MOVTIN com o mapa de datasets. EBJCONC lê lançamentos aprovados, não entrada bruta."},
-{"id":"INJ-026","t":"EBJSALD sem DD SALDOUT","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJSALD.jcl"],
- "desc":"DD SALDOUT removido do EBJSALD. Programa não tem onde gravar saída de saldo.",
- "sintoma":"FILE STATUS 35 ao abrir arquivo de saída de saldo.",
- "dica":"Compare os DDNAMEs do JCL com os SELECT do EBSALD01 (SALDIN, CONTA, SALDOUT)."},
+{"id":"INJ-026","t":"EBJSNAP sem DD SNAPOUT","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJSNAP.jcl"],
+ "desc":"DD SNAPOUT removido do EBJSNAP. Programa EBSNAP01 não tem onde gravar a geração nova do SALDO.GDG.",
+ "sintoma":"FILE STATUS 35 ao abrir saída. Snapshot não é criado. EBJCONC vai divergir na seção S3 por falta de SALDO.GDG(+1).",
+ "dica":"Compare os DDNAMEs do JCL com os SELECT do EBSNAP01 (CONTA, SNAPOUT)."},
 {"id":"INJ-027","t":"Seed de contas com saldo inicial corrompido","cat":"massa","dif":"pleno","tmp":"25min","arqs":["contas.txt"],
  "desc":"Campo de saldo inicial em contas.txt alterado com letras. Carga inicial grava lixo no VSAM.",
  "sintoma":"EBCLLOAD carrega, mas saldos ficam inconsistentes. EBPOST01 e EBCONC01 divergem.",
@@ -327,9 +328,9 @@ INJECTIONS = [
  "desc":"Checagem IS NUMERIC removida da validação de agência. MOVE direto para campo numérico.",
  "sintoma":"Se massa tiver agência com letras, MOVE para WS-AGENCIA-NUM causa S0C7.",
  "dica":"Procure a Regra 2 (agência) no 2100-VALIDAR-REGISTRO. O IF IS NUMERIC deveria estar lá."},
-{"id":"INJ-033","t":"COMBO: arquivo ausente + JCL com HOLD","cat":"combinado","dif":"pleno","tmp":"35min","arqs":["lancamentos_d0.txt","EBJSALD.jcl"],
- "desc":"Massa renomeada (não encontra para upload) E EBJSALD com TYPRUN=HOLD. Dois bloqueios.",
- "sintoma":"Primeiro problema: upload falha. Segundo: mesmo após resolver, EBJSALD trava em HOLD.",
+{"id":"INJ-033","t":"COMBO: arquivo ausente + JCL com HOLD","cat":"combinado","dif":"pleno","tmp":"35min","arqs":["lancamentos_d0.txt","EBJSNAP.jcl"],
+ "desc":"Massa renomeada (não encontra para upload) E EBJSNAP com TYPRUN=HOLD. Dois bloqueios em pontos diferentes da cadeia.",
+ "sintoma":"Primeiro: EBJWAIT não acha STAGE.ENTRADA.SEQ. Segundo: mesmo após resolver e a cadeia andar até EBJCUTF, EBJSNAP trava em HOLD e nunca gera SALDO.GDG(+1).",
  "dica":"Resolva na ordem: primeiro o arquivo (renomear de volta), depois o JCL (remover TYPRUN=HOLD)."},
 {"id":"INJ-034","t":"COMBO: sem REWRITE + seed corrompida","cat":"combinado","dif":"pleno","tmp":"50min","arqs":["EBPOST01.cbl","contas.txt"],
  "desc":"EBPOST01 sem REWRITE (saldo não persiste) E contas.txt com saldo corrompido.",
@@ -553,7 +554,7 @@ def _(d):
 
 @mut("INJ-020")
 def _(d):
-    p=os.path.join(_jcl(d),"EBJSALD.jcl"); s=_rf(p)
+    p=os.path.join(_jcl(d),"EBJSNAP.jcl"); s=_rf(p)
     _wf(p, s.replace("CLASS=A,MSGCLASS=X","CLASS=A,MSGCLASS=X,TYPRUN=HOLD"))
 
 @mut("INJ-021")
@@ -595,8 +596,8 @@ def _(d):
 
 @mut("INJ-026")
 def _(d):
-    p=os.path.join(_jcl(d),"EBJSALD.jcl"); s=_rf(p)
-    lines=[l for l in s.split('\n') if 'SALDOUT' not in l and 'SALDO-OUT' not in l]
+    p=os.path.join(_jcl(d),"EBJSNAP.jcl"); s=_rf(p)
+    lines=[l for l in s.split('\n') if 'SNAPOUT' not in l and 'SNAP-OUT' not in l]
     _wf(p,'\n'.join(lines))
 
 @mut("INJ-027")
@@ -654,9 +655,20 @@ def _(d): MUTATIONS["INJ-029"](d); MUTATIONS["INJ-027"](d)
 # ═════════════════════════════════════════════════════════════
 # GRADE BATCH
 # ═════════════════════════════════════════════════════════════
-GRADE=[("PRECHECK","06:00","—"),("EBBACKUP","06:15","—"),("EBJLOAD","06:30","—"),
-       ("EBJVALD","07:00","EBVALI01"),("EBJPOST","07:30","EBPOST01"),("EBJSALD","08:00","EBSALD01"),
-       ("EBJEXTR","09:00","EBEXTR01"),("EBJCONC","09:30","EBCONC01"),("EBJEOD","10:00","—")]
+GRADE=[("EBJPRECK","05:45","—"),
+       ("EBJSOD",  "06:00","—"),
+       ("EBJBCKPD","06:15","—"),
+       ("EBJWAIT", "06:30","—"),
+       ("EBJLOAD", "06:45","—"),
+       ("EBJVALD", "07:00","EBVALI01"),
+       ("EBJPOST", "07:30","EBPOST01"),
+       ("EBJCUTF", "08:00","—"),
+       ("EBJACCR", "08:15","EBACCR01"),
+       ("EBJSNAP", "08:30","EBSNAP01"),
+       ("EBJCUTE", "08:45","—"),
+       ("EBJCONC", "09:00","EBCONC01"),
+       ("EBJEXTR", "09:30","EBEXTR01"),
+       ("EBJEOD",  "10:00","EBJEOD01")]
 
 STATUS_LABELS={"backlog":"Backlog","em_andamento":"Em Andamento","em_revisao":"Em Revisão","concluido":"Concluído"}
 CAT_ICONS={"incidente":"🔥","desenvolvimento":"⚙️","operação":"📋","change":"🔄","investigação":"🔍"}
@@ -688,7 +700,7 @@ def show_batch(fail=False):
     for j,h,p,st,rc in jobs:
         c=colors[st]; ic=icons[st]
         print(f"    {c}{ic} {h} {C.B}{j:10}{C.R}{c} {p:10} RC={rc}{C.R}")
-    print(f"  {C.D}PRECHECK→EBBACKUP→EBJLOAD→EBJVALD→EBJPOST→EBJSALD→EBJEXTR→EBJCONC→EBJEOD{C.R}\n")
+    print(f"  {C.D}PRECK→SOD→BCKPD→WAIT→LOAD→VALD→POST→CUTF→ACCR→SNAP→CUTE→CONC→EXTR→EOD{C.R}\n")
     return jobs
 
 # ═════════════════════════════════════════════════════════════
