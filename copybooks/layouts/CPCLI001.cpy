@@ -21,7 +21,7 @@
       *   B = Bloqueado — operacoes suspensas por restricao           *
       *===============================================================*
 
-      *---------------------------------------------------------------*
+      *-----------------a----------------------------------------------*
       * Identificador unico do cliente                                *
       * Campo usado como chave primaria no KSDS de clientes           *
       * Preenchido sequencialmente na carga inicial (EBCLLOAD)        *
