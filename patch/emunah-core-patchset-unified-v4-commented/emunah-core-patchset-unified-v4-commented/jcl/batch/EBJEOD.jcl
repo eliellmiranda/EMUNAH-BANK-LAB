@@ -1,0 +1,53 @@
+//* ------------------------------------------------------------
+//* ARQUIVO      : EBJEOD.jcl
+//* CAMINHO LOCAL: jcl/batch/EBJEOD.jcl
+//*
+//* CONTEXTO DIDATICO:
+//* Executar o fechamento diário do ciclo batch.
+//*
+//* PAPEL NO LAB:
+//* Último passo da cadeia principal.
+//*
+//* FLUXO RESUMIDO:
+//* 1. Executa EBJEOD01 para consolidar a evidência do
+//* fechamento.
+//* 2. Lê conciliação, contas, snapshot e auditoria.
+//* 3. Invoca EBCTL01 com PARM=CLOSED ao final bem-sucedido.
+//*
+//* OBSERVACOES:
+//* - Substitui o fechamento antigo que gravava CLOSED via
+//* IEBGENER.
+//* ------------------------------------------------------------
+//EBJEOD   JOB ,'EMUNAH EOD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//*
+//DELFECH  EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE 'Z77948.EMUNAH.ARQ.FECHTO.SEQ' NONVSAM
+  SET MAXCC = 0
+/*
+//*
+//STEP1    EXEC PGM=EBJEOD01,COND=(0,NE)
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//CONCIN   DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,DISP=SHR
+//SALDOIN  DD DSN=Z77948.EMUNAH.ARQ.SALDO.GDG(0),DISP=SHR
+//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//FECHOUT  DD DSN=Z77948.EMUNAH.ARQ.FECHTO.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//SYSOUT   DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+//*
+//CLOSDAY  EXEC PGM=EBCTL01,PARM='CLOSED',COND=(4,LT)
+//STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//CTLSTAT  DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
+//SYSOUT   DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+//*
+//VERIFY   EXEC PGM=IEBGENER,COND=(0,NE)
+//SYSPRINT DD SYSOUT=*
+//SYSUT1   DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,DISP=SHR
+//SYSUT2   DD SYSOUT=*
+//SYSIN    DD DUMMY
