@@ -1,4 +1,4 @@
-*===============================================================*
+      *===============================================================*
       * PROGRAMA : EBCTL01                                            *
       * FUNCAO   : TRANSICAO CONTROLADA DO CTL.STATUS                 *
       * MODULO   : CTL (Controle de Estado)                           *
