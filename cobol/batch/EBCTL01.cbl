@@ -1,46 +1,45 @@
-       IDENTIFICATION DIVISION.
-       PROGRAM-ID. EBCTL01.
-      *===============================================================*
+*===============================================================*
       * PROGRAMA : EBCTL01                                            *
-      * FUNCAO   : UTILITARIO DE CONTROLE DE STATUS DO BRANCH         *
+      * FUNCAO   : TRANSICAO CONTROLADA DO CTL.STATUS                 *
+      * MODULO   : CTL (Controle de Estado)                           *
       *                                                               *
       * O QUE ESTE PROGRAMA FAZ:                                      *
-      * - Recebe o STATUS DESTINO via PARM do JCL                     *
-      * - Le o status atual de ARQ.CTL.STATUS                         *
-      * - Valida se a transicao solicitada e permitida                *
-      * - Se valida: grava o novo status e RC=0                       *
-      * - Se invalida: exibe erro e RC=8                              *
+      * - Recebe o status destino via PARM do JCL                     *
+      * - Le o status atual do arquivo CTL.STATUS (8 bytes)           *
+      * - Valida se a transicao e permitida pela maquina de estados   *
+      * - Grava o novo status via WRITE ou REWRITE conforme necessario *
       *                                                               *
-      * TRANSICOES VALIDAS:                                           *
-      *   (vazio)  --> OPEN    (inicio do dia / primeiro uso)         *
-      *   CLOSED   --> OPEN    (reabertura do dia seguinte)           *
-      *   OPEN     --> EOTI    (fechamento de input)                  *
-      *   EOTI     --> EOFI    (fechamento financeiro)                *
-      *   EOFI     --> CLOSED  (fechamento do dia)                    *
+      * MAQUINA DE ESTADOS DO LABORATORIO:                            *
+      *   (vazio) ou CLOSED --> OPEN   : inicio do ciclo do dia       *
+      *   OPEN              --> EOTI   : fim da entrada (batch ok)     *
+      *   EOTI              --> EOFI   : fim do processamento          *
+      *   EOFI              --> CLOSED : fechamento do dia             *
+      * Qualquer outra transicao e rejeitada com RC=8                 *
       *                                                               *
-      * CHAMADA VIA JCL:                                              *
-      *   //STEP EXEC PGM=EBCTL01,PARM='OPEN'                        *
-      *   //STEP EXEC PGM=EBCTL01,PARM='EOTI'                        *
-      *   //STEP EXEC PGM=EBCTL01,PARM='EOFI'                        *
-      *   //STEP EXEC PGM=EBCTL01,PARM='CLOSED'                      *
+      * ENTRADA:                                                      *
+      *   CTLSTAT = Z77948.EMUNAH.CTL.STATUS (8 bytes, RECFM=F)       *
+      *   PARM    = status destino passado pelo JCL (ex: 'OPEN')      *
       *                                                               *
-      * LAYOUT ARQ.CTL.STATUS (LRECL=8, RECFM=FB):                   *
-      *   PIC X(8) com valores: 'OPEN    ' 'EOTI    '                *
-      *                         'EOFI    ' 'CLOSED  '                *
+      * SAIDA:                                                        *
+      *   CTLSTAT = arquivo atualizado com novo status                *
       *                                                               *
-      * USADO POR: EBJSOD, EBJCUTF, EBJCUTE, EBJEOD                  *
+      * COPYBOOK UTILIZADO:                                           *
+      *   CPSTS001 = layout do CTL.STATUS com level 88 por valor      *
       *                                                               *
       * RETURN-CODE:                                                  *
-      *   RC = 0  --> Transicao realizada com sucesso                 *
-      *   RC = 8  --> PARM ausente, transicao invalida ou erro de I/O *
+      *   RC = 0  --> Transicao executada com sucesso                 *
+      *   RC = 8  --> PARM invalido, transicao proibida ou erro I/O   *
       *===============================================================*
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EBCTL01.
 
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
       *---------------------------------------------------------------*
-      * CTLSTAT = dataset de status do branch (ARQ.CTL.STATUS)        *
-      * Aberto I-O para READ + REWRITE em um unico open               *
+      * CTL-STATUS-FILE: arquivo de controle de estado do ciclo       *
+      * Aberto em I-O para permitir tanto WRITE quanto REWRITE        *
+      * DDNAME: CTLSTAT   LRECL: 8   RECFM: F                         *
       *---------------------------------------------------------------*
            SELECT CTL-STATUS-FILE
                ASSIGN TO CTLSTAT
@@ -52,22 +51,20 @@
        FILE SECTION.
 
       *---------------------------------------------------------------*
-      * Arquivo de status (8 bytes)                                   *
+      * Registro de status — layout via CPSTS001                      *
+      * Os level 88 permitem comparacao legivel (ex: IF STS-OPEN)     *
       *---------------------------------------------------------------*
        FD  CTL-STATUS-FILE
            RECORD CONTAINS 8 CHARACTERS
            RECORDING MODE IS F.
-       01  CTL-STATUS-REG             PIC X(8).
-           88 STATUS-VAZIO            VALUE SPACES.
-           88 STATUS-OPEN             VALUE 'OPEN    '.
-           88 STATUS-EOTI             VALUE 'EOTI    '.
-           88 STATUS-EOFI             VALUE 'EOFI    '.
-           88 STATUS-CLOSED           VALUE 'CLOSED  '.
+       01  CTL-STATUS-REG.
+           COPY CPSTS001.
 
        WORKING-STORAGE SECTION.
 
       *---------------------------------------------------------------*
-      * File status                                                   *
+      * File Status do CTL.STATUS                                     *
+      * '00' = OK   '10' = arquivo vazio (sem registro)               *
       *---------------------------------------------------------------*
        01  WS-FILE-STATUS.
            05 WS-FS-CTL               PIC XX VALUE SPACES.
@@ -75,7 +72,10 @@
               88 FS-CTL-EOF           VALUE '10'.
 
       *---------------------------------------------------------------*
-      * Controles                                                     *
+      * Flags de controle                                             *
+      * CTL-ABERTO: garante CLOSE seguro no 9000                      *
+      * ARQUIVO-VAZIO: diferencia WRITE (primeira vez) de REWRITE     *
+      * OCORREU-ERRO-IO: sinaliza falha em qualquer etapa             *
       *---------------------------------------------------------------*
        01  WS-CONTROLES.
            05 WS-CTL-ABERTO           PIC X VALUE 'N'.
@@ -87,71 +87,56 @@
               88 NAO-OCORREU-ERRO-IO  VALUE 'N'.
 
       *---------------------------------------------------------------*
-      * Status atual e status destino                                 *
+      * Status atual (lido do arquivo) e destino (recebido via PARM)  *
+      * Ambos com 8 bytes para compatibilidade com os valores do 88   *
       *---------------------------------------------------------------*
        01  WS-STATUS-ATUAL            PIC X(8) VALUE SPACES.
        01  WS-STATUS-DESTINO          PIC X(8) VALUE SPACES.
 
       *---------------------------------------------------------------*
-      * Data e hora                                                   *
+      * LINKAGE SECTION: area de comunicacao com o JCL via PARM=      *
+      * PARM-LEN: comprimento em bytes do dado recebido               *
+      * PARM-DADOS: conteudo do PARM (ex: 'OPEN', 'EOTI', 'CLOSED')   *
       *---------------------------------------------------------------*
-       01  WS-DATA-SISTEMA            PIC 9(8).
-       01  WS-HORA-SISTEMA            PIC 9(8).
-
        LINKAGE SECTION.
-      *---------------------------------------------------------------*
-      * PARM recebido do JCL via EXEC PGM=EBCTL01,PARM='OPEN'         *
-      * PARM-LEN = comprimento do dado (halfword binario)              *
-      * PARM-DADOS = conteudo do PARM (ex: 'OPEN', 'EOTI', 'CLOSED')  *
-      *---------------------------------------------------------------*
        01  PARM-AREA.
            05 PARM-LEN                PIC S9(4) COMP.
            05 PARM-DADOS              PIC X(8).
 
        PROCEDURE DIVISION USING PARM-AREA.
+
       *===============================================================*
-      * FLUXO PRINCIPAL                                               *
+      * 0000-PRINCIPAL                                                *
+      * Fluxo: valida PARM -> abre arquivo -> le status atual ->      *
+      * valida transicao -> grava novo status -> encerra              *
       *===============================================================*
        0000-PRINCIPAL.
-           ACCEPT WS-DATA-SISTEMA FROM DATE YYYYMMDD
-           ACCEPT WS-HORA-SISTEMA FROM TIME
-
            PERFORM 1000-VALIDAR-PARM
-
            IF NAO-OCORREU-ERRO-IO
-               PERFORM 2000-ABRIR-CTL-STATUS
+               PERFORM 2000-ABRIR
            END-IF
-
            IF NAO-OCORREU-ERRO-IO
-               PERFORM 3000-LER-STATUS-ATUAL
+               PERFORM 3000-LER-ATUAL
            END-IF
-
            IF NAO-OCORREU-ERRO-IO
                PERFORM 4000-VALIDAR-TRANSICAO
            END-IF
-
            IF NAO-OCORREU-ERRO-IO
-               PERFORM 5000-GRAVAR-NOVO-STATUS
+               PERFORM 5000-GRAVAR
            END-IF
-
-           PERFORM 9000-FECHAR-ARQUIVOS
-           PERFORM 9100-DEFINIR-RETURN-CODE
+           PERFORM 9000-FECHAR
+           PERFORM 9100-RETORNO
            GOBACK.
 
       *---------------------------------------------------------------*
-      * Valida o PARM recebido e carrega WS-STATUS-DESTINO            *
+      * 1000-VALIDAR-PARM                                             *
+      * Verifica se o PARM foi fornecido e se o valor e valido        *
+      * Valores aceitos: OPEN, EOTI, EOFI, CLOSED (padded com spaces) *
+      * PARM vazio ou valor desconhecido resulta em RC=8              *
       *---------------------------------------------------------------*
        1000-VALIDAR-PARM.
            IF PARM-LEN = ZERO
-               DISPLAY '*** ERRO: PARM nao informado. '
-                       'Use PARM=OPEN|EOTI|EOFI|CLOSED'
-               SET OCORREU-ERRO-IO TO TRUE
-               EXIT PARAGRAPH
-           END-IF
-
-           IF PARM-LEN > 8
-               DISPLAY '*** ERRO: PARM muito longo (' PARM-LEN
-                       ' bytes). Maximo: 8.'
+               DISPLAY '*** EBCTL01 ERRO - PARM ausente.'
                SET OCORREU-ERRO-IO TO TRUE
                EXIT PARAGRAPH
            END-IF
@@ -166,131 +151,62 @@
                WHEN 'CLOSED  '
                    CONTINUE
                WHEN OTHER
-                   DISPLAY '*** ERRO: STATUS DESTINO INVALIDO: ['
-                           WS-STATUS-DESTINO ']'
-                   DISPLAY '    Valores aceitos: OPEN EOTI EOFI CLOSED'
+                   DISPLAY '*** EBCTL01 ERRO - STATUS destino invalido'
+                           ': [' WS-STATUS-DESTINO ']'
                    SET OCORREU-ERRO-IO TO TRUE
            END-EVALUATE.
 
       *---------------------------------------------------------------*
-      * Abre CTL.STATUS para leitura e reescrita (I-O)                *
+      * 2000-ABRIR                                                    *
+      * Abre o CTL.STATUS em I-O para permitir WRITE e REWRITE        *
       *---------------------------------------------------------------*
-       2000-ABRIR-CTL-STATUS.
+       2000-ABRIR.
            OPEN I-O CTL-STATUS-FILE
            IF FS-CTL-OK
                SET CTL-ABERTO TO TRUE
            ELSE
-               DISPLAY '*** ERRO OPEN CTL-STATUS-FILE - STATUS: '
+               DISPLAY '*** EBCTL01 ERRO OPEN CTL.STATUS - STATUS: '
                        WS-FS-CTL
                SET OCORREU-ERRO-IO TO TRUE
            END-IF.
 
       *---------------------------------------------------------------*
+      * 3000-LER-ATUAL                                                *
       * Le o status atual do arquivo                                  *
-      * Se arquivo vazio (primeiro uso): considera status como SPACES  *
+      * AT END = arquivo vazio (primeiro uso do laboratorio)          *
+      * Neste caso, WS-STATUS-ATUAL fica em SPACES                    *
       *---------------------------------------------------------------*
-       3000-LER-STATUS-ATUAL.
+       3000-LER-ATUAL.
            READ CTL-STATUS-FILE
                AT END
                    SET ARQUIVO-VAZIO TO TRUE
                    MOVE SPACES TO WS-STATUS-ATUAL
-                   DISPLAY '*** AVISO: CTL.STATUS vazio - '
-                           'primeiro uso do dia'
                NOT AT END
                    IF FS-CTL-OK
-                       MOVE CTL-STATUS-REG TO WS-STATUS-ATUAL
+                       MOVE STS-CODIGO TO WS-STATUS-ATUAL
                    ELSE
-                       DISPLAY '*** ERRO READ CTL-STATUS - STATUS: '
+                       DISPLAY '*** EBCTL01 ERRO READ CTL.STATUS - '
                                WS-FS-CTL
                        SET OCORREU-ERRO-IO TO TRUE
                    END-IF
            END-READ.
 
       *---------------------------------------------------------------*
-      * Valida se a transicao ATUAL -> DESTINO e permitida            *
+      * 4000-VALIDAR-TRANSICAO                                        *
+      * Implementa a maquina de estados do laboratorio                *
+      * Apenas as transicoes da sequencia oficial sao permitidas      *
+      * Qualquer outro par (atual, destino) resulta em RC=8            *
       *---------------------------------------------------------------*
        4000-VALIDAR-TRANSICAO.
            EVALUATE TRUE
+      *        Primeira execucao ou reinicio apos CLOSED
                WHEN WS-STATUS-ATUAL = SPACES
                     AND WS-STATUS-DESTINO = 'OPEN    '
                    CONTINUE
                WHEN WS-STATUS-ATUAL = 'CLOSED  '
                     AND WS-STATUS-DESTINO = 'OPEN    '
                    CONTINUE
+      *        Progressao normal do ciclo do dia
                WHEN WS-STATUS-ATUAL = 'OPEN    '
                     AND WS-STATUS-DESTINO = 'EOTI    '
                    CONTINUE
-               WHEN WS-STATUS-ATUAL = 'EOTI    '
-                    AND WS-STATUS-DESTINO = 'EOFI    '
-                   CONTINUE
-               WHEN WS-STATUS-ATUAL = 'EOFI    '
-                    AND WS-STATUS-DESTINO = 'CLOSED  '
-                   CONTINUE
-               WHEN OTHER
-                   DISPLAY '*** ERRO: TRANSICAO INVALIDA'
-                   DISPLAY '    STATUS ATUAL  : [' WS-STATUS-ATUAL ']'
-                   DISPLAY '    STATUS DESTINO: [' WS-STATUS-DESTINO']'
-                   DISPLAY '    TRANSICOES VALIDAS:'
-                   DISPLAY '      (vazio)  -> OPEN'
-                   DISPLAY '      CLOSED   -> OPEN'
-                   DISPLAY '      OPEN     -> EOTI'
-                   DISPLAY '      EOTI     -> EOFI'
-                   DISPLAY '      EOFI     -> CLOSED'
-                   SET OCORREU-ERRO-IO TO TRUE
-           END-EVALUATE.
-
-      *---------------------------------------------------------------*
-      * Grava o novo status no arquivo                                *
-      * Se arquivo estava vazio: usa WRITE (primeiro registro)        *
-      * Se ja havia registro: usa REWRITE (atualiza existente)        *
-      *---------------------------------------------------------------*
-       5000-GRAVAR-NOVO-STATUS.
-           MOVE WS-STATUS-DESTINO TO CTL-STATUS-REG
-
-           IF ARQUIVO-VAZIO
-               WRITE CTL-STATUS-REG
-               IF NOT FS-CTL-OK
-                   DISPLAY '*** ERRO WRITE CTL-STATUS - STATUS: '
-                           WS-FS-CTL
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
-           ELSE
-               REWRITE CTL-STATUS-REG
-               IF NOT FS-CTL-OK
-                   DISPLAY '*** ERRO REWRITE CTL-STATUS - STATUS: '
-                           WS-FS-CTL
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
-           END-IF
-
-           IF NAO-OCORREU-ERRO-IO
-               DISPLAY '*** CTL.STATUS ATUALIZADO'
-               DISPLAY '    DE  : [' WS-STATUS-ATUAL ']'
-               DISPLAY '    PARA: [' WS-STATUS-DESTINO ']'
-               DISPLAY '    DATA: ' WS-DATA-SISTEMA
-                       ' HORA: '   WS-HORA-SISTEMA
-           END-IF.
-
-      *---------------------------------------------------------------*
-      * Fecha CTL.STATUS                                              *
-      *---------------------------------------------------------------*
-       9000-FECHAR-ARQUIVOS.
-           IF CTL-ABERTO
-               CLOSE CTL-STATUS-FILE
-               IF NOT FS-CTL-OK
-                   DISPLAY '*** ERRO CLOSE CTL-STATUS - STATUS: '
-                           WS-FS-CTL
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
-           END-IF.
-
-      *---------------------------------------------------------------*
-      * Define RETURN-CODE                                            *
-      *---------------------------------------------------------------*
-       9100-DEFINIR-RETURN-CODE.
-           EVALUATE TRUE
-               WHEN OCORREU-ERRO-IO
-                   MOVE 8 TO RETURN-CODE
-               WHEN OTHER
-                   MOVE 0 TO RETURN-CODE
-           END-EVALUATE.
