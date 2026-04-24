@@ -1,4 +1,4 @@
-*===============================================================*
+      *===============================================================*
       * PROGRAMA : EBSNAP01                                           *
       * FUNCAO   : GERACAO DO SNAPSHOT DIARIO DE SALDO                *
       * MODULO   : SNAP (Snapshot)                                    *
