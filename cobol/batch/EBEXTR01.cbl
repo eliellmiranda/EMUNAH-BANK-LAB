@@ -1,4 +1,4 @@
-*===============================================================*
+      *===============================================================*
       * PROGRAMA : EBEXTR01                                           *
       * FUNCAO   : GERACAO DO EXTRATO DIARIO DE MOVIMENTOS            *
       * MODULO   : EXTR (Extrato)                                     *
