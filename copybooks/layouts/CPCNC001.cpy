@@ -1,5 +1,5 @@
 *===============================================================*
-      * COPYBOOK: CPCONC001                                           *
+      * COPYBOOK: CPCNC001                                           *
       * FUNCAO  : LAYOUT ESTRUTURADO DO ARQUIVO DE CONCILIACAO        *
       * REGISTRO: 132 BYTES                                           *
       *                                                               *
