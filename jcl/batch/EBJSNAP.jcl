@@ -1,30 +1,55 @@
-//* ------------------------------------------------------------
-//* JOB: EBJSNAP
-//* FINALIDADE:
-//* Executar o programa EBSALD01 para processar a rotina de
-//* saldo do laboratorio EMUNAH.
+//* ============================================================
+//* ARQUIVO      : EBJSNAP.jcl
+//* CAMINHO LOCAL: jcl/batch/EBJSNAP.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJSNAP)
 //*
-//* FLUXO ESPERADO:
-//* 1. Ler o arquivo mestre de contas.
-//* 2. Consultar os dados necessarios para composicao do saldo.
-//* 3. Atualizar ou consolidar o saldo das contas.
-//* 4. Registrar eventos no arquivo de auditoria.
-//* 5. Gerar mensagens e relatorio de processamento.
-//* ------------------------------------------------------------
-//EBJSALD  JOB ,'EMUNAH SALDO',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
-//* Define o job de processamento de saldo.
-//STEP1    EXEC PGM=EBSALD01
-//* Executa o programa responsavel pela rotina de saldo.
+//* FINALIDADE:
+//*   Capturar snapshot dos saldos de todas as contas do KSDS
+//*   e gravar em nova geracao GDG (ARQ.SALDO.GDG(+1)).
+//*   O snapshot serve como baseline para o CHECK3 da conciliacao.
+//*
+//* POSICAO NA CADEIA DIARIA:
+//*   EBJCUTE (EOFI) --> EBJSNAP --> EBJCONC (conciliacao)
+//*   O snapshot deve ser tirado APOS o corte contabil (EOFI)
+//*   para representar o estado final do dia.
+//*
+//* O QUE ESTE JOB FAZ:
+//*   1. Le todas as contas do KSDS por READ NEXT (sequencial)
+//*   2. Para cada conta: copia SNP-AGENCIA, SNP-NUM-CONTA,
+//*      SNP-SALDO e SNP-DATA (data do dia)
+//*   3. Grava em SALDO.GDG(+1) - nova geracao do dia
+//*   4. Acumula WS-TOTAL-SALDO para DISPLAY no SYSOUT
+//*
+//* GDG DE SALDO:
+//*   GDG(0)  = snapshot mais recente (este dia)
+//*   GDG(-1) = snapshot do dia anterior
+//*   Retencao controlada pela base GDG (EBDEFGDG).
+//*
+//* CODIGOS DE RETORNO:
+//*   RC 0 = snapshot gerado com sucesso
+//*   RC 4 = KSDS de contas vazio - snapshot vazio gerado
+//*   RC 8 = erro de I/O
+//* ============================================================
+//EBJSALD  JOB ,'EMUNAH SNAP',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//*
+//* === STEP1: SNAPSHOT DE SALDO (EBSNAP01) =====================
+//*
+//STEP1    EXEC PGM=EBSNAP01
 //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
-//* Biblioteca onde esta o modulo executavel EBSALD01.
+//*           Biblioteca contendo o modulo executavel EBSNAP01.
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
-//* Arquivo VSAM KSDS de contas usado na rotina de saldo.
-//SALDIN   DD DSN=Z77948.EMUNAH.ARQ.SALDO.SEQ,DISP=SHR
-//* Arquivo de entrada ou apoio para processamento de saldo.
-//* Ajustar conforme a regra real implementada no programa.
+//*           VSAM KSDS de contas. Leitura sequencial por
+//*           READ NEXT (ACCESS DYNAMIC) do inicio ao fim.
+//SALDOUT  DD DSN=Z77948.EMUNAH.ARQ.SALDO.GDG(+1),
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(MODEL.DSCB,RECFM=FB,LRECL=120,BLKSIZE=0)
+//*           Nova geracao GDG do snapshot diario.
+//*           Layout CPSNP001 (120 bytes): SNP-AGENCIA(4),
+//*           SNP-NUM-CONTA(8), SNP-SALDO S9(11)V99, SNP-DATA(8).
+//*           MODEL.DSCB herda atributos da base GDG.
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
-//* Arquivo sequencial de auditoria do processamento.
+//*           Auditoria do snapshot. DISP=MOD = append.
 //SYSOUT   DD SYSOUT=*
-//* Saida geral do step para o spool.
+//*           WS-TOTAL-SALDO acumulado e exibido aqui ao final.
 //SYSPRINT DD SYSOUT=*
-//* Saida detalhada, relatorio e mensagens do programa.
