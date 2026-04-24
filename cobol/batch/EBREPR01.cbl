@@ -1,34 +1,37 @@
-       IDENTIFICATION DIVISION.
+IDENTIFICATION DIVISION.
        PROGRAM-ID. EBREPR01.
       *===============================================================*
       * PROGRAMA : EBREPR01                                           *
-      * FUNCAO   : REPROCESSAR LANCAMENTOS REJEITADOS                 *
+      * BIBLIOTECA: Z77948.EMUNAH.BATCH.COBOL                         *
+      * FUNCAO   : REPROCESSAMENTO DE LANCAMENTOS REJEITADOS          *
       *                                                               *
       * O QUE ESTE PROGRAMA FAZ:                                      *
-      * - Le o arquivo de rejeitos gerado pela validacao (EBVALI01)   *
-      * - Reaplica as regras de validacao nos registros corrigidos    *
-      * - Grava registros agora validos no arquivo de lancamentos     *
-      * - Grava registros ainda invalidos de volta no arquivo de      *
-      *   rejeitos permanentes                                       *
-      * - Gera auditoria de cada decisao (aceito / mantido rejeito)  *
-      * - Exibe resumo com totais reprocessados                       *
+      * - Le o arquivo sequencial de rejeitos gerado pelo EBVALI01    *
+      * - Reaplica as 5 regras de validacao sobre cada registro       *
+      * - Registros que passam voltam ao fluxo normal (LANCTO-OUT)    *
+      * - Registros que falham sao mantidos no arquivo de rejeitos    *
+      *   com motivo acumulado (separador ' | ')                      *
+      * - Registra cada decisao no arquivo de auditoria               *
       *                                                               *
-      * PARA QUE ELE SERVE:                                           *
-      * - Permitir correcao e reaproveitamento de lancamentos         *
-      *   rejeitados sem resubmeter todo o arquivo do dia             *
-      * - Simular o fluxo de reprocessamento sob demanda              *
+      * ARQUIVOS:                                                      *
+      * - REJIN    : Z77948.EMUNAH.ARQ.REJEIT.SEQ  (INPUT , 120 bytes)*
+      * - LCTOUT   : Z77948.EMUNAH.ARQ.LANCTO.ESDS (OUTPUT, 120 bytes)*
+      * - REJOUT   : Z77948.EMUNAH.ARQ.REJEIT2.SEQ (OUTPUT, 150 bytes)*
+      * - AUDIT    : Z77948.EMUNAH.ARQ.AUDIT.SEQ   (EXTEND, 120 bytes)*
       *                                                               *
-      * RETURN-CODE:                                                  *
-      *   RC = 0  --> Todos os rejeitos foram recuperados             *
-      *   RC = 4  --> Ainda restam rejeitos ou entrada vazia          *
-      *   RC = 8  --> Erro critico de I/O                             *
+      * CODIGOS DE RETORNO (RETURN-CODE):                             *
+      *   RC=0  : todos os rejeitos foram recuperados                 *
+      *   RC=4  : ha rejeitos permanentes remanescentes ou            *
+      *           arquivo de entrada estava vazio                     *
+      *   RC=8  : erro de I/O em algum arquivo                       *
       *===============================================================*
 
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
       *---------------------------------------------------------------*
-      * REJEIT-IN = arquivo de rejeitos a reprocessar                 *
+      * REJIN = arquivo de rejeitos gerado pelo EBVALI01              *
+      * Organizacao sequencial, leitura direta registro a registro    *
       *---------------------------------------------------------------*
            SELECT REJEIT-IN
                ASSIGN TO REJIN
@@ -37,7 +40,9 @@
                FILE STATUS IS WS-FS-REJIN.
 
       *---------------------------------------------------------------*
-      * LANCTO-OUT = arquivo de lancamentos recuperados               *
+      * LCTOUT = ESDS de lancamentos para receber registros           *
+      * recuperados. OPEN OUTPUT grava a partir do inicio da          *
+      * extensao; para ambiente real usar EXTEND para append           *
       *---------------------------------------------------------------*
            SELECT LANCTO-OUT
                ASSIGN TO LCTOUT
@@ -46,7 +51,8 @@
                FILE STATUS IS WS-FS-LCTOUT.
 
       *---------------------------------------------------------------*
-      * REJEIT-OUT = arquivo de rejeitos permanentes                  *
+      * REJOUT = arquivo de saida para rejeitos permanentes           *
+      * 150 bytes: 120 do original + 30 de motivo acumulado          *
       *---------------------------------------------------------------*
            SELECT REJEIT-OUT
                ASSIGN TO REJOUT
@@ -55,7 +61,8 @@
                FILE STATUS IS WS-FS-REJOUT.
 
       *---------------------------------------------------------------*
-      * AUDIT-OUT = arquivo de auditoria do reprocessamento           *
+      * AUDIT = arquivo de auditoria, aberto em EXTEND (append)       *
+      * Recebe um registro de auditoria para cada decisao             *
       *---------------------------------------------------------------*
            SELECT AUDIT-OUT
                ASSIGN TO AUDIT
@@ -67,438 +74,331 @@
        FILE SECTION.
 
       *---------------------------------------------------------------*
-      * Arquivo de rejeitos de entrada                                *
-      * Layout: mesma estrutura de lancamento (120 bytes)             *
+      * Registro de entrada com REDEFINES para acesso por campo       *
+      * O arquivo de rejeitos carrega o mesmo layout de 120 bytes     *
+      * dos lancamentos, facilitando a revalidacao com o mesmo codigo *
       *---------------------------------------------------------------*
        FD  REJEIT-IN
            RECORD CONTAINS 120 CHARACTERS
            RECORDING MODE IS F.
        01  REJEIT-IN-RAW              PIC X(120).
-
        01  REJEIT-IN-REG REDEFINES REJEIT-IN-RAW.
-           05 RJ-AGENCIA              PIC X(4).
-           05 RJ-CONTA                PIC X(8).
-           05 RJ-DATA                 PIC X(8).
+           05 RJ-AGENCIA              PIC 9(4).
+           05 RJ-NUM-CONTA            PIC 9(8).
+           05 RJ-DATA                 PIC 9(8).
            05 RJ-TIPO                 PIC X(1).
-           05 RJ-VALOR                PIC X(13).
+           05 RJ-VALOR                PIC 9(11)V99.
            05 RJ-HISTORICO            PIC X(30).
            05 RJ-CANAL                PIC X(10).
            05 FILLER                  PIC X(46).
 
       *---------------------------------------------------------------*
-      * Arquivo de lancamentos recuperados                            *
+      * Registro de saida para lancamentos recuperados                *
+      * Layout identico ao CPLCT001 (120 bytes)                       *
       *---------------------------------------------------------------*
        FD  LANCTO-OUT
            RECORD CONTAINS 120 CHARACTERS
            RECORDING MODE IS F.
-       01  LANCTO-OUT-RAW             PIC X(120).
+       01  LANCTO-OUT-REG.
+           COPY CPLCT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de rejeitos permanentes                               *
+      * Registro de saida para rejeitos permanentes                   *
+      * 150 bytes: 120 bytes do registro original + 30 bytes de       *
+      * motivo acumulado, para rastreabilidade do historico de         *
+      * validacao                                                     *
       *---------------------------------------------------------------*
        FD  REJEIT-OUT
            RECORD CONTAINS 150 CHARACTERS
            RECORDING MODE IS F.
-       01  REJEIT-OUT-REG             PIC X(150).
+       01  REJEIT-OUT-REG.
+           05 RO-DADOS-ORIG           PIC X(120).
+           05 RO-MOTIVO               PIC X(30).
 
       *---------------------------------------------------------------*
-      * Arquivo de auditoria                                          *
+      * Registro de auditoria - layout padrao CPAUD001 (120 bytes)    *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
            RECORD CONTAINS 120 CHARACTERS
            RECORDING MODE IS F.
-       01  AUDIT-REG                  PIC X(120).
+       01  AUDIT-REG.
+           COPY CPAUD001.
 
        WORKING-STORAGE SECTION.
 
       *---------------------------------------------------------------*
-      * File status dos arquivos                                      *
+      * FILE STATUS dos quatro arquivos                               *
+      * '00' = operacao OK                                            *
+      * '10' = fim de arquivo (apenas leitura sequencial)             *
+      * '35' = arquivo nao encontrado no OPEN                         *
       *---------------------------------------------------------------*
        01  WS-FILE-STATUS.
            05 WS-FS-REJIN             PIC XX.
-              88 FS-REJIN-OK          VALUE '00'.
-              88 FS-REJIN-EOF         VALUE '10'.
            05 WS-FS-LCTOUT            PIC XX.
-              88 FS-LCTOUT-OK         VALUE '00'.
            05 WS-FS-REJOUT            PIC XX.
-              88 FS-REJOUT-OK         VALUE '00'.
            05 WS-FS-AUDIT             PIC XX.
-              88 FS-AUDIT-OK          VALUE '00'.
 
       *---------------------------------------------------------------*
-      * Controle de processamento                                     *
+      * Flags de controle de fluxo                                    *
       *---------------------------------------------------------------*
        01  WS-CONTROLES.
            05 WS-EOF-REJIN            PIC X VALUE 'N'.
-              88 EOF-REJIN            VALUE 'S'.
-              88 NAO-EOF-REJIN        VALUE 'N'.
+               88 FIM-REJIN           VALUE 'S'.
            05 WS-ERRO-IO              PIC X VALUE 'N'.
-              88 OCORREU-ERRO-IO      VALUE 'S'.
-              88 NAO-OCORREU-ERRO-IO  VALUE 'N'.
+               88 ERRO-IO-DETECTADO   VALUE 'S'.
 
       *---------------------------------------------------------------*
-      * Controle de arquivos abertos                                  *
-      *---------------------------------------------------------------*
-       01  WS-ARQUIVOS.
-           05 WS-REJIN-ABERTO         PIC X VALUE 'N'.
-              88 REJIN-ABERTO         VALUE 'S'.
-           05 WS-LCTOUT-ABERTO        PIC X VALUE 'N'.
-              88 LCTOUT-ABERTO        VALUE 'S'.
-           05 WS-REJOUT-ABERTO        PIC X VALUE 'N'.
-              88 REJOUT-ABERTO        VALUE 'S'.
-           05 WS-AUDIT-ABERTO         PIC X VALUE 'N'.
-              88 AUDIT-ABERTO         VALUE 'S'.
-
-      *---------------------------------------------------------------*
-      * Flag de validacao do registro atual                           *
-      *---------------------------------------------------------------*
-       01  WS-FLAGS.
-           05 WS-REG-VALIDO           PIC X VALUE 'S'.
-              88 REGISTRO-VALIDO      VALUE 'S'.
-              88 REGISTRO-INVALIDO    VALUE 'N'.
-
-      *---------------------------------------------------------------*
-      * Acumulador de motivos de rejeicao                             *
-      *---------------------------------------------------------------*
-       01  WS-MOTIVOS.
-           05 WS-MOTIVO-CONCAT        PIC X(100) VALUE SPACES.
-           05 WS-MOTIVO-AUX           PIC X(100) VALUE SPACES.
-           05 WS-NOVO-MOTIVO          PIC X(25)  VALUE SPACES.
-
-      *---------------------------------------------------------------*
-      * Campos numericos de trabalho (usados apos IS NUMERIC)         *
-      *---------------------------------------------------------------*
-       01  WS-CAMPOS-NUMERICOS.
-           05 WS-AGENCIA-NUM          PIC 9(4)    VALUE ZERO.
-           05 WS-CONTA-NUM            PIC 9(8)    VALUE ZERO.
-           05 WS-DATA-NUM             PIC 9(8)    VALUE ZERO.
-           05 WS-VALOR-NUM            PIC 9(11)V99 VALUE ZERO.
-
-      *---------------------------------------------------------------*
-      * Contadores                                                    *
+      * Contadores de processamento para DISPLAY final                *
       *---------------------------------------------------------------*
        01  WS-CONTADORES.
-           05 WS-LIDOS                PIC 9(9) VALUE ZERO.
-           05 WS-RECUPERADOS          PIC 9(9) VALUE ZERO.
-           05 WS-MANTIDOS-REJ         PIC 9(9) VALUE ZERO.
+           05 WS-LIDOS                PIC 9(5) VALUE ZERO.
+           05 WS-RECUPERADOS          PIC 9(5) VALUE ZERO.
+           05 WS-MANTIDOS-REJ         PIC 9(5) VALUE ZERO.
 
       *---------------------------------------------------------------*
-      * Campos de edicao para rodape                                  *
+      * Campo auxiliar para acumular motivos de rejeito               *
+      * Cada falha de validacao adiciona texto + ' | '                *
       *---------------------------------------------------------------*
-       01  WS-EDIT-LIDOS              PIC ZZZ.ZZZ.ZZ9.
-       01  WS-EDIT-RECUP              PIC ZZZ.ZZZ.ZZ9.
-       01  WS-EDIT-MANT               PIC ZZZ.ZZZ.ZZ9.
+       01  WS-MOTIVO-ACUM             PIC X(120) VALUE SPACES.
+       01  WS-MOTIVO-TEMP             PIC X(30)  VALUE SPACES.
+
+      *---------------------------------------------------------------*
+      * Flags de validacao (uma por regra, nivel 88 para legibilidade)*
+      *---------------------------------------------------------------*
+       01  WS-FLAGS-VALID.
+           05 WS-TIPO-VALIDO          PIC X VALUE 'S'.
+               88 TIPO-INVALIDO       VALUE 'N'.
+           05 WS-AG-VALIDA            PIC X VALUE 'S'.
+               88 AG-INVALIDA         VALUE 'N'.
+           05 WS-CT-VALIDA            PIC X VALUE 'S'.
+               88 CT-INVALIDA         VALUE 'N'.
+           05 WS-VALOR-VALIDO         PIC X VALUE 'S'.
+               88 VALOR-INVALIDO      VALUE 'N'.
+           05 WS-DATA-VALIDA          PIC X VALUE 'S'.
+               88 DATA-INVALIDA       VALUE 'N'.
+
+      *---------------------------------------------------------------*
+      * Campos de data e hora para gravar na auditoria                *
+      *---------------------------------------------------------------*
+       01  WS-DATA-PROC               PIC X(8).
+       01  WS-HORA-PROC               PIC X(8).
 
        PROCEDURE DIVISION.
       *===============================================================*
-      * FLUXO PRINCIPAL                                               *
+      * 0000-PRINCIPAL                                                *
+      * Orquestra o fluxo completo de reprocessamento                 *
       *===============================================================*
        0000-PRINCIPAL.
+           ACCEPT WS-DATA-PROC FROM DATE YYYYMMDD
+           ACCEPT WS-HORA-PROC FROM TIME
+
            PERFORM 1000-ABRIR-ARQUIVOS
-           IF NAO-OCORREU-ERRO-IO
-               PERFORM 2000-PROCESSAR-REJEITOS
+           IF NOT ERRO-IO-DETECTADO
+               PERFORM 2000-REPROCESSAR-REJEITOS
+               PERFORM 9000-ENCERRAR
+           ELSE
+               MOVE 12 TO RETURN-CODE
            END-IF
-           PERFORM 9000-FECHAR-ARQUIVOS
-           PERFORM 9100-EXIBIR-RESUMO-E-DEFINIR-RC
+
            GOBACK.
 
-      *---------------------------------------------------------------*
-      * Abre todos os arquivos                                        *
-      *---------------------------------------------------------------*
+      *===============================================================*
+      * 1000-ABRIR-ARQUIVOS                                           *
+      * Abre os 4 arquivos. AUDIT em EXTEND para nao sobrescrever     *
+      * o historico ja gravado por execucoes anteriores do fluxo.     *
+      * Se qualquer OPEN falhar, seta ERRO-IO e encerra com RC=12.    *
+      *===============================================================*
        1000-ABRIR-ARQUIVOS.
            OPEN INPUT  REJEIT-IN
-           IF FS-REJIN-OK
-               SET REJIN-ABERTO TO TRUE
-           ELSE
-               DISPLAY '*** ERRO OPEN REJEIT-IN - STATUS: '
-                       WS-FS-REJIN
-               SET OCORREU-ERRO-IO TO TRUE
+           IF WS-FS-REJIN NOT = '00'
+               DISPLAY 'ERRO OPEN REJEIT-IN FS=' WS-FS-REJIN
+               MOVE 'S' TO WS-ERRO-IO
+               STOP RUN
            END-IF
 
-           IF NAO-OCORREU-ERRO-IO
-               OPEN OUTPUT LANCTO-OUT
-               IF FS-LCTOUT-OK
-                   SET LCTOUT-ABERTO TO TRUE
-               ELSE
-                   DISPLAY '*** ERRO OPEN LANCTO-OUT - STATUS: '
-                           WS-FS-LCTOUT
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
+           OPEN OUTPUT LANCTO-OUT
+           IF WS-FS-LCTOUT NOT = '00'
+               DISPLAY 'ERRO OPEN LANCTO-OUT FS=' WS-FS-LCTOUT
+               MOVE 'S' TO WS-ERRO-IO
+               STOP RUN
            END-IF
 
-           IF NAO-OCORREU-ERRO-IO
-               OPEN OUTPUT REJEIT-OUT
-               IF FS-REJOUT-OK
-                   SET REJOUT-ABERTO TO TRUE
-               ELSE
-                   DISPLAY '*** ERRO OPEN REJEIT-OUT - STATUS: '
-                           WS-FS-REJOUT
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
+           OPEN OUTPUT REJEIT-OUT
+           IF WS-FS-REJOUT NOT = '00'
+               DISPLAY 'ERRO OPEN REJEIT-OUT FS=' WS-FS-REJOUT
+               MOVE 'S' TO WS-ERRO-IO
+               STOP RUN
            END-IF
 
-           IF NAO-OCORREU-ERRO-IO
-               OPEN EXTEND AUDIT-OUT
-               IF FS-AUDIT-OK
-                   SET AUDIT-ABERTO TO TRUE
-               ELSE
-                   DISPLAY '*** ERRO OPEN AUDIT-OUT - STATUS: '
-                           WS-FS-AUDIT
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
+           OPEN EXTEND AUDIT-OUT
+           IF WS-FS-AUDIT NOT = '00'
+               DISPLAY 'ERRO OPEN AUDIT-OUT FS=' WS-FS-AUDIT
+               MOVE 'S' TO WS-ERRO-IO
+               STOP RUN
            END-IF.
 
-      *---------------------------------------------------------------*
-      * Loop principal de leitura dos rejeitos                        *
-      *---------------------------------------------------------------*
-       2000-PROCESSAR-REJEITOS.
-           PERFORM UNTIL EOF-REJIN OR OCORREU-ERRO-IO
+      *===============================================================*
+      * 2000-REPROCESSAR-REJEITOS                                     *
+      * Loop principal: le cada rejeito e decide seu destino          *
+      *===============================================================*
+       2000-REPROCESSAR-REJEITOS.
+           PERFORM UNTIL FIM-REJIN
                READ REJEIT-IN
                    AT END
-                       SET EOF-REJIN TO TRUE
+                       MOVE 'S' TO WS-EOF-REJIN
                    NOT AT END
-                       IF FS-REJIN-OK
-                           ADD 1 TO WS-LIDOS
-                           PERFORM 2100-REVALIDAR-REGISTRO
-                           PERFORM 2200-DESTINAR-REGISTRO
-                       ELSE
-                           DISPLAY '*** ERRO READ REJEIT-IN STATUS: '
-                                   WS-FS-REJIN
-                           SET OCORREU-ERRO-IO TO TRUE
-                       END-IF
+                       ADD 1 TO WS-LIDOS
+                       PERFORM 2100-VALIDAR-REGISTRO
                END-READ
            END-PERFORM.
 
-      *---------------------------------------------------------------*
-      * Reaplica as mesmas regras de validacao do EBVALI01             *
-      *---------------------------------------------------------------*
-       2100-REVALIDAR-REGISTRO.
-           SET REGISTRO-VALIDO TO TRUE
-           MOVE SPACES TO WS-MOTIVO-CONCAT
-                          WS-MOTIVO-AUX
+      *===============================================================*
+      * 2100-VALIDAR-REGISTRO                                         *
+      * Reaplica as 5 regras de validacao do EBVALI01.                *
+      * Inicializa flags e acumulador antes de cada registro.         *
+      *===============================================================*
+       2100-VALIDAR-REGISTRO.
+           MOVE SPACES TO WS-MOTIVO-ACUM
+           MOVE 'S'    TO WS-TIPO-VALIDO
+           MOVE 'S'    TO WS-AG-VALIDA
+           MOVE 'S'    TO WS-CT-VALIDA
+           MOVE 'S'    TO WS-VALOR-VALIDO
+           MOVE 'S'    TO WS-DATA-VALIDA
 
-      *    Regra 1: tipo deve ser C ou D
-           IF RJ-TIPO NOT = 'C'
-              AND RJ-TIPO NOT = 'D'
-               SET REGISTRO-INVALIDO TO TRUE
-               MOVE 'TIPO INVALIDO' TO WS-NOVO-MOTIVO
+      *-- R1: tipo deve ser 'C' (credito) ou 'D' (debito) --------*
+           IF RJ-TIPO NOT = 'C' AND RJ-TIPO NOT = 'D'
+               MOVE 'N' TO WS-TIPO-VALIDO
+               MOVE 'TIPO INVALIDO' TO WS-MOTIVO-TEMP
                PERFORM 2300-ACUMULAR-MOTIVO
            END-IF
 
-      *    Regra 2: agencia numerica e maior que zero
-           IF RJ-AGENCIA IS NUMERIC
-               MOVE RJ-AGENCIA TO WS-AGENCIA-NUM
-               IF WS-AGENCIA-NUM = ZERO
-                   SET REGISTRO-INVALIDO TO TRUE
-                   MOVE 'AGENCIA INVALIDA' TO WS-NOVO-MOTIVO
-                   PERFORM 2300-ACUMULAR-MOTIVO
-               END-IF
-           ELSE
-               SET REGISTRO-INVALIDO TO TRUE
-               MOVE 'AGENCIA INVALIDA' TO WS-NOVO-MOTIVO
+      *-- R2: agencia numerica e maior que zero -------------------*
+           IF RJ-AGENCIA NOT NUMERIC OR RJ-AGENCIA = ZEROS
+               MOVE 'N' TO WS-AG-VALIDA
+               MOVE 'AGENCIA INVALIDA' TO WS-MOTIVO-TEMP
                PERFORM 2300-ACUMULAR-MOTIVO
            END-IF
 
-      *    Regra 3: conta numerica e maior que zero
-           IF RJ-CONTA IS NUMERIC
-               MOVE RJ-CONTA TO WS-CONTA-NUM
-               IF WS-CONTA-NUM = ZERO
-                   SET REGISTRO-INVALIDO TO TRUE
-                   MOVE 'CONTA INVALIDA' TO WS-NOVO-MOTIVO
-                   PERFORM 2300-ACUMULAR-MOTIVO
-               END-IF
-           ELSE
-               SET REGISTRO-INVALIDO TO TRUE
-               MOVE 'CONTA INVALIDA' TO WS-NOVO-MOTIVO
+      *-- R3: numero de conta numerico e maior que zero -----------*
+           IF RJ-NUM-CONTA NOT NUMERIC OR RJ-NUM-CONTA = ZEROS
+               MOVE 'N' TO WS-CT-VALIDA
+               MOVE 'CONTA INVALIDA' TO WS-MOTIVO-TEMP
                PERFORM 2300-ACUMULAR-MOTIVO
            END-IF
 
-      *    Regra 4: valor numerico e maior que zero
-           IF RJ-VALOR IS NUMERIC
-               MOVE RJ-VALOR TO WS-VALOR-NUM
-               IF WS-VALOR-NUM <= ZERO
-                   SET REGISTRO-INVALIDO TO TRUE
-                   MOVE 'VALOR INVALIDO' TO WS-NOVO-MOTIVO
-                   PERFORM 2300-ACUMULAR-MOTIVO
-               END-IF
-           ELSE
-               SET REGISTRO-INVALIDO TO TRUE
-               MOVE 'VALOR INVALIDO' TO WS-NOVO-MOTIVO
+      *-- R4: valor numerico e maior que zero ---------------------*
+           IF RJ-VALOR NOT NUMERIC OR RJ-VALOR = ZEROS
+               MOVE 'N' TO WS-VALOR-VALIDO
+               MOVE 'VALOR INVALIDO' TO WS-MOTIVO-TEMP
                PERFORM 2300-ACUMULAR-MOTIVO
            END-IF
 
-      *    Regra 5: data numerica e diferente de zero
-           IF RJ-DATA IS NUMERIC
-               MOVE RJ-DATA TO WS-DATA-NUM
-               IF WS-DATA-NUM = ZERO
-                   SET REGISTRO-INVALIDO TO TRUE
-                   MOVE 'DATA INVALIDA' TO WS-NOVO-MOTIVO
-                   PERFORM 2300-ACUMULAR-MOTIVO
-               END-IF
-           ELSE
-               SET REGISTRO-INVALIDO TO TRUE
-               MOVE 'DATA INVALIDA' TO WS-NOVO-MOTIVO
+      *-- R5: data numerica e maior que zero ----------------------*
+           IF RJ-DATA NOT NUMERIC OR RJ-DATA = ZEROS
+               MOVE 'N' TO WS-DATA-VALIDA
+               MOVE 'DATA INVALIDA' TO WS-MOTIVO-TEMP
                PERFORM 2300-ACUMULAR-MOTIVO
-           END-IF.
-
-      *---------------------------------------------------------------*
-      * Acumula motivos de rejeicao separados por ' | '               *
-      *---------------------------------------------------------------*
-       2300-ACUMULAR-MOTIVO.
-           MOVE SPACES TO WS-MOTIVO-AUX
-
-           IF FUNCTION TRIM(WS-MOTIVO-CONCAT TRAILING) = SPACES
-               STRING FUNCTION TRIM(WS-NOVO-MOTIVO TRAILING)
-                      DELIMITED BY SIZE
-                      INTO WS-MOTIVO-AUX
-                      ON OVERFLOW
-                          DISPLAY '*** OVERFLOW ACUMULANDO MOTIVO'
-               END-STRING
-           ELSE
-               STRING FUNCTION TRIM(WS-MOTIVO-CONCAT TRAILING)
-                      ' | '
-                      FUNCTION TRIM(WS-NOVO-MOTIVO TRAILING)
-                      DELIMITED BY SIZE
-                      INTO WS-MOTIVO-AUX
-                      ON OVERFLOW
-                          DISPLAY '*** OVERFLOW ACUMULANDO MOTIVO'
-               END-STRING
            END-IF
 
-           MOVE WS-MOTIVO-AUX TO WS-MOTIVO-CONCAT.
+           PERFORM 2200-DESTINAR-REGISTRO.
 
-      *---------------------------------------------------------------*
-      * Direciona registro para recuperados ou rejeitos permanentes   *
-      *---------------------------------------------------------------*
+      *===============================================================*
+      * 2200-DESTINAR-REGISTRO                                        *
+      * Se passou em todas as regras -> LANCTO-OUT (recuperado)       *
+      * Se falhou em alguma -> REJEIT-OUT (permanente)                *
+      *===============================================================*
        2200-DESTINAR-REGISTRO.
-           IF REGISTRO-VALIDO
-               MOVE REJEIT-IN-RAW TO LANCTO-OUT-RAW
-               WRITE LANCTO-OUT-RAW
-               IF NOT FS-LCTOUT-OK
-                   DISPLAY '*** ERRO WRITE LANCTO-OUT - STATUS: '
-                           WS-FS-LCTOUT
-                   SET OCORREU-ERRO-IO TO TRUE
-               ELSE
-                   ADD 1 TO WS-RECUPERADOS
-                   MOVE SPACES TO AUDIT-REG
-                   STRING 'REPR RECUPERADO - AG '
-                          RJ-AGENCIA
-                          ' CTA '
-                          RJ-CONTA
-                          ' TIPO '
-                          RJ-TIPO
-                          ' DATA '
-                          RJ-DATA
-                          DELIMITED BY SIZE
-                          INTO AUDIT-REG
-                   END-STRING
-                   PERFORM 7000-GRAVAR-AUDITORIA
-               END-IF
+           IF WS-TIPO-VALIDO  = 'S'
+           AND WS-AG-VALIDA   = 'S'
+           AND WS-CT-VALIDA   = 'S'
+           AND WS-VALOR-VALIDO = 'S'
+           AND WS-DATA-VALIDA  = 'S'
+               ADD 1 TO WS-RECUPERADOS
+               MOVE REJEIT-IN-RAW TO LCT-CHAVE-CONTA OF LANCTO-OUT-REG
+               WRITE LANCTO-OUT-REG
+               PERFORM 5000-AUDITAR-RECUPERADO
            ELSE
-               MOVE SPACES TO REJEIT-OUT-REG
-               STRING 'REPR MANTIDO | '
-                      FUNCTION TRIM(WS-MOTIVO-CONCAT TRAILING)
-                      ' | AG '
-                      RJ-AGENCIA
-                      ' CTA '
-                      RJ-CONTA
-                      ' DATA '
-                      RJ-DATA
-                      ' TIPO '
-                      RJ-TIPO
-                      DELIMITED BY SIZE
-                      INTO REJEIT-OUT-REG
-                      ON OVERFLOW
-                          DISPLAY '*** OVERFLOW REJEIT AG:'
-                                  RJ-AGENCIA ' CTA:' RJ-CONTA
-               END-STRING
-
+               ADD 1 TO WS-MANTIDOS-REJ
+               MOVE REJEIT-IN-RAW TO RO-DADOS-ORIG
+               MOVE FUNCTION TRIM(WS-MOTIVO-ACUM TRAILING)
+                   TO RO-MOTIVO
                WRITE REJEIT-OUT-REG
-               IF NOT FS-REJOUT-OK
-                   DISPLAY '*** ERRO WRITE REJEIT-OUT - STATUS: '
-                           WS-FS-REJOUT
-                   SET OCORREU-ERRO-IO TO TRUE
-               ELSE
-                   ADD 1 TO WS-MANTIDOS-REJ
-                   MOVE SPACES TO AUDIT-REG
-                   STRING 'REPR MANTIDO REJ - AG '
-                          RJ-AGENCIA
-                          ' CTA '
-                          RJ-CONTA
-                          DELIMITED BY SIZE
-                          INTO AUDIT-REG
-                   END-STRING
-                   PERFORM 7000-GRAVAR-AUDITORIA
-               END-IF
+               PERFORM 5100-AUDITAR-PERMANENTE
            END-IF.
 
-      *---------------------------------------------------------------*
-      * Grava registro de auditoria                                   *
-      *---------------------------------------------------------------*
-       7000-GRAVAR-AUDITORIA.
-           WRITE AUDIT-REG
-           IF NOT FS-AUDIT-OK
-               DISPLAY '*** ERRO WRITE AUDIT - STATUS: '
-                       WS-FS-AUDIT
-               SET OCORREU-ERRO-IO TO TRUE
+      *===============================================================*
+      * 2300-ACUMULAR-MOTIVO                                          *
+      * Adiciona WS-MOTIVO-TEMP ao acumulador usando STRING.          *
+      * O separador ' | ' e acrescentado entre motivos consecutivos. *
+      * FUNCTION TRIM elimina espacos finais antes de concatenar.     *
+      * Exemplo resultado: 'TIPO INVALIDO | VALOR INVALIDO'           *
+      *===============================================================*
+       2300-ACUMULAR-MOTIVO.
+           IF WS-MOTIVO-ACUM = SPACES
+               STRING FUNCTION TRIM(WS-MOTIVO-TEMP TRAILING)
+                      DELIMITED BY SIZE
+                      INTO WS-MOTIVO-ACUM
+               END-STRING
+           ELSE
+               STRING FUNCTION TRIM(WS-MOTIVO-ACUM TRAILING)
+                      ' | '
+                      FUNCTION TRIM(WS-MOTIVO-TEMP TRAILING)
+                      DELIMITED BY SIZE
+                      INTO WS-MOTIVO-ACUM
+               END-STRING
            END-IF.
 
-      *---------------------------------------------------------------*
-      * Fecha todos os arquivos                                       *
-      *---------------------------------------------------------------*
-       9000-FECHAR-ARQUIVOS.
-           IF REJIN-ABERTO
-               CLOSE REJEIT-IN
-               IF NOT FS-REJIN-OK
-                   DISPLAY '*** ERRO CLOSE REJEIT-IN - STATUS: '
-                           WS-FS-REJIN
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
-           END-IF
+      *===============================================================*
+      * 5000-AUDITAR-RECUPERADO                                       *
+      * Grava evento de auditoria para registro que voltou ao fluxo  *
+      *===============================================================*
+       5000-AUDITAR-RECUPERADO.
+           MOVE SPACES            TO AUDIT-REG
+           MOVE 'EBREPR01'        TO AU-PROGRAMA  OF AUDIT-REG
+           MOVE WS-DATA-PROC      TO AU-DATA-EVENTO OF AUDIT-REG
+           MOVE WS-HORA-PROC      TO AU-HORA-EVENTO OF AUDIT-REG
+           MOVE 'OK'              TO AU-TIPO-EVENTO OF AUDIT-REG
+           MOVE 'REGISTRO RECUPERADO'
+                                  TO AU-MENSAGEM  OF AUDIT-REG
+           WRITE AUDIT-REG.
 
-           IF LCTOUT-ABERTO
-               CLOSE LANCTO-OUT
-               IF NOT FS-LCTOUT-OK
-                   DISPLAY '*** ERRO CLOSE LANCTO-OUT - STATUS: '
-                           WS-FS-LCTOUT
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
-           END-IF
+      *===============================================================*
+      * 5100-AUDITAR-PERMANENTE                                       *
+      * Grava evento de auditoria para rejeito permanente             *
+      * Inclui o motivo acumulado no campo de mensagem                *
+      *===============================================================*
+       5100-AUDITAR-PERMANENTE.
+           MOVE SPACES            TO AUDIT-REG
+           MOVE 'EBREPR01'        TO AU-PROGRAMA  OF AUDIT-REG
+           MOVE WS-DATA-PROC      TO AU-DATA-EVENTO OF AUDIT-REG
+           MOVE WS-HORA-PROC      TO AU-HORA-EVENTO OF AUDIT-REG
+           MOVE 'REJT'            TO AU-TIPO-EVENTO OF AUDIT-REG
+           MOVE WS-MOTIVO-ACUM    TO AU-MENSAGEM  OF AUDIT-REG
+           WRITE AUDIT-REG.
 
-           IF REJOUT-ABERTO
-               CLOSE REJEIT-OUT
-               IF NOT FS-REJOUT-OK
-                   DISPLAY '*** ERRO CLOSE REJEIT-OUT - STATUS: '
-                           WS-FS-REJOUT
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
-           END-IF
+      *===============================================================*
+      * 9000-ENCERRAR                                                 *
+      * Exibe totais no SYSOUT, fecha arquivos e define RETURN-CODE.  *
+      * RC=0 : todos os rejeitos foram recuperados                    *
+      * RC=4 : ha rejeitos permanentes remanescentes, ou              *
+      *        arquivo entrou vazio (WS-LIDOS = ZERO)                 *
+      * RC=8 : erro de I/O detectado durante processamento            *
+      *===============================================================*
+       9000-ENCERRAR.
+           DISPLAY '*** RESUMO EBREPR01 ***'
+           DISPLAY 'REGISTROS LIDOS       : ' WS-LIDOS
+           DISPLAY 'REGISTROS RECUPERADOS : ' WS-RECUPERADOS
+           DISPLAY 'REJEITOS PERMANENTES  : ' WS-MANTIDOS-REJ
 
-           IF AUDIT-ABERTO
-               CLOSE AUDIT-OUT
-               IF NOT FS-AUDIT-OK
-                   DISPLAY '*** ERRO CLOSE AUDIT-OUT - STATUS: '
-                           WS-FS-AUDIT
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
-           END-IF.
-
-      *---------------------------------------------------------------*
-      * Exibe resumo e define RETURN-CODE                             *
-      *---------------------------------------------------------------*
-       9100-EXIBIR-RESUMO-E-DEFINIR-RC.
-           DISPLAY '*** RESUMO REPROCESSAMENTO ***'
-           DISPLAY 'REJEITOS LIDOS       : ' WS-LIDOS
-           DISPLAY 'REGISTROS RECUPERADOS: ' WS-RECUPERADOS
-           DISPLAY 'REJEITOS MANTIDOS    : ' WS-MANTIDOS-REJ
+           CLOSE REJEIT-IN
+           CLOSE LANCTO-OUT
+           CLOSE REJEIT-OUT
+           CLOSE AUDIT-OUT
 
            EVALUATE TRUE
-               WHEN OCORREU-ERRO-IO
+               WHEN ERRO-IO-DETECTADO
                    MOVE 8 TO RETURN-CODE
-               WHEN WS-LIDOS = ZERO
-                   DISPLAY '*** ATENCAO: ARQUIVO DE REJEITOS VAZIO'
-                   MOVE 4 TO RETURN-CODE
-               WHEN WS-MANTIDOS-REJ > ZERO
+               WHEN WS-MANTIDOS-REJ > ZERO OR WS-LIDOS = ZERO
                    MOVE 4 TO RETURN-CODE
                WHEN OTHER
                    MOVE 0 TO RETURN-CODE
