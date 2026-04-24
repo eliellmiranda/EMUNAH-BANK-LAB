@@ -1,38 +1,73 @@
-      *===============================================================*
+*===============================================================*
       * COPYBOOK: DCLCLIENTE                                          *
       * FUNCAO  : DCLGEN DA TABELA DB2 TB_CLIENTE                     *
       *                                                               *
       * TABELA   : EMUNAH.TB_CLIENTE                                  *
       * OWNER    : EMUNAH                                             *
+      * SCHEMA   : Z77948.EMUNAH.DB2                                  *
       *                                                               *
-      * ESTE COPYBOOK SIMULA A SAIDA DO UTILITARIO DCLGEN DO DB2     *
-      * PARA USO EM PROGRAMAS QUE ACESSAM A TABELA DE CLIENTES       *
+      * ESTE COPYBOOK SIMULA A SAIDA DO UTILITARIO DCLGEN DO DB2.    *
+      * Em producao o DCLGEN gera automaticamente as host variables   *
+      * a partir do catalogo do DB2 (SYSIBM.SYSCOLUMNS).             *
+      *                                                               *
+      * NOTA: Nenhum programa batch atual do laboratorio usa DB2.     *
+      * Este DCLGEN e fornecido para fins didaticos e para eventual   *
+      * expansao futura com modulo DB2.                               *
+      *                                                               *
+      * INDICATOR VARIABLES:                                          *
+      *   Valor -1 : coluna contem NULL (dado ausente)                *
+      *   Valor  0 : coluna contem valor valido                       *
+      *   Obrigatorio para colunas nullable (sem NOT NULL na DDL)     *
       *===============================================================*
 
       *---------------------------------------------------------------*
-      * AREA HOST VARIABLES - TABELA TB_CLIENTE                       *
+      * HOST VARIABLES - TABELA TB_CLIENTE                            *
+      * Cada variavel host corresponde a uma coluna da tabela         *
       *---------------------------------------------------------------*
        01  DCLTB-CLIENTE.
-      *    ID_CLIENTE        INTEGER NOT NULL
+
+      *-- ID_CLIENTE: INTEGER NOT NULL                              *
+      *   Chave primaria da tabela, gerada pelo sistema              *
+      *   DB2: INTEGER (4 bytes) -> COBOL: PIC S9(9) COMP (fullword) *
            05 CLI-ID-CLIENTE         PIC S9(9) COMP.
-      *    NOME              VARCHAR(30) NOT NULL
+
+      *-- NOME: VARCHAR(30) NOT NULL                                *
+      *   VARCHAR em COBOL requer dois subcampos (nivel 49):         *
+      *   - CLI-NOME-LEN  : comprimento real do dado (0 a 30)        *
+      *   - CLI-NOME-TEXT : conteudo do nome (ate 30 bytes)          *
            05 CLI-NOME.
               49 CLI-NOME-LEN        PIC S9(4) COMP.
               49 CLI-NOME-TEXT       PIC X(30).
-      *    CPF               CHAR(11) NOT NULL
+
+      *-- CPF: CHAR(11) NOT NULL                                    *
+      *   CPF armazenado como string de 11 digitos sem pontuacao     *
            05 CLI-CPF                PIC X(11).
-      *    DATA_NASCIMENTO   DATE
+
+      *-- DATA_NASCIMENTO: DATE (nullable)                          *
+      *   DB2 DATE retorna string 'AAAA-MM-DD' (10 bytes)            *
+      *   Usar IND-DATA-NASC = -1 para verificar NULL antes de ler  *
            05 CLI-DATA-NASC          PIC X(10).
-      *    STATUS            CHAR(1) NOT NULL DEFAULT 'A'
+
+      *-- STATUS: CHAR(1) NOT NULL DEFAULT 'A'                      *
+      *   A=Ativo / I=Inativo / B=Bloqueado                         *
            05 CLI-STATUS             PIC X(1).
-      *    DATA_CADASTRO     TIMESTAMP NOT NULL
+
+      *-- DATA_CADASTRO: TIMESTAMP NOT NULL                         *
+      *   DB2 TIMESTAMP retorna 'AAAA-MM-DD-HH.MM.SS.ffffff'(26 bytes)*
            05 CLI-DATA-CAD           PIC X(26).
-      *    AGENCIA_PRINC     SMALLINT
+
+      *-- AGENCIA_PRINC: SMALLINT (nullable)                        *
+      *   Agencia principal do cliente; pode ser NULL                *
+      *   DB2: SMALLINT (2 bytes) -> COBOL: PIC S9(4) COMP (halfword)*
+      *   Usar IND-AGENCIA-PRINC = -1 para verificar NULL           *
            05 CLI-AGENCIA-PRINC      PIC S9(4) COMP.
 
       *---------------------------------------------------------------*
       * INDICATOR VARIABLES                                           *
+      * Declaradas separadamente; referenciadas no SQL com INDICATOR  *
+      * Ex: FETCH ... INTO :CLI-DATA-NASC :IND-DATA-NASC             *
+      * Se IND = -1 a coluna e NULL; o conteudo da host var e lixo   *
       *---------------------------------------------------------------*
        01  DCLIND-CLIENTE.
-           05 IND-DATA-NASC          PIC S9(4) COMP.
-           05 IND-AGENCIA-PRINC      PIC S9(4) COMP.
+           05 IND-DATA-NASC          PIC S9(4) COMP.  *> -1=NULL
+           05 IND-AGENCIA-PRINC      PIC S9(4) COMP.  *> -1=NULL
