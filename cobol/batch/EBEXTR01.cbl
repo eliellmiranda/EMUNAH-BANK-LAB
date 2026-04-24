@@ -1,27 +1,48 @@
-       IDENTIFICATION DIVISION.
-       PROGRAM-ID. EBEXTR01.
-      *===============================================================*
+*===============================================================*
       * PROGRAMA : EBEXTR01                                           *
-      * FUNCAO   : GERAR EXTRATO DE MOVIMENTOS DO DIA                 *
+      * FUNCAO   : GERACAO DO EXTRATO DIARIO DE MOVIMENTOS            *
+      * MODULO   : EXTR (Extrato)                                     *
       *                                                               *
       * O QUE ESTE PROGRAMA FAZ:                                      *
-      * - Le os lancamentos validos/postados (LANCTO.ESDS via MOVTIN) *
-      * - Formata cada movimento como linha de extrato                *
-      * - Grava cabecalho, detalhe e rodape em EXTROUT                *
-      * - EXTROUT aponta para ARQ.EXTRATO.GDG(+1) via JCL             *
-      *   (nova geracao GDG a cada execucao)                          *
+      * - Le lancamentos postados (MOVTIN) sequencialmente            *
+      * - Para cada movimento, consulta o saldo atual da conta no KSDS*
+      * - Monta uma linha de extrato via CPEXT001 e grava em EXTROUT  *
+      * - Registra resumo de execucao na trilha de auditoria          *
+      *                                                               *
+      * ESTRATEGIA DESTA VERSAO:                                      *
+      * - Um registro de extrato por movimento processado             *
+      * - O saldo gravado no extrato e o saldo ATUAL da conta no KSDS *
+      *   (posicao corrente apos todas as postagens do dia)           *
+      * - Cada execucao do EBJEXTR gera uma nova geracao do GDG       *
+      *                                                               *
+      * ENTRADAS:                                                     *
+      *   MOVTIN   = Z77948.EMUNAH.ARQ.LANCTO.ESDS  (lancamentos)     *
+      *   CONTA    = Z77948.EMUNAH.ARQ.CONTA.KSDS   (master contas)   *
+      *                                                               *
+      * SAIDAS:                                                       *
+      *   EXTROUT  = Z77948.EMUNAH.ARQ.EXTRATO.GDG  (extrato do dia)  *
+      *   AUDIT    = Z77948.EMUNAH.ARQ.AUDIT.SEQ    (trilha)          *
+      *                                                               *
+      * COPYBOOKS UTILIZADOS:                                         *
+      *   CPLCT001 = layout de lancamento (120 bytes)                 *
+      *   CPCNT001 = layout de conta      (100 bytes)                 *
+      *   CPEXT001 = layout de extrato    (132 bytes)                 *
+      *   CPAUD001 = layout de auditoria  (120 bytes)                 *
       *                                                               *
       * RETURN-CODE:                                                  *
       *   RC = 0  --> Extrato gerado com sucesso                      *
-      *   RC = 4  --> Arquivo de entrada vazio                        *
+      *   RC = 4  --> Nenhum movimento lido (arquivo vazio)           *
       *   RC = 8  --> Erro critico de I/O                             *
       *===============================================================*
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EBEXTR01.
 
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
       *---------------------------------------------------------------*
-      * MOVTIN = lancamentos validos postados (LANCTO.ESDS)           *
+      * MOVTO-IN: lancamentos postados, fonte do extrato              *
+      * DDNAME: MOVTIN   LRECL: 120   RECFM: FB                       *
       *---------------------------------------------------------------*
            SELECT MOVTO-IN
                ASSIGN TO MOVTIN
@@ -30,7 +51,21 @@
                FILE STATUS IS WS-FS-MOVTIN.
 
       *---------------------------------------------------------------*
-      * EXTROUT = saida do extrato (aponta para GDG(+1) no JCL)       *
+      * CONTA-KSDS: consultado para obter saldo atual de cada conta   *
+      * Aberto em INPUT — somente leitura, sem alteracao de saldo     *
+      * DDNAME: CONTA                                                 *
+      *---------------------------------------------------------------*
+           SELECT CONTA-KSDS
+               ASSIGN TO CONTA
+               ORGANIZATION IS INDEXED
+               ACCESS MODE IS DYNAMIC
+               RECORD KEY IS CNT-CHAVE OF CONTA-REG
+               FILE STATUS IS WS-FS-CONTA.
+
+      *---------------------------------------------------------------*
+      * EXTRATO-OUT: arquivo GDG de saida com as linhas de extrato    *
+      * Aberto em OUTPUT — nova geracao a cada execucao do job        *
+      * DDNAME: EXTROUT   LRECL: 132   RECFM: FB                      *
       *---------------------------------------------------------------*
            SELECT EXTRATO-OUT
                ASSIGN TO EXTROUT
@@ -38,303 +73,250 @@
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-EXTROUT.
 
+      *---------------------------------------------------------------*
+      * AUDIT-OUT: trilha de auditoria — registra resumo ao final     *
+      * DDNAME: AUDIT   LRECL: 120   RECFM: FB                        *
+      *---------------------------------------------------------------*
+           SELECT AUDIT-OUT
+               ASSIGN TO AUDIT
+               ORGANIZATION IS SEQUENTIAL
+               ACCESS MODE IS SEQUENTIAL
+               FILE STATUS IS WS-FS-AUDIT.
+
        DATA DIVISION.
        FILE SECTION.
 
       *---------------------------------------------------------------*
-      * Lancamentos validos (120 bytes)                               *
+      * Arquivo de movimentos postados — layout via CPLCT001          *
       *---------------------------------------------------------------*
        FD  MOVTO-IN
            RECORD CONTAINS 120 CHARACTERS
            RECORDING MODE IS F.
-       01  MOVTO-IN-REG.
-           05 MV-AGENCIA              PIC 9(4).
-           05 MV-CONTA                PIC 9(8).
-           05 MV-DATA                 PIC 9(8).
-           05 MV-TIPO                 PIC X(1).
-           05 MV-VALOR                PIC 9(11)V99.
-           05 MV-HISTORICO            PIC X(30).
-           05 MV-CANAL                PIC X(10).
-           05 FILLER                  PIC X(46).
+       01  MOVTO-REG.
+           COPY CPLCT001.
 
       *---------------------------------------------------------------*
-      * Extrato de saida (132 colunas)                                *
+      * KSDS de contas — consultado para obter CNT-SALDO atual        *
+      *---------------------------------------------------------------*
+       FD  CONTA-KSDS.
+       01  CONTA-REG.
+           COPY CPCNT001.
+
+      *---------------------------------------------------------------*
+      * Arquivo de extrato — layout via CPEXT001 (132 bytes)          *
+      * Uma linha por movimento processado                            *
       *---------------------------------------------------------------*
        FD  EXTRATO-OUT
            RECORD CONTAINS 132 CHARACTERS
            RECORDING MODE IS F.
-       01  EXTRATO-REG                PIC X(132).
+       01  EXTRATO-REG.
+           COPY CPEXT001.
+
+      *---------------------------------------------------------------*
+      * Arquivo de auditoria — layout via CPAUD001                    *
+      *---------------------------------------------------------------*
+       FD  AUDIT-OUT
+           RECORD CONTAINS 120 CHARACTERS
+           RECORDING MODE IS F.
+       01  AUDIT-REG.
+           COPY CPAUD001.
 
        WORKING-STORAGE SECTION.
 
       *---------------------------------------------------------------*
-      * File status                                                   *
+      * File Status de todos os arquivos                              *
+      * '00' = OK   '10' = EOF   '23' = nao encontrado (KSDS)         *
       *---------------------------------------------------------------*
        01  WS-FILE-STATUS.
-           05 WS-FS-MOVTIN            PIC XX VALUE SPACES.
-              88 FS-MOVTIN-OK         VALUE '00'.
-              88 FS-MOVTIN-EOF        VALUE '10'.
-           05 WS-FS-EXTROUT           PIC XX VALUE SPACES.
-              88 FS-EXTROUT-OK        VALUE '00'.
+           05 WS-FS-MOVTIN           PIC XX VALUE SPACES.
+              88 FS-MOVTIN-OK        VALUE '00'.
+              88 FS-MOVTIN-EOF       VALUE '10'.
+           05 WS-FS-CONTA            PIC XX VALUE SPACES.
+              88 FS-CONTA-OK         VALUE '00'.
+              88 FS-CONTA-NF         VALUE '23'.
+           05 WS-FS-EXTROUT          PIC XX VALUE SPACES.
+              88 FS-EXTROUT-OK       VALUE '00'.
+           05 WS-FS-AUDIT            PIC XX VALUE SPACES.
+              88 FS-AUDIT-OK         VALUE '00'.
 
       *---------------------------------------------------------------*
-      * Controles                                                     *
+      * Flags de controle do processamento                            *
       *---------------------------------------------------------------*
-       01  WS-CONTROLES.
-           05 WS-EOF-MOVTO            PIC X VALUE 'N'.
-              88 EOF-MOVTO            VALUE 'S'.
-           05 WS-ERRO-IO              PIC X VALUE 'N'.
-              88 OCORREU-ERRO-IO      VALUE 'S'.
-              88 NAO-OCORREU-ERRO-IO  VALUE 'N'.
+       01  WS-FLAGS.
+           05 WS-EOF-MOVTIN          PIC X VALUE 'N'.
+              88 EOF-MOVTIN          VALUE 'S'.
+           05 WS-ERRO                PIC X VALUE 'N'.
+              88 COM-ERRO            VALUE 'S'.
 
       *---------------------------------------------------------------*
-      * Controle de arquivos abertos                                  *
-      *---------------------------------------------------------------*
-       01  WS-ARQUIVOS.
-           05 WS-MOVTIN-ABERTO        PIC X VALUE 'N'.
-              88 MOVTIN-ABERTO        VALUE 'S'.
-           05 WS-EXTROUT-ABERTO       PIC X VALUE 'N'.
-              88 EXTROUT-ABERTO       VALUE 'S'.
-
-      *---------------------------------------------------------------*
-      * Contadores                                                    *
+      * Contadores para resumo final e auditoria                      *
       *---------------------------------------------------------------*
        01  WS-CONTADORES.
-           05 WS-TOTAL-LIDOS          PIC 9(9) VALUE ZERO.
-           05 WS-TOTAL-CREDITOS       PIC 9(9) VALUE ZERO.
-           05 WS-TOTAL-DEBITOS        PIC 9(9) VALUE ZERO.
-           05 WS-TOTAL-INVALIDOS      PIC 9(9) VALUE ZERO.
+           05 WS-LIDOS               PIC 9(9) VALUE ZERO.
+           05 WS-GERADOS             PIC 9(9) VALUE ZERO.
 
       *---------------------------------------------------------------*
-      * Area de formatacao do movimento                               *
+      * Data e hora capturadas no inicio para uso na auditoria        *
       *---------------------------------------------------------------*
-       01  WS-AREA-TRABALHO.
-           05 WS-DATA-FMT.
-              10 WS-DATA-ANO          PIC X(4).
-              10 FILLER               PIC X VALUE '-'.
-              10 WS-DATA-MES          PIC X(2).
-              10 FILLER               PIC X VALUE '-'.
-              10 WS-DATA-DIA          PIC X(2).
-           05 WS-VALOR-EDIT           PIC ZZZ.ZZZ.ZZ9,99.
-           05 WS-TIPO-DESC            PIC X(7).
+       01  WS-DATA-SISTEMA           PIC 9(8).
+       01  WS-HORA-SISTEMA           PIC 9(8).
+       01  WS-CHAVE-REF              PIC X(20).
 
        PROCEDURE DIVISION.
+
       *===============================================================*
-      * FLUXO PRINCIPAL                                               *
+      * 0000-PRINCIPAL                                                *
+      * Ponto de entrada. Processa movimentos, gera extrato e audita  *
       *===============================================================*
        0000-PRINCIPAL.
-           PERFORM 1000-ABRIR-ARQUIVOS
-           IF NAO-OCORREU-ERRO-IO
-               PERFORM 2000-GERAR-EXTRATO
+           ACCEPT WS-DATA-SISTEMA FROM DATE YYYYMMDD
+           ACCEPT WS-HORA-SISTEMA FROM TIME
+           PERFORM 1000-ABRIR
+           IF NOT COM-ERRO
+               PERFORM 2000-PROCESSAR
+               PERFORM 3000-AUDITAR-RESUMO
            END-IF
-           PERFORM 9000-FECHAR-ARQUIVOS
-           PERFORM 9100-DEFINIR-RETURN-CODE
+           PERFORM 9000-FECHAR
+           PERFORM 9100-RC
            GOBACK.
 
       *---------------------------------------------------------------*
-      * Abre os arquivos e verifica FILE STATUS                       *
+      * 1000-ABRIR                                                    *
+      * Abre todos os arquivos verificando FILE STATUS                *
+      * EXTRATO-OUT aberto em OUTPUT para nova geracao do GDG         *
       *---------------------------------------------------------------*
-       1000-ABRIR-ARQUIVOS.
+       1000-ABRIR.
            OPEN INPUT MOVTO-IN
-           IF FS-MOVTIN-OK
-               SET MOVTIN-ABERTO TO TRUE
-           ELSE
-               DISPLAY '*** ERRO OPEN MOVTO-IN - STATUS: '
-                       WS-FS-MOVTIN
-               SET OCORREU-ERRO-IO TO TRUE
+           IF NOT FS-MOVTIN-OK
+               DISPLAY '*** EBEXTR01 ERRO OPEN MOVTIN - ' WS-FS-MOVTIN
+               SET COM-ERRO TO TRUE
            END-IF
 
-           IF NAO-OCORREU-ERRO-IO
+           IF NOT COM-ERRO
+               OPEN INPUT CONTA-KSDS
+               IF NOT FS-CONTA-OK
+                   DISPLAY '*** EBEXTR01 ERRO OPEN CONTA - ' WS-FS-CONTA
+                   SET COM-ERRO TO TRUE
+               END-IF
+           END-IF
+
+           IF NOT COM-ERRO
                OPEN OUTPUT EXTRATO-OUT
-               IF FS-EXTROUT-OK
-                   SET EXTROUT-ABERTO TO TRUE
-               ELSE
-                   DISPLAY '*** ERRO OPEN EXTRATO-OUT - STATUS: '
+               IF NOT FS-EXTROUT-OK
+                   DISPLAY '*** EBEXTR01 ERRO OPEN EXTROUT - '
                            WS-FS-EXTROUT
-                   SET OCORREU-ERRO-IO TO TRUE
+                   SET COM-ERRO TO TRUE
+               END-IF
+           END-IF
+
+           IF NOT COM-ERRO
+               OPEN EXTEND AUDIT-OUT
+               IF NOT FS-AUDIT-OK
+                   DISPLAY '*** EBEXTR01 ERRO OPEN AUDIT - ' WS-FS-AUDIT
+                   SET COM-ERRO TO TRUE
                END-IF
            END-IF.
 
       *---------------------------------------------------------------*
-      * Gera o extrato completo                                       *
+      * 2000-PROCESSAR                                                *
+      * Loop principal: le um movimento por vez e gera linha extrato  *
       *---------------------------------------------------------------*
-       2000-GERAR-EXTRATO.
-           PERFORM 2100-GERAR-CABECALHO
-           PERFORM UNTIL EOF-MOVTO OR OCORREU-ERRO-IO
+       2000-PROCESSAR.
+           PERFORM UNTIL EOF-MOVTIN OR COM-ERRO
                READ MOVTO-IN
                    AT END
-                       SET EOF-MOVTO TO TRUE
+                       SET EOF-MOVTIN TO TRUE
                    NOT AT END
                        IF FS-MOVTIN-OK
-                           ADD 1 TO WS-TOTAL-LIDOS
-                           PERFORM 2200-TRATAR-MOVIMENTO
+                           ADD 1 TO WS-LIDOS
+                           PERFORM 2100-GERAR-LINHA
                        ELSE
-                           DISPLAY '*** ERRO READ MOVTO-IN - STATUS: '
+                           DISPLAY '*** EBEXTR01 ERRO READ MOVTIN - '
                                    WS-FS-MOVTIN
-                           SET OCORREU-ERRO-IO TO TRUE
+                           SET COM-ERRO TO TRUE
                        END-IF
                END-READ
-           END-PERFORM
-           IF NAO-OCORREU-ERRO-IO
-               PERFORM 2300-GERAR-RODAPE
-           END-IF.
+           END-PERFORM.
 
       *---------------------------------------------------------------*
-      * Grava cabecalho do extrato                                    *
+      * 2100-GERAR-LINHA                                              *
+      * Consulta o saldo atual da conta no KSDS                       *
+      * Se conta nao encontrada, grava saldo zero na linha de extrato *
+      * Mapeia campos de CPLCT001 para CPEXT001                       *
+      *   LCT-AGENCIA    --> EXT-AGENCIA                              *
+      *   LCT-NUM-CONTA  --> EXT-NUM-CONTA                            *
+      *   LCT-DATA       --> EXT-DATA-MOVTO                           *
+      *   LCT-NSEQ       --> EXT-NSEQ                                 *
+      *   LCT-TIPO       --> EXT-TIPO                                 *
+      *   LCT-HISTORICO  --> EXT-DESCRICAO                            *
+      *   LCT-VALOR      --> EXT-VALOR                                *
+      *   CNT-SALDO      --> EXT-SALDO-POSICAO (saldo atual do KSDS)  *
+      *   LCT-CANAL      --> EXT-CANAL                                *
       *---------------------------------------------------------------*
-       2100-GERAR-CABECALHO.
-           MOVE ALL '-' TO EXTRATO-REG
-           PERFORM 2900-ESCREVER-EXTRATO
+       2100-GERAR-LINHA.
+           MOVE LCT-CHAVE-CONTA OF MOVTO-REG TO CNT-CHAVE OF CONTA-REG
+           READ CONTA-KSDS
+               INVALID KEY
+                   MOVE ZERO TO CNT-SALDO OF CONTA-REG
+               NOT INVALID KEY
+                   CONTINUE
+           END-READ
 
            MOVE SPACES TO EXTRATO-REG
-           MOVE 'EXTRATO DE MOVIMENTOS - EMUNAH BANK LAB'
-               TO EXTRATO-REG
-           PERFORM 2900-ESCREVER-EXTRATO
-
-           MOVE SPACES TO EXTRATO-REG
-           MOVE 'DATA       AG   CONTA      TIPO     '
-               TO EXTRATO-REG(1:37)
-           MOVE 'VALOR            HISTORICO'
-               TO EXTRATO-REG(38:26)
-           PERFORM 2900-ESCREVER-EXTRATO
-
-           MOVE ALL '-' TO EXTRATO-REG
-           PERFORM 2900-ESCREVER-EXTRATO.
-
-      *---------------------------------------------------------------*
-      * Trata cada movimento de acordo com o tipo                     *
-      *---------------------------------------------------------------*
-       2200-TRATAR-MOVIMENTO.
-           EVALUATE MV-TIPO
-               WHEN 'C'
-                   MOVE 'CREDITO' TO WS-TIPO-DESC
-                   ADD 1 TO WS-TOTAL-CREDITOS
-                   PERFORM 2210-ESCREVER-LINHA
-               WHEN 'D'
-                   MOVE 'DEBITO ' TO WS-TIPO-DESC
-                   ADD 1 TO WS-TOTAL-DEBITOS
-                   PERFORM 2210-ESCREVER-LINHA
-               WHEN OTHER
-                   ADD 1 TO WS-TOTAL-INVALIDOS
-                   DISPLAY '*** TIPO INVALIDO IGNORADO: '
-                           MV-TIPO
-                           ' AG: ' MV-AGENCIA
-                           ' CTA: ' MV-CONTA
-           END-EVALUATE.
-
-      *---------------------------------------------------------------*
-      * Formata e grava a linha de detalhe do movimento               *
-      *---------------------------------------------------------------*
-       2210-ESCREVER-LINHA.
-           MOVE MV-DATA(1:4) TO WS-DATA-ANO
-           MOVE MV-DATA(5:2) TO WS-DATA-MES
-           MOVE MV-DATA(7:2) TO WS-DATA-DIA
-           MOVE MV-VALOR     TO WS-VALOR-EDIT
-
-           MOVE SPACES TO EXTRATO-REG
-           STRING WS-DATA-FMT
-                  '  '
-                  MV-AGENCIA
-                  '  '
-                  MV-CONTA
-                  '  '
-                  WS-TIPO-DESC
-                  '  '
-                  WS-VALOR-EDIT
-                  '  '
-                  MV-HISTORICO
-                  DELIMITED BY SIZE INTO EXTRATO-REG
-           END-STRING
-           PERFORM 2900-ESCREVER-EXTRATO.
-
-      *---------------------------------------------------------------*
-      * Grava rodape com totais do extrato                            *
-      *---------------------------------------------------------------*
-       2300-GERAR-RODAPE.
-           MOVE ALL '-' TO EXTRATO-REG
-           PERFORM 2900-ESCREVER-EXTRATO
-
-           MOVE SPACES TO EXTRATO-REG
-           STRING 'TOTAL LIDOS     : '
-                  WS-TOTAL-LIDOS
-                  DELIMITED BY SIZE INTO EXTRATO-REG
-           END-STRING
-           PERFORM 2900-ESCREVER-EXTRATO
-
-           MOVE SPACES TO EXTRATO-REG
-           STRING 'TOTAL CREDITOS  : '
-                  WS-TOTAL-CREDITOS
-                  DELIMITED BY SIZE INTO EXTRATO-REG
-           END-STRING
-           PERFORM 2900-ESCREVER-EXTRATO
-
-           MOVE SPACES TO EXTRATO-REG
-           STRING 'TOTAL DEBITOS   : '
-                  WS-TOTAL-DEBITOS
-                  DELIMITED BY SIZE INTO EXTRATO-REG
-           END-STRING
-           PERFORM 2900-ESCREVER-EXTRATO
-
-           IF WS-TOTAL-INVALIDOS > ZERO
-               MOVE SPACES TO EXTRATO-REG
-               STRING 'TOTAL INVALIDOS : '
-                      WS-TOTAL-INVALIDOS
-                      DELIMITED BY SIZE INTO EXTRATO-REG
-               END-STRING
-               PERFORM 2900-ESCREVER-EXTRATO
-           END-IF
-
-           MOVE ALL '-' TO EXTRATO-REG
-           PERFORM 2900-ESCREVER-EXTRATO.
-
-      *---------------------------------------------------------------*
-      * Grava linha no extrato e verifica FILE STATUS                 *
-      *---------------------------------------------------------------*
-       2900-ESCREVER-EXTRATO.
+           MOVE LCT-AGENCIA   OF MOVTO-REG TO EXT-AGENCIA
+           MOVE LCT-NUM-CONTA OF MOVTO-REG TO EXT-NUM-CONTA
+           MOVE LCT-DATA      OF MOVTO-REG TO EXT-DATA-MOVTO
+           MOVE LCT-NSEQ      OF MOVTO-REG TO EXT-NSEQ
+           MOVE LCT-TIPO      OF MOVTO-REG TO EXT-TIPO
+           MOVE LCT-HISTORICO OF MOVTO-REG TO EXT-DESCRICAO
+           MOVE LCT-VALOR     OF MOVTO-REG TO EXT-VALOR
+           MOVE CNT-SALDO     OF CONTA-REG TO EXT-SALDO-POSICAO
+           MOVE LCT-CANAL     OF MOVTO-REG TO EXT-CANAL
            WRITE EXTRATO-REG
-           IF NOT FS-EXTROUT-OK
-               DISPLAY '*** ERRO WRITE EXTRATO-OUT - STATUS: '
+           IF FS-EXTROUT-OK
+               ADD 1 TO WS-GERADOS
+           ELSE
+               DISPLAY '*** EBEXTR01 ERRO WRITE EXTROUT - '
                        WS-FS-EXTROUT
-               SET OCORREU-ERRO-IO TO TRUE
+               SET COM-ERRO TO TRUE
            END-IF.
 
       *---------------------------------------------------------------*
-      * Fecha arquivos com verificacao de FILE STATUS                 *
+      * 3000-AUDITAR-RESUMO                                           *
+      * Grava registro unico de auditoria ao final do processamento   *
+      * Complemento contem o total de linhas geradas                  *
       *---------------------------------------------------------------*
-       9000-FECHAR-ARQUIVOS.
-           IF MOVTIN-ABERTO
-               CLOSE MOVTO-IN
-               IF NOT FS-MOVTIN-OK
-                   DISPLAY '*** ERRO CLOSE MOVTO-IN - STATUS: '
-                           WS-FS-MOVTIN
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
-           END-IF
-
-           IF EXTROUT-ABERTO
-               CLOSE EXTRATO-OUT
-               IF NOT FS-EXTROUT-OK
-                   DISPLAY '*** ERRO CLOSE EXTRATO-OUT - STATUS: '
-                           WS-FS-EXTROUT
-                   SET OCORREU-ERRO-IO TO TRUE
-               END-IF
-           END-IF.
+       3000-AUDITAR-RESUMO.
+           MOVE SPACES TO AUDIT-REG
+           MOVE 'OK'       TO AU-TIPO-EVENTO
+           MOVE 'EBEXTR01' TO AU-PROGRAMA
+           MOVE WS-DATA-SISTEMA TO AU-DATA-EVENTO
+           MOVE WS-HORA-SISTEMA TO AU-HORA-EVENTO
+           MOVE 'EXTOK001' TO AU-COD-EVENTO
+           MOVE 'EXTRATO-DIA' TO AU-CHAVE-REF
+           MOVE 'EXTRATO GERADO COM SUCESSO' TO AU-MENSAGEM
+           MOVE WS-GERADOS TO AU-COMPLEMENTO
+           WRITE AUDIT-REG.
 
       *---------------------------------------------------------------*
-      * Exibe resumo e define RETURN-CODE                             *
+      * 9000-FECHAR                                                   *
       *---------------------------------------------------------------*
-       9100-DEFINIR-RETURN-CODE.
-           DISPLAY '*** RESUMO EXTRATO ***'
-           DISPLAY 'MOVIMENTOS LIDOS    : ' WS-TOTAL-LIDOS
-           DISPLAY 'CREDITOS            : ' WS-TOTAL-CREDITOS
-           DISPLAY 'DEBITOS             : ' WS-TOTAL-DEBITOS
-           DISPLAY 'INVALIDOS IGNORADOS : ' WS-TOTAL-INVALIDOS
+       9000-FECHAR.
+           CLOSE MOVTO-IN CONTA-KSDS EXTRATO-OUT AUDIT-OUT.
 
+      *---------------------------------------------------------------*
+      * 9100-RC                                                       *
+      * RC=0: extrato gerado com sucesso                              *
+      * RC=4: nenhum movimento no arquivo de entrada                  *
+      * RC=8: erro critico de I/O                                     *
+      *---------------------------------------------------------------*
+       9100-RC.
+           DISPLAY '*** EBEXTR01 LIDOS   : ' WS-LIDOS
+           DISPLAY '*** EBEXTR01 GERADOS : ' WS-GERADOS
            EVALUATE TRUE
-               WHEN OCORREU-ERRO-IO
+               WHEN COM-ERRO
                    MOVE 8 TO RETURN-CODE
-               WHEN WS-TOTAL-LIDOS = ZERO
-                   DISPLAY '*** ATENCAO: LANCTO.ESDS VAZIO'
+               WHEN WS-LIDOS = ZERO
                    MOVE 4 TO RETURN-CODE
                WHEN OTHER
                    MOVE 0 TO RETURN-CODE
