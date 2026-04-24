@@ -5,3 +5,21 @@ data/rejeito/
 .zowe/*.yaml
 .zowe/*.log
 .claude/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Editores / OS
+.DS_Store
+Thumbs.db
+*.bak
+*.orig
+*.swp
+
+# Logs genéricos
+*.log
