@@ -21,7 +21,7 @@
            05 CTORIGF                 PIC X.
            05 FILLER REDEFINES CTORIGF.
               10 CTORIGA              PIC X.
-           05 CTORIGI                 PIC X(8).
+           05 CTORIGI              sd   PIC X(8).
            05 AGDESTL                 PIC S9(4) COMP.
            05 AGDESTF                 PIC X.
            05 FILLER REDEFINES AGDESTF.
