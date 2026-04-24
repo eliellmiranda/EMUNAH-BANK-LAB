@@ -1,24 +1,41 @@
-//* ------------------------------------------------------------
+//* ============================================================
 //* ARQUIVO      : EBJHKGDG.jcl
 //* CAMINHO LOCAL: jcl/batch/EBJHKGDG.jcl
 //* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJHKGDG)
+//*
 //* FINALIDADE:
-//* Housekeeping das bases GDG do laboratorio.
-//* Gera evidencia do estado atual de cada base: quantidade
-//* de geracoes, LIMIT configurado, atributos de retencao
-//* (NOEMPTY/SCRATCH) e lista das geracoes ativas.
+//*   Housekeeping de monitoramento das bases GDG do laboratorio.
+//*   Gera evidencia do estado atual de cada base: quantidade
+//*   de geracoes ativas, LIMIT configurado, atributos NOEMPTY/
+//*   SCRATCH e lista de todas as geracoes catalogadas.
 //*
-//* A expiracao automatica das geracoes antigas e feita pela
-//* propria base GDG (NOEMPTY + SCRATCH definidos no EBDEFGDG).
-//* Este job NAO faz DELETE ativo: e monitor + evidencia.
+//* O QUE ESTE JOB FAZ:
+//*   Executa IDCAMS LISTCAT ALL para as 6 bases GDG:
+//*   1. ARQ.EXTRATO.GDG     - extratos diarios
+//*   2. ARQ.SALDO.GDG       - snapshots de saldo
+//*   3. ARQ.BKP.CLIENTE.GDG - backup do KSDS de clientes
+//*   4. ARQ.BKP.CONTA.GDG   - backup do KSDS de contas
+//*   5. ARQ.BKP.AUDIT.GDG   - backup de auditoria
+//*   6. ARQ.BKP.REJEITOS.GDG- backup de rejeitos
 //*
-//* FLUXO ESPERADO:
-//* 1. IDCAMS LISTCAT ALL das 6 bases GDG.
-//*    Saida em SYSPRINT, arquivavel como trilha de auditoria.
-//* ------------------------------------------------------------
+//* IMPORTANTE - O QUE ESTE JOB NAO FAZ:
+//*   Nao realiza DELETE ativo de geracoes antigas.
+//*   A expiracao automatica e controlada pelos atributos
+//*   NOEMPTY e SCRATCH definidos na base GDG (EBDEFGDG).
+//*   Quando o LIMIT e atingido, a geracao mais antiga e
+//*   automaticamente descatalogada pelo sistema ao criar (+1).
+//*
+//* FREQUENCIA:
+//*   Executar periodicamente (semanal ou mensal) como
+//*   monitoramento operacional. Saida em SYSPRINT e
+//*   arquivavel como trilha de auditoria.
+//* ============================================================
 //EBJHKGDG JOB ,'EMUNAH HKGDG',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
-//* === STEP 1: LISTCAT DAS BASES GDG ===
+//* === STEP LISTGDG: LISTAR ESTADO DAS 6 BASES GDG =============
+//*   LISTCAT ALL mostra: nome da base, LIMIT, geracoes ativas,
+//*   atributos NOEMPTY/SCRATCH, VOLSER e CREDT/EXPDT de cada
+//*   geracao. Saida apenas em SYSPRINT (sem arquivos de saida).
 //*
 //LISTGDG  EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
