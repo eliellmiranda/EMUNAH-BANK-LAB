@@ -1,71 +1,57 @@
-      *===============================================================*
+*===============================================================*
       * COPYBOOK: CPSLD001                                            *
-      * FUNCAO  : LAYOUT DE CONSULTA/SAIDA DE SALDO                   *
+      * FUNCAO  : LAYOUT DE POSICAO DE SALDO / SNAPSHOT               *
+      * REGISTRO: 120 BYTES                                           *
       *                                                               *
-      * O QUE ESTE COPYBOOK FAZ:                                      *
-      * - Define a estrutura padrao para registros de saldo           *
-      * - Permite reutilizacao em consultas, relatorios e conferencias*
-      * - Centraliza os campos principais de identificacao da conta   *
-      *   e do saldo consultado                                       *
+      * USADO EM: EBSNAP01 (SNAPSHOT DE SALDO), EBCONC01 (CONCILIACAO)*
+      *           EBSALD01 (CONSULTA DE SALDO), EBJEOD01 (EOD)        *
+      * DATASET : Z77948.EMUNAH.ARQ.SALDO.GDG                         *
+      * DDNAME  : SALDOIN / SALDOUT                                   *
       *                                                               *
-      * PARA QUE ELE SERVE:                                           *
-      * - Padronizar arquivos de consulta de saldo no laboratorio     *
-      * - Evitar repeticao de layout em varios programas COBOL        *
-      * - Facilitar integracao entre leitura, consulta e saida        *
+      * FINALIDADE:                                                   *
+      * - Padronizar o registro de posicao de saldo por conta         *
+      * - Alimentar o snapshot diario gerado no fechamento do dia     *
+      * - Servir como entrada para conciliacao e consulta de saldo    *
+      * - Cada execucao do EBJEOD01 gera nova geracao do GDG          *
+      *                                                               *
+      * NOTA SOBRE O GDG:                                             *
+      * O dataset ARQ.SALDO.GDG e versionado por geracao              *
+      * GDG(0) = geracao mais recente (saldo do dia atual)            *
+      * GDG(-1) = geracao anterior (saldo do dia anterior)            *
+      * Usado pelo EBCONC01 para comparar posicoes entre dias         *
       *===============================================================*
 
       *---------------------------------------------------------------*
-      * Chave da conta                                                *
-      * Formada por agencia + numero da conta                         *
+      * Agencia da conta — parte da chave de identificacao            *
+      * Compativel com CNT-AGENCIA (CPCNT001) e LCT-AGENCIA           *
       *---------------------------------------------------------------*
-           05 SLD-CHAVE.
-              10 SLD-AGENCIA          PIC 9(4).
-              10 SLD-NUM-CONTA        PIC 9(8).
+           05 SLD-AGENCIA             PIC 9(04).
 
       *---------------------------------------------------------------*
-      * Identificador do cliente titular                              *
+      * Numero da conta — complemento da chave de identificacao       *
+      * Combinado com SLD-AGENCIA identifica unicamente a conta       *
+      * Compativel com CNT-NUM-CONTA (CPCNT001) e LCT-NUM-CONTA       *
       *---------------------------------------------------------------*
-           05 SLD-ID-CLIENTE          PIC 9(5).
+           05 SLD-NUM-CONTA           PIC 9(08).
 
       *---------------------------------------------------------------*
-      * Tipo da conta                                                 *
-      * Exemplos:                                                     *
-      * C = Corrente                                                  *
-      * P = Poupanca                                                  *
-      * S = Salario                                                   *
+      * Saldo da conta na data do snapshot                            *
+      * Sinalizado para refletir posicao real (pode ser negativo      *
+      * quando ha uso de limite/cheque especial)                      *
+      * Para calculos internos mover para WS com PIC S9(13)V99 COMP-3 *
       *---------------------------------------------------------------*
-           05 SLD-TIPO-CONTA          PIC X(1).
+           05 SLD-SALDO               PIC S9(11)V99.
 
       *---------------------------------------------------------------*
-      * Status da conta                                               *
-      * Exemplos:                                                     *
-      * A = Ativa                                                     *
-      * I = Inativa                                                   *
-      * B = Bloqueada                                                 *
+      * Data de referencia do snapshot no formato AAAAMMDD            *
+      * Preenchida pelo EBJEOD01 no fechamento do dia operacional     *
+      * Usada pelo EBCONC01 para validar a geracao correta do GDG     *
+      * Ex.: 20240315 = posicao de saldo ao final de 15/03/2024       *
       *---------------------------------------------------------------*
-           05 SLD-STATUS              PIC X(1).
+           05 SLD-DATA                PIC 9(08).
 
       *---------------------------------------------------------------*
-      * Data da consulta no formato AAAAMMDD                          *
+      * Reserva para completar o tamanho fisico do registro (120 bytes)*
+      * Nao utilizar — reservado para evolucao futura do layout       *
       *---------------------------------------------------------------*
-           05 SLD-DATA-CONSULTA       PIC 9(8).
-
-      *---------------------------------------------------------------*
-      * Saldo atual da conta                                          *
-      *---------------------------------------------------------------*
-           05 SLD-SALDO-ATUAL         PIC 9(11)V99.
-
-      *---------------------------------------------------------------*
-      * Limite disponivel/registrado                                  *
-      *---------------------------------------------------------------*
-           05 SLD-LIMITE              PIC 9(9)V99.
-
-      *---------------------------------------------------------------*
-      * Saldo total considerado com limite                            *
-      *---------------------------------------------------------------*
-           05 SLD-SALDO-DISPONIVEL    PIC 9(11)V99.
-
-      *---------------------------------------------------------------*
-      * Completa o tamanho fisico do registro                         *
-      *---------------------------------------------------------------*
-           05 SLD-FILLER              PIC X(36).
+           05 FILLER                  PIC X(87).
