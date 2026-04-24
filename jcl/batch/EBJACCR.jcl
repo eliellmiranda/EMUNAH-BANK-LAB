@@ -1,48 +1,63 @@
-//* ------------------------------------------------------------
+//* ============================================================
 //* ARQUIVO      : EBJACCR.jcl
 //* CAMINHO LOCAL: jcl/batch/EBJACCR.jcl
 //* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJACCR)
+//*
 //* FINALIDADE:
-//* Calcular e aplicar accruals diarios (juros e tarifas)
-//* sobre as contas ativas do laboratorio.
+//*   Calcular e aplicar accruals diarios (juros e tarifas)
+//*   sobre as contas ativas do laboratorio.
 //*
-//* POSICAO NA CADEIA: apos EBJCUTF (EOTI) e antes de EBJCUTE.
+//* POSICAO NA CADEIA DIARIA:
+//*   EBJCUTF (-> EOTI) --> EBJACCR --> EBJCUTE (-> EOFI)
+//*   Os accruals sao calculados APOS o corte financeiro (EOTI)
+//*   e ANTES do corte contabil (EOFI), garantindo que os juros
+//*   do dia sejam incorporados antes do fechamento contabil.
 //*
-//* FLUXO ESPERADO:
-//* 1. ACCR - EBACCR01 le PARM.JUROS.CONFIG e CONTA.KSDS,
-//*           calcula juros (corrente/poupanca) e tarifas,
-//*           faz REWRITE em CONTA.KSDS, grava movimentos
-//*           em ARQ.ACCR.MOV.SEQ e appenda em LANCTO.ESDS.
+//* PRE-REQUISITOS:
+//*   - EBALLOC e EBDEFGDG ja executados (infraestrutura pronta)
+//*   - ARQ.CTL.STATUS = EOTI (EBJCUTF ja executou)
+//*   - PARM.JUROS.CONFIG catalogado com regras do dia
 //*
-//* PRE-REQUISITO: EBALLOC + EBDEFGDG ja executados.
-//* ------------------------------------------------------------
+//* CODIGOS DE RETORNO:
+//*   RC 0  = accruals aplicados com sucesso em todas as contas
+//*   RC 4  = CONTA.KSDS vazio - nenhum accrual calculado
+//*   RC 8  = erro de I/O - verificar SYSPRINT antes de rerun
+//*   RC 12 = erro critico - CONTA.KSDS ou LANCTO.ESDS inacessivel
+//* ============================================================
 //EBJACCR  JOB ,'EMUNAH ACCR',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
-//* === STEP 1: APLICAR ACCRUALS (EBACCR01) ===
+//* === STEP ACCR: APLICAR ACCRUALS (EBACCR01) ==================
+//*   EBACCR01 le PARM.JUROS.CONFIG (regras de juros/tarifas),
+//*   percorre o CONTA.KSDS por READ NEXT, calcula juros para
+//*   contas Corrente/Poupanca e tarifas conforme configuracao,
+//*   faz REWRITE do saldo atualizado no KSDS, grava movimento
+//*   em ACCROUT e appenda lancamento no LANCTO.ESDS.
 //*
 //ACCR     EXEC PGM=EBACCR01
-//* Programa de calculo e aplicacao de juros e tarifas.
 //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
-//* Biblioteca do executavel EBACCR01.
+//*           Biblioteca contendo o modulo executavel EBACCR01.
 //PARMLIB  DD DSN=Z77948.EMUNAH.PARM.JUROS.CONFIG,DISP=SHR
-//* Parametros de juros e tarifas por tipo de conta (pos 80 bytes).
+//*           Arquivo de parametros de juros e tarifas.
+//*           Layout: pos1=tipo (J/T/*), pos2=modalidade (C/P),
+//*           pos3-7=taxa PIC 9(3)V99. Uma regra por registro.
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
-//* VSAM KSDS de contas - aberto I-O pelo programa para REWRITE.
+//*           VSAM KSDS de contas. Aberto em I-O pelo programa
+//*           para REWRITE dos saldos apos calculo do accrual.
 //ACCROUT  DD DSN=Z77948.EMUNAH.ARQ.ACCR.MOV.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
 //             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
-//* Movimentos de accrual gerados no dia (feed de evidencia).
+//*           Arquivo de movimentos de accrual do dia.
+//*           Serve como evidencia auditavel dos juros aplicados.
+//*           NEW/CATLG = cria nova geracao a cada execucao.
 //LANCTO   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
-//* VSAM ESDS de historico - aberto EXTEND pelo programa.
+//*           VSAM ESDS historico de lancamentos.
+//*           Aberto em EXTEND pelo programa para append dos
+//*           movimentos de juros/tarifas gerados no dia.
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
-//* Auditoria do processamento de accruals.
+//*           Arquivo de auditoria. DISP=MOD garante append
+//*           sem apagar registros de steps anteriores do dia.
 //SYSOUT   DD SYSOUT=*
-//* Saida geral do programa.
+//*           Saida operacional do programa (DISPLAY).
 //SYSPRINT DD SYSOUT=*
-//* Mensagens tecnicas.
-//*
-//* RC 0  = accruals aplicados com sucesso.
-//* RC 4  = CONTA.KSDS vazio - nenhum accrual calculado.
-//* RC 8  = erro de I/O - verificar SYSPRINT antes de rerun.
-//* RC 12 = erro critico - CONTA.KSDS ou LANCTO.ESDS inacessivel.
+//*           Mensagens tecnicas e diagnostico do sistema.
