@@ -23,3 +23,8 @@ Thumbs.db
 
 # Logs genéricos
 *.log
+
+# Credenciais e ambiente local
+.env
+.env.local
+db2/PROD_SERVER.rsp
