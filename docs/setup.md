@@ -175,6 +175,46 @@ Compara `tests/actual/` com `tests/expected/` e reporta divergências.
 
 ---
 
+## 10. Configurar o VS Code na sua máquina
+
+O arquivo `.vscode/settings.json` versionado no repositório contém paths de Java específicos da máquina original (`C:\Program Files\Java\jdk-21`). Se esses paths não existirem na sua máquina, o VS Code vai reclamar. Siga os passos abaixo para ajustar:
+
+**1. Descubra onde o Java está instalado na sua máquina:**
+
+```powershell
+where java
+# Exemplo de saída: C:\Program Files\Eclipse Adoptium\jdk-21.0.5.11-hotspot\bin\java.exe
+# O JAVA_HOME seria: C:\Program Files\Eclipse Adoptium\jdk-21.0.5.11-hotspot
+```
+
+**2. Abra o settings.json do workspace no VS Code:**
+
+`Ctrl+Shift+P` → digite `Open Workspace Settings JSON` → selecione a opção
+
+**3. Atualize as três entradas de Java com o path da sua máquina:**
+
+```json
+"zopeneditor.JAVA_HOME": "C:\\SEU\\PATH\\PARA\\JAVA",
+"java.jdt.ls.java.home": "C:\\SEU\\PATH\\PARA\\JAVA",
+"db2forzosdeveloperextension.java.home": "C:\\SEU\\PATH\\PARA\\JAVA"
+```
+
+> Essas configurações estão em `settingsSync.ignoredSettings`, então o VS Code não vai sobrescrever as suas quando sincronizar com outro dispositivo.
+
+**4. Verifique se o IBM Z Open Editor reconhece os copybooks:**
+
+Abra qualquer arquivo `.cbl` em `cobol/batch/`. Se aparecer erro de copybook não encontrado, confirme que o path em `zopeneditor.cobol.copybookPaths` aponta para a pasta correta do seu clone, por exemplo:
+
+```json
+"zopeneditor.cobol.copybookPaths": [
+    "C:\\Users\\SEU-USUARIO\\EMUNAH-BANK-LAB\\copybooks\\layouts",
+    "C:\\Users\\SEU-USUARIO\\EMUNAH-BANK-LAB\\copybooks\\db2",
+    "C:\\Users\\SEU-USUARIO\\EMUNAH-BANK-LAB\\copybooks\\telas"
+]
+```
+
+---
+
 ## Referências
 
 - [IBM Z Learning / zXplore](https://www.ibm.com/academic/home)
