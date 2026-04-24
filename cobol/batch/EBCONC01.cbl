@@ -1,4 +1,4 @@
-*===============================================================*
+      *===============================================================*
       * PROGRAMA : EBCONC01                                           *
       * FUNCAO   : CONCILIACAO TRES-VIAS DO CICLO DIARIO              *
       * MODULO   : CONC (Conciliacao)                                 *
