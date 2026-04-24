@@ -1,16 +1,34 @@
-//* ------------------------------------------------------------
+//* ============================================================
 //* ARQUIVO      : EBLISTDS.jcl
 //* CAMINHO LOCAL: jcl/util/EBLISTDS.jcl
 //* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBLISTDS)
-//* FINALIDADE:
-//* Listar todos os datasets do laboratorio e verificar
-//* se estao catalogados corretamente.
 //*
-//* UTIL PARA DIAGNOSTICO E INVENTARIO DO AMBIENTE.
-//* ------------------------------------------------------------
+//* FINALIDADE:
+//*   Inventariar todos os datasets do laboratorio, verificando
+//*   se estao catalogados e exibindo seus atributos (VOLSER,
+//*   RECFM, LRECL, BLKSIZE, CREATION DATE, etc).
+//*
+//* QUANDO USAR:
+//*   - Diagnostico de ambiente apos problemas de I/O
+//*   - Verificacao de alocacao logo apos executar EBALLOC
+//*   - Inventario pre-deploy para confirmar todos os DSNs
+//*   - Troubleshooting de erros "DATASET NOT FOUND" na cadeia
+//*
+//* SAIDA:
+//*   Toda saida vai para SYSPRINT no spool (sem arquivos fisicos).
+//*   Arquivavel como evidencia do estado do ambiente.
+//*
+//* OS 4 STEPS LISTCAT POR NIVEL:
+//*   LISTDEV  - Z77948.EMUNAH.DEV.*  (PDS de desenvolvimento)
+//*   LISTARQ  - Z77948.EMUNAH.ARQ.*  (dados, VSAMs, GDGs)
+//*   LISTSEED - Z77948.EMUNAH.SEED.* (arquivos de seed)
+//*   LISTBKP  - Z77948.EMUNAH.BKP.*  (backups diversos)
+//* ============================================================
 //EBLISTDS JOB ,'EMUNAH LISTDS',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
-//* === STEP 1: LISTAR DATASETS DE DESENVOLVIMENTO ===
+//* === STEP LISTDEV: DATASETS DE DESENVOLVIMENTO ===============
+//*   LISTCAT LEVEL lista tudo sob o nivel especificado.
+//*   Inclui: COBOL, COPY, JCL, LOADLIB.
 //*
 //LISTDEV  EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
@@ -18,7 +36,10 @@
   LISTCAT LEVEL('Z77948.EMUNAH.DEV') ALL
 /*
 //*
-//* === STEP 2: LISTAR DATASETS DE DADOS ===
+//* === STEP LISTARQ: DATASETS DE DADOS =========================
+//*   Inclui: KSDS de clientes/contas, ESDS de lancamentos,
+//*   sequenciais (ENTRADA, REJEITOS, AUDIT, CONCIL, CTL.STATUS),
+//*   GDGs (EXTRATO, SALDO, BKP.*).
 //*
 //LISTARQ  EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
@@ -26,7 +47,9 @@
   LISTCAT LEVEL('Z77948.EMUNAH.ARQ') ALL
 /*
 //*
-//* === STEP 3: LISTAR DATASETS DE SEED ===
+//* === STEP LISTSEED: DATASETS DE SEED =========================
+//*   Inclui: SEED.CLIENTES.SEQ e SEED.CONTAS.SEQ.
+//*   Devem existir antes de executar EBSEED.
 //*
 //LISTSEED EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
@@ -34,7 +57,9 @@
   LISTCAT LEVEL('Z77948.EMUNAH.SEED') ALL
 /*
 //*
-//* === STEP 4: LISTAR DATASETS DE BACKUP ===
+//* === STEP LISTBKP: DATASETS DE BACKUP ========================
+//*   Inclui: backups manuais e GDGs de backup.
+//*   Util para verificar geracoes ativas e espaco consumido.
 //*
 //LISTBKP  EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
