@@ -1,4 +1,4 @@
-*===============================================================*
+      *===============================================================*
       * PROGRAMA : EBVALI01                                           *
       * FUNCAO   : VALIDACAO DE LANCAMENTOS DE ENTRADA                *
       * MODULO   : VALI (Validacao)                                   *
