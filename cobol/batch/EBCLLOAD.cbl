@@ -1,29 +1,52 @@
-       IDENTIFICATION DIVISION.
-       PROGRAM-ID. EBCLLOAD.
-      *===============================================================*
-      * PROGRAMA: EBCLLOAD                                            *
-      * FUNCAO : CARGA INICIAL DE CLIENTES E CONTAS                   *
+*===============================================================*
+      * PROGRAMA : EBCLLOAD                                           *
+      * FUNCAO   : CARGA INICIAL DE CLIENTES E CONTAS                 *
+      * MODULO   : CL (Client Load)                                   *
       *                                                               *
       * O QUE ESTE PROGRAMA FAZ:                                      *
-      * - Le arquivo sequencial de clientes                           *
-      * - Le arquivo sequencial de contas                             *
-      * - Valida status basico dos registros                          *
-      * - Grava clientes em um KSDS de clientes                       *
-      * - Grava contas em um KSDS de contas                           *
-      * - Registra rejeicoes e duplicidades em arquivo de auditoria   *
+      * - Le arquivo sequencial de clientes (SEED) e grava no KSDS   *
+      * - Le arquivo sequencial de contas (SEED) e grava no KSDS     *
+      * - Valida status basico dos registros antes de gravar          *
+      * - Rejeita duplicidades detectadas pelo INVALID KEY do KSDS   *
+      * - Registra rejeicoes e ocorrencias em arquivo de auditoria    *
       * - Exibe resumo final com totais processados                   *
       *                                                               *
       * PARA QUE ELE SERVE:                                           *
-      * - Simular a carga inicial do ambiente bancario                *
-      * - Popular arquivos master antes das rotinas batch             *
-      * - Criar massa inicial para testes do laboratorio              *
+      * - Simular a carga inicial do ambiente bancario do laboratorio *
+      * - Popular os arquivos master antes das rotinas batch do dia   *
+      * - Criar massa inicial para testes e validacoes                *
+      *                                                               *
+      * ENTRADAS:                                                     *
+      *   CLIENTIN = Z77948.EMUNAH.SEED.CLIENTES.SEQ (80 bytes)       *
+      *   CONTAIN  = Z77948.EMUNAH.SEED.CONTAS.SEQ   (100 bytes)      *
+      *                                                               *
+      * SAIDAS:                                                       *
+      *   CLIENTE  = Z77948.EMUNAH.ARQ.CLIENTE.KSDS  (master clientes)*
+      *   CONTA    = Z77948.EMUNAH.ARQ.CONTA.KSDS    (master contas)  *
+      *   AUDIT    = Z77948.EMUNAH.ARQ.AUDIT.SEQ     (trilha)         *
+      *                                                               *
+      * COPYBOOKS UTILIZADOS:                                         *
+      *   CPCLI001 = layout de cliente (80 bytes)                     *
+      *   CPCNT001 = layout de conta   (100 bytes)                    *
+      *                                                               *
+      * REGRAS DE VALIDACAO:                                          *
+      *   - Status do cliente deve ser A, I ou B                      *
+      *   - Status da conta deve ser A, I ou B                        *
+      *   - Chave duplicada no KSDS gera rejeicao na auditoria        *
+      *                                                               *
+      * RETURN-CODE:                                                  *
+      *   Nao controlado nesta versao — verificar AUDIT para rejeitos *
       *===============================================================*
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EBCLLOAD.
 
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
       *---------------------------------------------------------------*
-      * CLIENTES-IN = arquivo sequencial de entrada com clientes      *
+      * CLIENTES-IN: arquivo sequencial com massa inicial de clientes  *
+      * Gerado manualmente ou por REXX antes da carga                 *
+      * DDNAME: CLIENTIN   LRECL: 80   RECFM: FB                      *
       *---------------------------------------------------------------*
            SELECT CLIENTES-IN
                ASSIGN TO CLIENTIN
@@ -32,7 +55,9 @@
                FILE STATUS IS WS-FS-CLIENTIN.
 
       *---------------------------------------------------------------*
-      * CONTAS-IN = arquivo sequencial de entrada com contas          *
+      * CONTAS-IN: arquivo sequencial com massa inicial de contas      *
+      * Deve referenciar clientes ja presentes no KSDS de clientes    *
+      * DDNAME: CONTAIN   LRECL: 100   RECFM: FB                      *
       *---------------------------------------------------------------*
            SELECT CONTAS-IN
                ASSIGN TO CONTAIN
@@ -41,8 +66,9 @@
                FILE STATUS IS WS-FS-CONTAIN.
 
       *---------------------------------------------------------------*
-      * AUDIT-OUT = arquivo de auditoria para registrar rejeicoes     *
-      * e ocorrencias de duplicidade                                  *
+      * AUDIT-OUT: trilha de auditoria para rejeicoes e duplicidades   *
+      * Aberto em EXTEND para acumular registros sem sobrescrever      *
+      * DDNAME: AUDIT   LRECL: 120   RECFM: FB                        *
       *---------------------------------------------------------------*
            SELECT AUDIT-OUT
                ASSIGN TO AUDIT
@@ -51,8 +77,10 @@
                FILE STATUS IS WS-FS-AUDIT.
 
       *---------------------------------------------------------------*
-      * CLIENTE-KSDS = arquivo master indexado de clientes            *
-      * A chave do arquivo e o id do cliente                          *
+      * CLIENTE-KSDS: arquivo master indexado de clientes (VSAM KSDS) *
+      * Chave primaria: CLI-ID-CLIENTE (5 bytes numericos)             *
+      * Aberto em I-O para permitir WRITE e leitura posterior         *
+      * DDNAME: CLIENTE                                               *
       *---------------------------------------------------------------*
            SELECT CLIENTE-KSDS
                ASSIGN TO CLIENTE
@@ -62,8 +90,10 @@
                FILE STATUS IS WS-FS-CLIENTE.
 
       *---------------------------------------------------------------*
-      * CONTA-KSDS = arquivo master indexado de contas                *
-      * A chave e definida no copybook como CNT-CHAVE                *
+      * CONTA-KSDS: arquivo master indexado de contas (VSAM KSDS)     *
+      * Chave primaria: CNT-CHAVE (agencia 4 + num-conta 8 = 12 bytes)*
+      * Aberto em I-O para permitir WRITE e verificacao de duplicidade *
+      * DDNAME: CONTA                                                 *
       *---------------------------------------------------------------*
            SELECT CONTA-KSDS
                ASSIGN TO CONTA
@@ -77,7 +107,8 @@
 
       *---------------------------------------------------------------*
       * Arquivo de entrada de clientes                                *
-      * O copybook CPCLI001 deve conter apenas os campos 05...        *
+      * Layout definido pelo copybook CPCLI001 (80 bytes)             *
+      * O copybook declara apenas niveis 05 — nivel 01 fica aqui      *
       *---------------------------------------------------------------*
        FD  CLIENTES-IN
            RECORD CONTAINS 80 CHARACTERS
@@ -87,7 +118,7 @@
 
       *---------------------------------------------------------------*
       * Arquivo de entrada de contas                                  *
-      * O copybook CPCNT001 deve conter apenas os campos 05...        *
+      * Layout definido pelo copybook CPCNT001 (100 bytes)            *
       *---------------------------------------------------------------*
        FD  CONTAS-IN
            RECORD CONTAINS 100 CHARACTERS
@@ -96,7 +127,8 @@
            COPY CPCNT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de auditoria                                          *
+      * Arquivo de auditoria (registro generico de 120 bytes)         *
+      * Gravado como texto livre via STRING para flexibilidade         *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
            RECORD CONTAINS 120 CHARACTERS
@@ -104,14 +136,17 @@
        01  AUDIT-REG                  PIC X(120).
 
       *---------------------------------------------------------------*
-      * KSDS de clientes                                              *
+      * KSDS de clientes — mesmo layout do arquivo de entrada         *
+      * A chave CLI-ID-CLIENTE e usada como RECORD KEY                *
       *---------------------------------------------------------------*
        FD  CLIENTE-KSDS.
        01  CLIENTE-KSDS-REG.
            COPY CPCLI001.
 
       *---------------------------------------------------------------*
-      * KSDS de contas                                                *
+      * KSDS de contas — mesmo layout do arquivo de entrada           *
+      * A chave CNT-CHAVE (agencia + numero da conta) e usada         *
+      * como RECORD KEY do VSAM                                       *
       *---------------------------------------------------------------*
        FD  CONTA-KSDS.
        01  CONTA-KSDS-REG.
@@ -120,7 +155,8 @@
        WORKING-STORAGE SECTION.
 
       *---------------------------------------------------------------*
-      * File status dos arquivos                                      *
+      * File Status de todos os arquivos                              *
+      * '00' = OK   '10' = EOF   outros = erro de I/O                 *
       *---------------------------------------------------------------*
        01  WS-FILE-STATUS.
            05 WS-FS-CLIENTIN          PIC XX.
@@ -130,14 +166,19 @@
            05 WS-FS-CONTA             PIC XX.
 
       *---------------------------------------------------------------*
-      * Controle de fim de arquivo                                    *
+      * Flags de controle de fim de arquivo                           *
+      * Inicializados como 'N' (nao chegou ao fim)                    *
+      * Setados para 'S' no AT END do READ                            *
       *---------------------------------------------------------------*
        01  WS-CONTROLES.
            05 WS-EOF-CLIENTES         PIC X VALUE 'N'.
            05 WS-EOF-CONTAS           PIC X VALUE 'N'.
 
       *---------------------------------------------------------------*
-      * Contadores para resumo final                                  *
+      * Contadores para o resumo final exibido no SYSOUT              *
+      * Lidos    = total de registros lidos do arquivo de entrada      *
+      * Gravados = registros aceitos e gravados no KSDS               *
+      * Rejeitados = duplicados ou status invalido                     *
       *---------------------------------------------------------------*
        01  WS-CONTADORES.
            05 WS-CLI-LIDOS            PIC 9(5) VALUE ZERO.
@@ -149,7 +190,12 @@
 
        PROCEDURE DIVISION.
       *===============================================================*
-      * FLUXO PRINCIPAL                                               *
+      * 0000-PRINCIPAL                                                *
+      * Ponto de entrada do programa. Controla o fluxo geral:         *
+      * 1. Abre os arquivos                                           *
+      * 2. Processa clientes                                          *
+      * 3. Processa contas                                            *
+      * 4. Encerra e exibe resumo                                     *
       *===============================================================*
        0000-PRINCIPAL.
            PERFORM 1000-ABRIR-ARQUIVOS
@@ -159,7 +205,11 @@
            GOBACK.
 
       *---------------------------------------------------------------*
-      * Abre os arquivos de entrada, os arquivos master e a auditoria *
+      * 1000-ABRIR-ARQUIVOS                                           *
+      * Abre todos os arquivos necessarios para o processamento       *
+      * CLIENTES-IN e CONTAS-IN em INPUT (leitura sequencial)         *
+      * KSDS em I-O (permite WRITE e leitura por chave)               *
+      * AUDIT-OUT em EXTEND (acumula sem sobrescrever runs anteriores)*
       *---------------------------------------------------------------*
        1000-ABRIR-ARQUIVOS.
            OPEN INPUT CLIENTES-IN
@@ -169,7 +219,9 @@
            OPEN EXTEND AUDIT-OUT.
 
       *---------------------------------------------------------------*
-      * Le todos os clientes da entrada e envia para validacao        *
+      * 2000-CARREGAR-CLIENTES                                        *
+      * Loop sequencial de leitura do arquivo de clientes             *
+      * Para cada registro lido, aciona a validacao e carga           *
       *---------------------------------------------------------------*
        2000-CARREGAR-CLIENTES.
            PERFORM UNTIL WS-EOF-CLIENTES = 'S'
@@ -183,10 +235,12 @@
            END-PERFORM.
 
       *---------------------------------------------------------------*
-      * Valida o cliente e tenta gravar no KSDS                       *
-      * Regras de status aceitas: A, I ou B                           *
-      * Se o status for invalido, rejeita                             *
-      * Se a chave ja existir, rejeita como duplicado                 *
+      * 2100-VALIDAR-CLIENTE                                          *
+      * Valida o status do cliente lido:                              *
+      *   - Status invalido (nao A, I ou B): grava rejeicao na AUDIT  *
+      *   - Status valido: tenta gravar no KSDS                       *
+      *   - INVALID KEY no KSDS: cliente duplicado, grava na AUDIT    *
+      *   - NOT INVALID KEY: cliente gravado com sucesso              *
       *---------------------------------------------------------------*
        2100-VALIDAR-CLIENTE.
            IF CLI-STATUS OF CLIENTES-IN-REG NOT = 'A'
@@ -201,10 +255,9 @@
                END-STRING
                WRITE AUDIT-REG
            ELSE
-      *        Move o registro da entrada para a area do KSDS
+      *        Copia o registro da entrada para a area do KSDS
                MOVE CLIENTES-IN-REG TO CLIENTE-KSDS-REG
-
-      *        Tenta gravar o cliente no arquivo indexado
+      *        Tenta gravar no KSDS — INVALID KEY indica duplicidade
                WRITE CLIENTE-KSDS-REG
                    INVALID KEY
                        ADD 1 TO WS-CLI-REJEITADOS
@@ -221,7 +274,9 @@
            END-IF.
 
       *---------------------------------------------------------------*
-      * Le todas as contas da entrada e envia para validacao          *
+      * 3000-CARREGAR-CONTAS                                          *
+      * Loop sequencial de leitura do arquivo de contas               *
+      * Para cada registro lido, aciona a validacao e carga           *
       *---------------------------------------------------------------*
        3000-CARREGAR-CONTAS.
            PERFORM UNTIL WS-EOF-CONTAS = 'S'
@@ -235,9 +290,12 @@
            END-PERFORM.
 
       *---------------------------------------------------------------*
-      * Valida a conta e tenta gravar no KSDS                         *
-      * Regras de status aceitas: A, I ou B                           *
-      * Se a chave ja existir, rejeita como duplicada                 *
+      * 3100-VALIDAR-CONTA                                            *
+      * Valida o status da conta lida:                                *
+      *   - Status invalido (nao A, I ou B): grava rejeicao na AUDIT  *
+      *   - Status valido: tenta gravar no KSDS                       *
+      *   - INVALID KEY: conta duplicada (mesma agencia+numero)       *
+      *   - NOT INVALID KEY: conta gravada com sucesso                *
       *---------------------------------------------------------------*
        3100-VALIDAR-CONTA.
            IF CNT-STATUS OF CONTAS-IN-REG NOT = 'A'
@@ -254,10 +312,9 @@
                END-STRING
                WRITE AUDIT-REG
            ELSE
-      *        Move o registro da entrada para a area do KSDS
+      *        Copia o registro da entrada para a area do KSDS
                MOVE CONTAS-IN-REG TO CONTA-KSDS-REG
-
-      *        Tenta gravar a conta no arquivo indexado
+      *        Tenta gravar no KSDS — INVALID KEY indica duplicidade
                WRITE CONTA-KSDS-REG
                    INVALID KEY
                        ADD 1 TO WS-CNT-REJEITADOS
@@ -276,7 +333,9 @@
            END-IF.
 
       *---------------------------------------------------------------*
-      * Exibe resumo final e fecha os arquivos                        *
+      * 9000-ENCERRAR                                                 *
+      * Exibe resumo final no SYSOUT e fecha todos os arquivos        *
+      * O resumo permite conferencia rapida do resultado da carga      *
       *---------------------------------------------------------------*
        9000-ENCERRAR.
            DISPLAY '*** RESUMO CARGA INICIAL ***'
