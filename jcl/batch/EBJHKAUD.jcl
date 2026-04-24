@@ -1,35 +1,53 @@
-//* ------------------------------------------------------------
+//* ============================================================
 //* ARQUIVO      : EBJHKAUD.jcl
 //* CAMINHO LOCAL: jcl/batch/EBJHKAUD.jcl
 //* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJHKAUD)
+//*
 //* FINALIDADE:
-//* Housekeeping ativo do ARQ.AUDIT.SEQ: arquiva o conteudo
-//* corrente em ARQ.BKP.AUDIT.GDG(+1) e recria o arquivo vazio,
-//* evitando crescimento indefinido via DISP=MOD.
+//*   Housekeeping do ARQ.AUDIT.SEQ: arquiva o conteudo corrente
+//*   em GDG e recria o arquivo vazio para o proximo ciclo.
 //*
-//* FLUXO ESPERADO:
-//* 1. ARCHAUD  - IEBGENER copia AUDIT.SEQ -> ARQ.BKP.AUDIT.GDG(+1).
-//* 2. DELAUD   - IDCAMS deleta AUDIT.SEQ atual.
-//* 3. ALLOCAUD - IEFBR14 recria AUDIT.SEQ vazio.
+//* POR QUE E NECESSARIO:
+//*   Todos os programas abrem AUDIT com DISP=MOD (append).
+//*   Sem rotacao, o arquivo cresce indefinidamente a cada
+//*   ciclo diario. Este job faz a rotacao de forma segura:
+//*   arquiva -> deleta -> recria vazio.
 //*
-//* Roda tipicamente no fim do ciclo diario, apos EBJEOD.
-//* ------------------------------------------------------------
+//* FREQUENCIA:
+//*   Executar uma vez por ciclo diario, apos EBJEOD (EOD).
+//*
+//* FLUXO DOS 3 STEPS:
+//*   ARCHAUD -> DELAUD -> ALLOCAUD
+//*   Se ARCHAUD falhar, DELAUD e ALLOCAUD nao executam
+//*   (COND=(0,NE) em ambos), preservando o arquivo original.
+//*
+//* CODIGOS DE RETORNO:
+//*   RC 0  = rotacao concluida - AUDIT.SEQ arquivado e reiniciado
+//*   RC 4  = aviso em IEBGENER (aceitar se GDG catalogado)
+//*   RC 8  = falha em ARCHAUD ou DELAUD - arquivo nao rotacionado
+//*   RC 12 = falha critica - GDG nao gerado
+//* ============================================================
 //EBJHKAUD JOB ,'EMUNAH HKAUD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
-//* === STEP 1: ARQUIVAR AUDIT.SEQ EM ARQ.BKP.AUDIT.GDG(+1) ===
+//* === STEP ARCHAUD: ARQUIVAR AUDIT.SEQ EM GDG(+1) =============
+//*   IEBGENER copia o conteudo atual do arquivo de auditoria
+//*   para uma nova geracao do GDG de backup.
 //*
 //ARCHAUD  EXEC PGM=IEBGENER
 //SYSPRINT DD SYSOUT=*
 //SYSUT1   DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=SHR
-//* Arquivo de auditoria corrente, gravado via DISP=MOD pelos programas.
+//*           Arquivo de auditoria corrente (acumulado via MOD).
 //SYSUT2   DD DSN=Z77948.EMUNAH.ARQ.BKP.AUDIT.GDG(+1),
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
 //             DCB=(MODEL.DSCB,RECFM=FB,LRECL=120,BLKSIZE=0)
-//* Nova geracao do GDG de backup de auditoria.
+//*           Nova geracao GDG de backup. MODEL.DSCB herda DCB.
 //SYSIN    DD DUMMY
 //*
-//* === STEP 2: DELETAR AUDIT.SEQ ATUAL ===
+//* === STEP DELAUD: DELETAR AUDIT.SEQ ATUAL ====================
+//*   COND=(0,NE): executa somente se ARCHAUD terminou RC=0.
+//*   SET MAXCC=0 suprime RC=8 quando o arquivo ja nao existe
+//*   (torna o step idempotente - seguro para rerun).
 //*
 //DELAUD   EXEC PGM=IDCAMS,COND=(0,NE)
 //SYSPRINT DD SYSOUT=*
@@ -37,19 +55,16 @@
   DELETE 'Z77948.EMUNAH.ARQ.AUDIT.SEQ' NONVSAM
   SET MAXCC = 0
 /*
-//* Deleta o arquivo fisico do catalogo para permitir realocacao limpa.
-//* SET MAXCC=0 suprime RC=8 quando o arquivo ja nao existe (idempotente).
 //*
-//* === STEP 3: REALOCAR AUDIT.SEQ VAZIO ===
+//* === STEP ALLOCAUD: RECRIAR AUDIT.SEQ VAZIO ==================
+//*   IEFBR14 e um programa nulo; a alocacao ocorre pelo DD card.
+//*   DISP=(NEW,CATLG,DELETE) cria o arquivo vazio e o cataloga.
+//*   O novo arquivo tem o mesmo DCB do original: FB/120.
 //*
 //ALLOCAUD EXEC PGM=IEFBR14,COND=(0,NE)
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
 //             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
-//* Recria o arquivo vazio com o mesmo layout, pronto para o proximo ciclo.
-//*
-//* RC 0  = rotacao concluida - AUDIT.SEQ arquivado e reiniciado.
-//* RC 4  = aviso em IEBGENER (aceitar se output catalogado).
-//* RC 8  = falha em ARCHAUD ou DELAUD - verificar SYSPRINT do step.
-//* RC 12 = falha critica - GDG nao gerado ou AUDIT.SEQ nao recriado.
+//*           Arquivo recriado vazio com mesmo layout FB/120.
+//*           Pronto para receber registros do proximo ciclo.
