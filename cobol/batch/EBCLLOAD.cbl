@@ -1,4 +1,4 @@
-*===============================================================*
+      *===============================================================*
       * PROGRAMA : EBCLLOAD                                           *
       * FUNCAO   : CARGA INICIAL DE CLIENTES E CONTAS                 *
       * MODULO   : CL (Client Load)                                   *
