@@ -1,23 +1,27 @@
-name: Generated ZAPP document
+name: EMUNAH-BANK-LAB
 description: >-
-  CRRZG5299I Note that this default file searches all your local folders in all
-  open VS Code workspaces, which can be highly inefficient. Modify the
-  "locations" entries to be as specific as possible. Add a new entry of type
-  "MVS" to specify remote locations. See the documentation for more details:
-  <https://ibm.github.io/zopeneditor-about/Docs/setting_propertygroup.html>
-author: IBM Z Open Editor
+  Configuracao de property groups para o IBM Z Open Editor no lab EMUNAH-BANK-LAB.
+  Define locais especificos de copybooks, JCLs e PROCs para evitar busca global ineficiente.
+author: Eliel
 propertyGroups:
-  - name: search-all
+  - name: emunah-local
     libraries:
       - name: syslib
         type: local
         locations:
-          - '**'
+          - copybooks/layouts
+          - copybooks/db2
+          - copybooks/telas
       - name: maclib
         type: local
         locations:
-          - '**'
+          - copybooks/layouts
       - name: proclib
         type: local
         locations:
-          - '**'
+          - jcl/batch
+          - jcl/compile
+          - jcl/deploy
+          - jcl/util
+          - jcl/hml
+          - jcl/prd

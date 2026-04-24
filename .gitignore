@@ -5,6 +5,7 @@ data/rejeito/
 .zowe/*.yaml
 .zowe/*.log
 .claude/
+backup/
 
 # Python
 __pycache__/
