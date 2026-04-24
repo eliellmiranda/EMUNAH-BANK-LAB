@@ -1,4 +1,4 @@
-*===============================================================*
+      *===============================================================*
       * PROGRAMA : EBPCHK01                                           *
       * FUNCAO   : PRECHECK DO CTL.STATUS ANTES DO INICIO DA CADEIA   *
       * MODULO   : CTL (Controle de Estado)                           *
