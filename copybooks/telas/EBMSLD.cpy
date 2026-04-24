@@ -1,22 +1,35 @@
-      *===============================================================*
+*===============================================================*
       * COPYBOOK: EBMSLD                                              *
       * FUNCAO  : MAPA BMS - TELA DE CONSULTA DE SALDO               *
-      * TRANSACAO: ESLD                                               *
+      * TRANSACAO CICS: ESLD                                          *
+      * PROGRAMA ASSOCIADO: EBCSSLD                                   *
       *                                                               *
       * ESTE COPYBOOK SIMULA O LAYOUT GERADO PELO BMS ASSEMBLER      *
-      * PARA USO NOS PROGRAMAS CICS ONLINE DO LABORATORIO             *
+      * para a tela de consulta de saldo.                            *
+      *                                                               *
+      * CONVENCAO DE SUFIXOS (padrao BMS):                            *
+      *   xxxxxL = length field (PIC S9(4) COMP)                     *
+      *   xxxxxF = flag/attribute byte (PIC X)                       *
+      *   xxxxxA = alias do attribute via REDEFINES                   *
+      *   xxxxxI = dado de input (digitado pelo operador)             *
+      *   xxxxxO = dado de output (exibido na tela)                   *
       *===============================================================*
 
       *---------------------------------------------------------------*
-      * AREA DE ENTRADA (INPUT) - dados recebidos da tela             *
+      * AREA DE ENTRADA (EBMSLDI) - populada por EXEC CICS RECEIVE MAP*
       *---------------------------------------------------------------*
        01  EBMSLDI.
+      *-- 12 bytes de controle interno BMS -------------------------*
            05 FILLER                  PIC X(12).
-           05 AGENCIAL                PIC S9(4) COMP.
-           05 AGENCIAF                PIC X.
+
+      *-- Campo AGENCIA: agencia da conta (4 digitos) --------------*
+           05 AGENCIAL                PIC S9(4) COMP.    *> comprimento
+           05 AGENCIAF                PIC X.             *> atributo
            05 FILLER REDEFINES AGENCIAF.
               10 AGENCIAA             PIC X.
-           05 AGENCIAI                PIC X(4).
+           05 AGENCIAI                PIC X(4).          *> dado input
+
+      *-- Campo CONTA: numero de conta (8 digitos) ----------------*
            05 CONTAL                  PIC S9(4) COMP.
            05 CONTAF                  PIC X.
            05 FILLER REDEFINES CONTAF.
@@ -24,15 +37,39 @@
            05 CONTAI                  PIC X(8).
 
       *---------------------------------------------------------------*
-      * AREA DE SAIDA (OUTPUT) - dados enviados para a tela           *
+      * AREA DE SAIDA (EBMSLDO) - preenchida antes de EXEC CICS SEND  *
+      * Campos mapeados a partir do registro CPCNT001 lido do KSDS    *
       *---------------------------------------------------------------*
        01  EBMSLDO.
+      *-- 12 bytes de controle interno BMS -------------------------*
            05 FILLER                  PIC X(12).
+
+      *-- Eco da agencia e conta consultadas -----------------------*
            05 AGENCIAO                PIC X(4).
            05 CONTAO                  PIC X(8).
+
+      *-- Tipo de conta: C=Corrente / P=Poupanca / S=Salario ------*
+      *   Origem: CNT-TIPO OF CPCNT001                              *
            05 TIPOO                   PIC X(1).
+
+      *-- Status da conta: A=Ativa / I=Inativa / B=Bloqueada ------*
+      *   Origem: CNT-STATUS OF CPCNT001                            *
            05 STATUSO                 PIC X(1).
+
+      *-- Saldo atual editado (ex: '    1.234,56') -----------------*
+      *   Origem: CNT-SALDO editado via PIC ZZZ.ZZZ.ZZ9,99          *
            05 SALDOO                  PIC X(16).
+
+      *-- Limite de credito editado --------------------------------*
+      *   Origem: CNT-LIMITE editado via PIC ZZZ.ZZZ.ZZ9,99         *
            05 LIMITEO                 PIC X(16).
+
+      *-- Saldo disponivel = saldo + limite (editado) --------------*
+      *   Calculado em EBCSSLD: ADD CNT-SALDO CNT-LIMITE             *
            05 DISPON                  PIC X(16).
+
+      *-- Mensagem de retorno ao operador --------------------------*
+      *   Ex: 'CONSULTA REALIZADA COM SUCESSO'                       *
+      *       'CONTA NAO ENCONTRADA'                                  *
+      *       'ERRO DE LEITURA NO VSAM'                              *
            05 MSGO                    PIC X(50).
