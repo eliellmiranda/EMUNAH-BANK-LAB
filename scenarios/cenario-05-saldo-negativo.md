@@ -20,17 +20,21 @@ Debito de R$ 9.900,00 na conta 0001-00000001 (que tem saldo ~R$ 100,00).
 |------|-----|-------------|-----------|
 | 1 | EBJVALD | RC=0 | Lancamento valido (formato ok) |
 | 2 | EBJPOST | RC=0 | Debito aplicado, saldo fica negativo |
-| 3 | EBJSALD | RC=0 | Relatorio mostra saldo negativo |
+| 3 | EBJSNAP | RC=0 | SALDO.GDG(+1) com saldo negativo registrado para a conta |
+| 4 | EBJCONC | RC=0 | Conciliacao three-way ainda fecha — saldo negativo nao quebra a aritmetica |
+| 5 | EBSALD01 (utilitario, opcional) | RC=0 | Relatorio manual mostra saldo negativo |
 
 ## Resultado esperado
 - EBPOST01 aplica o debito sem verificar saldo suficiente
 - O saldo da conta fica negativo (comportamento atual, sem limite)
 - A auditoria registra "POSTADO" com saldo anterior e posterior
-- O EBJSALD exibe o saldo negativo no relatorio
+- O snapshot do dia em SALDO.GDG(+1) traz a conta com saldo negativo
+- O utilitario `EBSALD01` (em `cobol/util/`), quando executado manualmente, exibe o saldo negativo
 
 ## Evidencias a coletar
 - Spool do EBJPOST com saldo anterior e saldo posterior
-- Conteudo do SALDO.OUT.SEQ mostrando saldo negativo
+- Geracao mais recente do SALDO.GDG mostrando o saldo negativo
+- Trecho do CONCIL.SEQ confirmando que a conciliacao fechou
 - Registro de auditoria correspondente
 
 ## Evolucao futura
