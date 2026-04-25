@@ -35,7 +35,7 @@
       *   - Chave duplicada no KSDS gera rejeicao na auditoria        *
       *                                                               *
       * RETURN-CODE:                                                  *
-      *   Nao controlado nesta versao — verificar AUDIT para rejeitos *
+      *   Nao controlado nesta versao - verificar AUDIT para rejeitos *
       *===============================================================*
        IDENTIFICATION DIVISION.
        PROGRAM-ID. EBCLLOAD.
@@ -108,7 +108,7 @@
       *---------------------------------------------------------------*
       * Arquivo de entrada de clientes                                *
       * Layout definido pelo copybook CPCLI001 (80 bytes)             *
-      * O copybook declara apenas niveis 05 — nivel 01 fica aqui      *
+      * O copybook declara apenas niveis 05 - nivel 01 fica aqui      *
       *---------------------------------------------------------------*
        FD  CLIENTES-IN
            RECORD CONTAINS 80 CHARACTERS
@@ -136,7 +136,7 @@
        01  AUDIT-REG                  PIC X(120).
 
       *---------------------------------------------------------------*
-      * KSDS de clientes — mesmo layout do arquivo de entrada         *
+      * KSDS de clientes - mesmo layout do arquivo de entrada         *
       * A chave CLI-ID-CLIENTE e usada como RECORD KEY                *
       *---------------------------------------------------------------*
        FD  CLIENTE-KSDS.
@@ -144,7 +144,7 @@
            COPY CPCLI001.
 
       *---------------------------------------------------------------*
-      * KSDS de contas — mesmo layout do arquivo de entrada           *
+      * KSDS de contas - mesmo layout do arquivo de entrada           *
       * A chave CNT-CHAVE (agencia + numero da conta) e usada         *
       * como RECORD KEY do VSAM                                       *
       *---------------------------------------------------------------*
@@ -257,7 +257,7 @@
            ELSE
       *        Copia o registro da entrada para a area do KSDS
                MOVE CLIENTES-IN-REG TO CLIENTE-KSDS-REG
-      *        Tenta gravar no KSDS — INVALID KEY indica duplicidade
+      *        Tenta gravar no KSDS - INVALID KEY indica duplicidade
                WRITE CLIENTE-KSDS-REG
                    INVALID KEY
                        ADD 1 TO WS-CLI-REJEITADOS
@@ -314,7 +314,7 @@
            ELSE
       *        Copia o registro da entrada para a area do KSDS
                MOVE CONTAS-IN-REG TO CONTA-KSDS-REG
-      *        Tenta gravar no KSDS — INVALID KEY indica duplicidade
+      *        Tenta gravar no KSDS - INVALID KEY indica duplicidade
                WRITE CONTA-KSDS-REG
                    INVALID KEY
                        ADD 1 TO WS-CNT-REJEITADOS
