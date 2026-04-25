@@ -23,7 +23,7 @@ Todos os datasets seguem o padrão:
 |------------------------------|----------|-----------------------------------------------------------------|---------------------------------------|
 | `<HLQ>.EMUNAH.DEV.COBOL`    | PDS/PDSE | EBCLLOAD, EBVALI01, EBPOST01, EBACCR01, EBSNAP01, EBCONC01, EBEXTR01, EBREPR01, EBCTL01, EBJEOD01, EBSALD01 | Fontes COBOL de desenvolvimento |
 | `<HLQ>.EMUNAH.DEV.COPY`     | PDS/PDSE | CPCLI001, CPCNT001, CPLCT001, CPAUD001, CPSLD001, CPACR001, CPCTL001 | Copybooks e layouts de registro |
-| `<HLQ>.EMUNAH.DEV.JCL`      | PDS/PDSE | EBALLOC, EBALLOC2, EBDEFGDG, EBDEPLOY, EBJPRECK, EBJSOD, EBJBCKPD, EBJWAIT, EBJLOAD, EBJVALD, EBJPOST, EBJCUTF, EBJSNAP, EBJCUTE, EBJCONC, EBJEXTR, EBJEOD, EBJREPR, EBJRPOST, EBJHKGDG, EBJHKAUD, EBJHKREJ, EBJCLLD, EBSEED, EBLISTDS, EBRESET | JCLs de alocação, cadeia batch e utilidades |
+| `<HLQ>.EMUNAH.DEV.JCL`      | PDS/PDSE | EBALLOC, EBDEFGDG, EBDEPLOY, EBBUILD, EBCOMP, EBLINK, EBJPRECK, EBJSOD, EBJBCKPD, EBJWAIT, EBJLOAD, EBJVALD, EBJPOST, EBJACCR, EBJCUTF, EBJSNAP, EBJCUTE, EBJCONC, EBJEXTR, EBJEOD, EBJREPR, EBJRPOST, EBJHKGDG, EBJHKAUD, EBJHKREJ, EBJCLLD, EBSEED, EBLISTDS, EBRESET | JCLs de alocação, build, cadeia batch e utilidades |
 | `<HLQ>.EMUNAH.DEV.REXX`     | PDS/PDSE | Scripts utilitários                                             | Scripts REXX e automações             |
 | `<HLQ>.EMUNAH.DEV.LOADLIB`  | PDS/PDSE | Load modules compilados                                         | Executáveis gerados no build DEV      |
 
