@@ -133,13 +133,31 @@ Os datasets foram alocados vazios pelo `EBALLALL`/`EBALLOC` (`CLIENTE.KSDS` exis
 ### Ordem obrigatória no setup do zero
 
 ```
-1. EBALLALL   → aloca todos os datasets vazios (incluindo LOADLIB vazia)
-2. Upload     → sobe fontes COBOL para DEV.COBOL e copybooks para DEV.COPY
-3. EBDEPLOY   → DEPLOY: compila os 13 programas, popula a LOADLIB
-4. Upload     → sobe SEED.CLIENTES.SEQ e SEED.CONTAS.SEQ
-5. EBSEED     → CARGA INICIAL: invoca EBCLLOAD para popular VSAMs
-6. EBJSOD     → abre o primeiro ciclo batch (sistema "no ar")
+1. EBALLALL (local-file)  → aloca todos os datasets vazios:
+                              PDSs (DEV.JCL, DEV.COBOL, DEV.COPY,
+                              DEV.REXX, DEV.LOADLIB...), VSAMs,
+                              GDGs e sequenciais. LOADLIB e PDSs
+                              de fonte ficam vazios.
+2. Upload de fontes       → sobe para DEV.JCL todos os JCLs
+                              (jcl/batch, jcl/compile, jcl/deploy,
+                              jcl/util...), para DEV.COBOL os
+                              fontes COBOL, para DEV.COPY os
+                              copybooks e para DEV.REXX os scripts.
+3. EBDEPLOY (data-set)    → DEPLOY: compila os 13 programas COBOL
+                              e popula a DEV.LOADLIB com os
+                              modulos executaveis.
+4. Upload de seeds        → sobe SEED.CLIENTES.SEQ, SEED.CONTAS.SEQ
+                              e demais arquivos de carga inicial.
+5. EBSEED                 → CARGA INICIAL: invoca EBCLLOAD (ja
+                              buildado) para popular CLIENTE.KSDS
+                              e CONTA.KSDS.
+6. Inicializar CTL.STATUS → grava "CLOSED" em ARQ.CTL.STATUS via
+                              IEBGENER (pre-condicao do EBJSOD).
+7. EBJSOD                 → abre o primeiro ciclo batch
+                              (CTL.STATUS = OPEN, sistema "no ar").
 ```
+
+A partir da etapa 2, todos os JCLs ja vivem no `DEV.JCL` e podem ser submetidos por referencia (`zowe jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBDEPLOY)"`). Antes da etapa 2, qualquer JCL precisa ser submetido via `local-file` porque o PDS de destino ainda nao existe — e e exatamente esse o caso do `EBALLALL` na etapa 1, que se auto-inicia sem depender de nada no host.
 
 A relação essencial: **a carga inicial só funciona depois do deploy**, porque ela executa um módulo que precisa estar buildado na LOADLIB. Se o `EBCLLOAD` na LOADLIB foi compilado com um copybook desatualizado, o `EBSEED` vai falhar com erros de layout (ex.: VSAM File Status 37 = atributos conflitantes), mesmo que o copybook local esteja correto. Fluxo de correção nesse caso: corrigir copybook → re-buildar (`EBBUILD` ou `EBDEPLOY`) → rodar carga inicial (`EBSEED`).
 
@@ -153,59 +171,142 @@ A relação essencial: **a carga inicial só funciona depois do deploy**, porque
 
 ## 5. Alocar os datasets no mainframe
 
-Execute o JCL de alocação inicial via Zowe:
+Esta é a etapa 1 da "Ordem obrigatória" descrita acima. Submeta o JCL de bootstrap **via local-file** (o `DEV.JCL` do host ainda não existe nesse momento, então não dá pra referenciar por dataset):
 
 ```powershell
-zowe jobs submit local-file "jcl/deploy/EBALLOC.jcl" --wfo
+zowe jobs submit local-file "jcl/deploy/EBALLALL.jcl" --wfo
 ```
 
-Depois popule os dados seed:
+O `EBALLALL` cria em um único job os 35 datasets do laboratório: 3 VSAM (CLIENTE.KSDS, CONTA.KSDS, LANCTO.ESDS), 6 GDG bases, 12 PDS/PDSE (DEV.JCL, DEV.COBOL, DEV.COPY, DEV.REXX, DEV.LOADLIB, DEV.MAPLIB, DEV.DCLGEN, HML.\*, PRD.\*) e 14 sequenciais (ARQ.\*, CTL.\*, SEED.\*, STAGE.\*, BAK.\*).
 
-```powershell
-zowe jobs submit local-file "jcl/batch/EBSEED.jcl" --wfo
-```
+> **Observação:** o `EBALLALL` é idempotente para os VSAMs (faz `DELETE+DEFINE`) mas **não** para os PDS/sequenciais (usa `NEW,CATLG,DELETE` — falha se o dataset já existir). Para recriar tudo do zero, rode `EBRESET` antes.
+
+Verifique no Zowe Explorer que o filtro `Z77948.EMUNAH.*` mostra todos os datasets criados, todos vazios (`used: 0`).
 
 ---
 
-## 6. Carregar os membros nos PDSs
+## 6. Upload de fontes, copybooks e JCLs para os PDSs
 
-Use o script de upload Zowe para enviar COBOLs, JCLs, copybooks e REXXs:
+Etapa 2 da Ordem obrigatória. Agora que o `DEV.JCL`, `DEV.COBOL`, `DEV.COPY` e `DEV.REXX` existem vazios, é hora de subir todos os artefatos versionados no clone local. O mapeamento completo está em [`docs/09-padroes-publicacao.md`](09-padroes-publicacao.md), mas a regra geral é:
+
+| Pasta local | Dataset destino |
+|---|---|
+| `jcl/batch/`, `jcl/compile/`, `jcl/deploy/`, `jcl/util/` | `Z77948.EMUNAH.DEV.JCL` |
+| `cobol/batch/`, `cobol/util/`, `cobol/online/`, `cobol/common/` | `Z77948.EMUNAH.DEV.COBOL` |
+| `copybooks/layouts/`, `copybooks/telas/`, `copybooks/db2/` | `Z77948.EMUNAH.DEV.COPY` |
+| `rexx/util/`, `rexx/operador/` | `Z77948.EMUNAH.DEV.REXX` |
+| `jcl/hml/`, `jcl/prd/` | `Z77948.EMUNAH.HML.JCL`, `Z77948.EMUNAH.PRD.JCL` |
+
+Use o script de automação para subir tudo de uma vez:
 
 ```powershell
-# Submeter a cadeia de upload (lê automation/submit/submit_cadeia.sh)
 bash automation/submit/submit_cadeia.sh
 ```
 
-Ou manualmente via Zowe Explorer no VS Code: arraste os arquivos para o PDS correspondente.
+Ou manualmente via Zowe Explorer no VS Code: arraste cada pasta local para o PDS correspondente.
+
+A partir desta etapa, todos os JCLs podem ser submetidos por referência a dataset, sem precisar mais do `local-file`:
+
+```powershell
+zowe jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBDEPLOY)" --wfo
+```
 
 ---
 
-## 7. Compilar e link-editar
+## 7. Deploy: compilar e link-editar todos os programas
+
+Etapa 3 da Ordem obrigatória. Com os COBOLs e copybooks no host, o `EBDEPLOY` compila os 13 programas em sequência via `IGYWCL` (compilador + link-editor) e grava os módulos executáveis na `DEV.LOADLIB`:
 
 ```powershell
-zowe jobs submit local-file "jcl/compile/EBCOMP.jcl" --wfo
-zowe jobs submit local-file "jcl/compile/EBLINK.jcl" --wfo
+zowe jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBDEPLOY)" --wfo
 ```
 
-Verifique RC=0 em ambos antes de prosseguir.
+A LOADLIB sai vazia da etapa 5 e fica populada com 13 módulos depois desta etapa: `EBCLLOAD`, `EBVALI01`, `EBPOST01`, `EBACCR01`, `EBSNAP01`, `EBCONC01`, `EBREPR01`, `EBCTL01`, `EBPCHK01`, `EBJEOD01`, `EBEXTR01`, `EBCOMM01`, `EBSALD01`.
+
+> **Para builds pontuais** (recompilar só um programa, ex.: após mudar o `EBCLLOAD`), use o `EBBUILD` em vez do `EBDEPLOY`. Veja a seção conceitual acima sobre quando usar cada um.
+
+Verifique RC=0 ou RC=4 em todos os steps `CL01..CL13` antes de prosseguir. Se algum step retornar RC ≥ 8, o `COND=(4,LT)` aborta os subsequentes para evitar gravar módulos defeituosos na LOADLIB.
 
 ---
 
-## 8. Executar a cadeia batch diária
+## 8. Carga inicial dos VSAMs
 
-A cadeia completa segue esta ordem:
+Etapas 4 e 5 da Ordem obrigatória. Agora que o `EBCLLOAD` está buildado na LOADLIB, sobe os arquivos de seed e roda a carga inicial.
 
-```
-EBJLOAD → EBJVALD → EBJPOST → EBJCONC → EBJSNAP → EBJEOD
-```
-
-Para submeter via automação:
+**8.1 Upload dos seeds:**
 
 ```powershell
-python automation/submit/submit_cadeia.sh
+zowe files upload file-to-data-set "data/normalized/clientes.txt" "Z77948.EMUNAH.SEED.CLIENTES.SEQ"
+zowe files upload file-to-data-set "data/normalized/contas.txt"   "Z77948.EMUNAH.SEED.CONTAS.SEQ"
 ```
 
-Ou use o EBOPS:
+> **Importante:** use os arquivos de `data/normalized/` (já com padding correto e LF-only). Os arquivos de `data/raw/` podem ter CRLF ou LRECL diferente do esperado e causam falhas no `EBCLLOAD`.
+
+**8.2 Submeter a carga inicial:**
+
+```powershell
+zowe jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBSEED)" --wfo
+```
+
+O `EBSEED` invoca o `EBCLLOAD` que lê os seeds sequenciais e popula `CLIENTE.KSDS` e `CONTA.KSDS`. RC esperado: 0. Se vier RC=8 com `FS=37` (VSAM File Status 37), significa que o módulo na LOADLIB tem layout incompatível com o cluster — recompile via `EBBUILD` ou `EBDEPLOY` e tente de novo.
+
+---
+
+## 9. Inicializar controle e abrir o primeiro ciclo
+
+Etapas 6 e 7 da Ordem obrigatória. O `EBJSOD` (Start of Day) só roda se o `ARQ.CTL.STATUS` contiver "CLOSED" — então no primeiro uso do laboratório, esse status precisa ser inicializado.
+
+**9.1 Gravar "CLOSED" no CTL.STATUS:**
+
+O `EBRESET` (em `jcl/util/`) já faz essa inicialização entre outras tarefas de reset. Para o primeiro uso do laboratório, submeta:
+
+```powershell
+zowe jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBRESET)" --wfo
+```
+
+Alternativamente, para inicializar **só** o `CTL.STATUS` sem mexer em mais nada, submeta um IEBGENER pontual via `local-file` gravando o literal `CLOSED` em `ARQ.CTL.STATUS` (DISP=OLD).
+
+**9.2 Abrir o primeiro ciclo:**
+
+```powershell
+zowe jobs submit data-set "Z77948.EMUNAH.DEV.JCL(EBJSOD)" --wfo
+```
+
+O `EBJSOD` grava "OPEN" em `ARQ.CTL.STATUS` e libera a cadeia diária para executar.
+
+---
+
+## 10. Executar a cadeia batch diária
+
+Com o ciclo aberto (`CTL.STATUS = OPEN`), a cadeia diária completa segue esta ordem:
+
+```
+EBJSOD   → abre o ciclo (STATUS=OPEN)             [executado na seção 9]
+EBJPRECK → valida pré-condições do CTL.STATUS
+EBJWAIT  → file-watcher: aguarda STAGE.ENTRADA.SEQ chegar
+EBJLOAD  → IEBGENER copia STAGE para ARQ.ENTRADA.SEQ
+EBJVALD  → valida lançamentos (gera REJEITOS.SEQ)
+EBJPOST  → posta lançamentos no LANCTO.ESDS
+EBJACCR  → calcula accruals (juros, encargos)
+EBJSNAP  → snapshot de saldos (GDG SALDO.G+1)
+EBJCONC  → conciliação três-vias
+EBJEXTR  → gera extrato (GDG EXTRATO.G+1)
+EBJEOD   → fechamento do dia (STATUS=CLOSED)
+```
+
+Antes de cada execução diária, suba o arquivo de movimento do dia para o STAGE:
+
+```powershell
+zowe files upload file-to-data-set "data/normalized/lancamentos_simulados.txt" "Z77948.EMUNAH.STAGE.ENTRADA.SEQ"
+```
+
+Para submeter a cadeia completa via automação local:
+
+```powershell
+bash automation/submit/submit_cadeia.sh
+```
+
+Ou via EBOPS (interface unificada):
 
 ```powershell
 python ebops/ebops.py dia
@@ -213,7 +314,7 @@ python ebops/ebops.py dia
 
 ---
 
-## 9. Validar saídas
+## 11. Validar saídas
 
 ```powershell
 bash automation/valida/valida_saida.sh
@@ -223,7 +324,7 @@ Compara `tests/actual/` com `tests/expected/` e reporta divergências.
 
 ---
 
-## 10. Configurar o VS Code na sua máquina
+## 12. Configurar o VS Code na sua máquina
 
 O arquivo `.vscode/settings.json` versionado no repositório contém paths de Java específicos da máquina original (`C:\Program Files\Java\jdk-21`). Se esses paths não existirem na sua máquina, o VS Code vai reclamar. Siga os passos abaixo para ajustar:
 
