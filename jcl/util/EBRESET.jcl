@@ -4,62 +4,92 @@
 //* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBRESET)
 //*
 //* FINALIDADE:
-//*   Resetar o ambiente de laboratorio para um estado limpo,
-//*   permitindo reexecutar a cadeia batch do inicio.
+//*   Reset de CICLO. Limpa as saidas do dia para reexecutar
+//*   a cadeia batch sobre os MESMOS masters (CLIENTE/CONTA).
+//*   Util quando a cadeia falhou no meio e voce quer rodar
+//*   de novo sem refazer a carga inicial.
 //*
-//* O QUE ESTE JOB DELETA (datasets de saida e backup):
-//*   - ARQ.LANCTO.ESDS     (VSAM ESDS - recriado vazio)
-//*   - ARQ.REJEITOS.SEQ    (recriado vazio)
-//*   - ARQ.AUDIT.SEQ       (recriado vazio)
-//*   - ARQ.SALDO.OUT.SEQ
-//*   - ARQ.CONCIL.SEQ
-//*   - ARQ.EXTRATO.SEQ
-//*   - ARQ.FECHTO.SEQ
-//*   - ARQ.REPR.LANCTO.SEQ
-//*   - ARQ.REPR.REJPERM.SEQ
-//*   - BKP.CLIENTE.SEQ / BKP.CONTA.SEQ / BKP.AUDIT.SEQ
+//* DIFERENCA PARA EBRESETF:
+//*   - EBRESET   = reset de CICLO (este job - preserva masters,
+//*                 CTL.STATUS, CTL.PROCDATE e GDGs)
+//*   - EBRESETF  = reset de FABRICA (zera tudo, exceto fontes
+//*                 e LOADLIB) - rodar antes de EBSEED + EBJCLLD
+//*
+//* O QUE ESTE JOB DELETA / RECRIA VAZIO:
+//*   - ARQ.LANCTO.ESDS         (DELETE CLUSTER + DEFINE)
+//*   - ARQ.ENTRADA.SEQ         (recriado vazio LRECL=120)
+//*   - ARQ.ENTRADA.TRAILER.SEQ (recriado vazio LRECL=80)
+//*   - ARQ.REJEITOS.SEQ        (recriado vazio LRECL=120)
+//*   - ARQ.AUDIT.SEQ           (recriado vazio LRECL=120)
+//*   - ARQ.CONCIL.SEQ          (recriado vazio LRECL=132)
+//*   - ARQ.ACCR.MOV.SEQ        (apagado - EBJACCR aloca a cada
+//*                              ciclo)
+//*   - ARQ.FECHTO.SEQ          (apagado - EBJEOD  aloca a cada
+//*                              ciclo)
+//*   - ARQ.REPR.LANCTO.SEQ     (recriado vazio LRECL=120)
+//*   - ARQ.REPR.REJPERM.SEQ    (recriado vazio LRECL=120)
 //*
 //* O QUE ESTE JOB NAO TOCA (preservado):
-//*   - ARQ.CLIENTE.KSDS e ARQ.CONTA.KSDS (masters de dados)
-//*   - DEV.COBOL / DEV.COPY / DEV.JCL / DEV.LOADLIB
+//*   - ARQ.CLIENTE.KSDS e ARQ.CONTA.KSDS (masters)
+//*   - ARQ.CTL.STATUS e ARQ.CTL.PROCDATE (controle do ciclo)
+//*   - DEV.COBOL / DEV.COPY / DEV.JCL / DEV.LOADLIB / DEV.REXX
 //*   - SEED.CLIENTES.SEQ e SEED.CONTAS.SEQ
-//*   - ARQ.CTL.STATUS e ARQ.CTL.PROCDATE
-//*   - Bases GDG e suas geracoes existentes
+//*   - STAGE.ENTRADA.SEQ (permite re-promover o mesmo arquivo
+//*                        do dia via EBJWAIT/EBJLOAD)
+//*   - GDGs (SALDO, EXTRATO, BKP.*) e suas geracoes
 //*
-//* SET MAXCC=0 apos cada DELETE: idempotente - nao falha se
-//* o dataset ja foi deletado ou nunca existiu.
+//* PROXIMO PASSO APOS RODAR ESTE JOB:
+//*   - Ajustar CTL.STATUS para CLOSED se nao estiver (via
+//*     EBCTL01 ou edicao manual no ISPF)
+//*   - Reexecutar a cadeia: EBJPRECK -> EBJSOD -> ... -> EBJEOD
+//*
+//* SET MAXCC=0 apos cada DELETE: idempotente. Nao falha se o
+//* dataset ja foi deletado ou nunca existiu.
 //* ============================================================
 //EBRESET  JOB ,'EMUNAH RESET',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
-//* === STEP DELSAIDA: DELETAR DATASETS DE SAIDA ================
+//* === STEP DELLCT: DELETAR LANCTO.ESDS =========================
+//*   VSAM CLUSTER nao pode ser "esvaziado" - precisa DELETE +
+//*   redefinir. Os outros VSAMs (CLIENTE/CONTA) NAO sao tocados
+//*   - sao masters preservados.
 //*
-//DELSAIDA EXEC PGM=IDCAMS
+//DELLCT   EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
 //SYSIN    DD *
   DELETE 'Z77948.EMUNAH.ARQ.LANCTO.ESDS' CLUSTER PURGE
   SET MAXCC = 0
-//*       VSAM ESDS de lancamentos - sera recriado vazio no RECRIA.
-  DELETE 'Z77948.EMUNAH.ARQ.REJEITOS.SEQ' NONVSAM PURGE
-  SET MAXCC = 0
-//*       Rejeitos acumulados pelo EBJVALD.
-  DELETE 'Z77948.EMUNAH.ARQ.AUDIT.SEQ' NONVSAM PURGE
-  SET MAXCC = 0
-//*       Trilha de auditoria - sera recriada vazia no RECRIASEQ.
-  DELETE 'Z77948.EMUNAH.ARQ.SALDO.OUT.SEQ' NONVSAM PURGE
-  SET MAXCC = 0
-//*       Arquivo de saldo de saida de execucoes anteriores.
-  DELETE 'Z77948.EMUNAH.ARQ.CONCIL.SEQ' NONVSAM PURGE
-  SET MAXCC = 0
-//*       Relatorio de conciliacao do ciclo anterior.
-  DELETE 'Z77948.EMUNAH.ARQ.EXTRATO.SEQ' NONVSAM PURGE
-  SET MAXCC = 0
-//*       Extrato gerado pelo EBJEXTR.
-  DELETE 'Z77948.EMUNAH.ARQ.FECHTO.SEQ' NONVSAM PURGE
-  SET MAXCC = 0
-//*       Relatorio de fechamento do EBJEOD01.
 /*
 //*
-//* === STEP DELREPR: DELETAR DATASETS DE REPROCESSAMENTO =======
+//* === STEP DELSEQ: DELETAR SEQUENCIAIS DO CICLO ================
+//*
+//DELSEQ   EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE 'Z77948.EMUNAH.ARQ.ENTRADA.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+//*       Arquivo do dia promovido pelo EBJLOAD. Sera recriado
+//*       vazio. O proximo EBJLOAD repopula a partir do STAGE.
+  DELETE 'Z77948.EMUNAH.ARQ.ENTRADA.TRAILER.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+//*       Trailer com count/hash do arquivo de entrada.
+  DELETE 'Z77948.EMUNAH.ARQ.REJEITOS.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+//*       Rejeitos acumulados pelo EBJVALD via DISP=MOD.
+  DELETE 'Z77948.EMUNAH.ARQ.AUDIT.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+//*       Trilha de auditoria do dia.
+  DELETE 'Z77948.EMUNAH.ARQ.CONCIL.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+//*       Relatorio three-way de conciliacao (LRECL=132).
+  DELETE 'Z77948.EMUNAH.ARQ.ACCR.MOV.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+//*       Movimentos de juros/tarifas. EBJACCR aloca a cada ciclo.
+  DELETE 'Z77948.EMUNAH.ARQ.FECHTO.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+//*       Relatorio de fechamento. EBJEOD aloca a cada ciclo.
+/*
+//*
+//* === STEP DELREPR: DELETAR DATASETS DE REPROCESSAMENTO ========
 //*
 //DELREPR  EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
@@ -69,28 +99,14 @@
 //*       Lancamentos recuperados pelo EBJREPR.
   DELETE 'Z77948.EMUNAH.ARQ.REPR.REJPERM.SEQ' NONVSAM PURGE
   SET MAXCC = 0
-//*       Rejeitos permanentes do EBJREPR.
+//*       Rejeitos permanentes apos reprocessamento.
 /*
 //*
-//* === STEP DELBKP: DELETAR BACKUPS ============================
+//* === STEP DEFLCT: REDEFINIR LANCTO.ESDS VAZIO =================
+//*   DEFINE CLUSTER identico ao do EBALLOC. Necessario porque
+//*   VSAM nao aceita truncate.
 //*
-//DELBKP   EXEC PGM=IDCAMS
-//SYSPRINT DD SYSOUT=*
-//SYSIN    DD *
-  DELETE 'Z77948.EMUNAH.BKP.CLIENTE.SEQ' NONVSAM PURGE
-  SET MAXCC = 0
-  DELETE 'Z77948.EMUNAH.BKP.CONTA.SEQ' NONVSAM PURGE
-  SET MAXCC = 0
-  DELETE 'Z77948.EMUNAH.BKP.AUDIT.SEQ' NONVSAM PURGE
-  SET MAXCC = 0
-/*
-//*
-//* === STEP RECRIA: RECRIAR LANCTO.ESDS VAZIO ==================
-//*   DEFINE CLUSTER identico ao do EBALLOC.
-//*   Necessario porque VSAM CLUSTER nao pode ser "zerado":
-//*   deve ser deletado e redefinido para ficar vazio.
-//*
-//RECRIA   EXEC PGM=IDCAMS
+//DEFLCT   EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
 //SYSIN    DD *
   DEFINE CLUSTER -
@@ -103,18 +119,58 @@
     (NAME('Z77948.EMUNAH.ARQ.LANCTO.ESDS.DATA'))
 /*
 //*
-//* === STEP RECRIASEQ: RECRIAR SEQUENCIAIS NECESSARIOS ==========
-//*   IEFBR14 recria REJEITOS.SEQ e AUDIT.SEQ vazios com o mesmo
-//*   DCB original, prontos para receber dados no novo ciclo.
+//* === STEP RECRSEQ: RECRIAR SEQUENCIAIS NECESSARIOS ============
+//*   IEFBR14 + DD NEW,CATLG mantem mesmos DCB do EBALLOC.
+//*   ACCR.MOV.SEQ e FECHTO.SEQ NAO sao recriados aqui:
+//*   sao alocados dinamicamente em EBJACCR/EBJEOD a cada ciclo.
 //*
-//RECRIASEQ EXEC PGM=IEFBR14
+//RECRSEQ  EXEC PGM=IEFBR14
+//ENTRADA  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//*           Arquivo do dia recriado vazio.
+//TRAILER  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.TRAILER.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(1,1)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
+//*           Trailer/hash recriado vazio.
 //REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
 //             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
-//*           Arquivo de rejeitos recriado vazio (LRECL=120).
+//*           Rejeitos recriado vazio (LRECL=120).
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
 //             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
-//*           Arquivo de auditoria recriado vazio (LRECL=120).
+//*           Auditoria recriada vazia (LRECL=120).
+//CONCIL   DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(10,5)),
+//             DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)
+//*           Conciliacao three-way recriada vazia (LRECL=132).
+//REPRLCT  DD DSN=Z77948.EMUNAH.ARQ.REPR.LANCTO.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//*           Lancamentos para reprocessamento (vazio).
+//REPRREJ  DD DSN=Z77948.EMUNAH.ARQ.REPR.REJPERM.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//*           Rejeitos permanentes (vazio).
+//*
+//* === STEP LISTRES: EVIDENCIA POS-RESET ========================
+//*   LISTCAT mostra os datasets recriados vazios e os masters
+//*   intactos.
+//*
+//LISTRES  EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.LANCTO.ESDS')   ALL
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.CLIENTE.KSDS')
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.CONTA.KSDS')
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.CTL.STATUS')
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.CTL.PROCDATE')
+/*
