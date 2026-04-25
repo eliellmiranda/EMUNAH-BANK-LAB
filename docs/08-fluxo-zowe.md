@@ -63,7 +63,9 @@ O fluxo padrão do laboratório segue esta sequência:
 `jcl/compile/` e `jcl/batch/` → `<HLQ>.EMUNAH.DEV.JCL`
 
 ### Publicação de arquivo de entrada
-`data/entrada/` → `<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ`
+`data/normalized/lancamentos_simulados.txt` → `<HLQ>.EMUNAH.STAGE.ENTRADA.SEQ`
+
+> O upload sempre alimenta o **STAGE**. O `EBJWAIT` valida e o `EBJLOAD` promove para `ARQ.ENTRADA.SEQ`.
 
 ---
 
