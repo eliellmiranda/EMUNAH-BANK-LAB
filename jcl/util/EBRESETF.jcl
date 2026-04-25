@@ -1,0 +1,267 @@
+//* ============================================================
+//* ARQUIVO      : EBRESETF.jcl
+//* CAMINHO LOCAL: jcl/util/EBRESETF.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBRESETF)
+//*
+//* FINALIDADE:
+//*   Factory reset do laboratorio. Volta o ambiente ao estado
+//*   pre-EBSEED: alocacao feita, GDGs definidos, programas
+//*   compilados, mas SEM nenhum dado de negocio carregado.
+//*
+//* QUANDO USAR:
+//*   - Demonstracao do lab "do zero" para alguem novo
+//*   - Suspeita de corrupcao dos masters (CLIENTE/CONTA.KSDS)
+//*   - Antes de simular um Day-One completo (EBSEED + EBJCLLD
+//*     + primeira execucao da cadeia)
+//*
+//* DIFERENCA PARA EBRESET:
+//*   - EBRESET   = reset de CICLO (preserva masters e GDGs)
+//*   - EBRESETF  = reset de FABRICA (zera tudo, exceto fontes
+//*                 e LOADLIB)
+//*
+//* O QUE ESTE JOB FAZ:
+//*   1. DELETE + DEFINE dos 3 VSAMs (CLIENTE/CONTA/LANCTO)
+//*   2. Apaga e recria sequenciais do ciclo, do controle e
+//*      do staging (todos vazios, mesmo DCB do EBALLOC)
+//*   3. Apaga e redefine as 6 bases GDG sem geracoes
+//*   4. LISTCAT final como evidencia
+//*
+//* O QUE ESTE JOB NAO TOCA:
+//*   - DEV.COBOL / DEV.COPY / DEV.JCL / DEV.LOADLIB / DEV.REXX
+//*   - SEED.CLIENTES.SEQ e SEED.CONTAS.SEQ (massa de carga)
+//*   - PARM.JUROS.CONFIG (parametros de juros/tarifas)
+//*
+//* PROXIMO PASSO APOS RODAR ESTE JOB:
+//*   1. EBJCLLD  -> carrega CLIENTES/CONTAS dos SEEDs nos KSDS
+//*   2. Upload de novo arquivo do dia para STAGE.ENTRADA.SEQ
+//*   3. Cadeia normal: EBJPRECK -> EBJSOD -> ... -> EBJEOD
+//*
+//* SET MAXCC=0 apos cada DELETE: idempotente. Nao falha se o
+//* dataset ja foi deletado ou nunca existiu.
+//* ============================================================
+//EBRESETF JOB ,'EMUNAH RESETF',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//*
+//* === STEP DELVSAM: DELETAR OS 3 VSAMs ========================
+//*   Inclui os masters (CLIENTE.KSDS e CONTA.KSDS) - este e o
+//*   ponto que diferencia o factory reset do reset de ciclo.
+//*
+//DELVSAM  EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE 'Z77948.EMUNAH.ARQ.CLIENTE.KSDS' CLUSTER PURGE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.CONTA.KSDS' CLUSTER PURGE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.LANCTO.ESDS' CLUSTER PURGE
+  SET MAXCC = 0
+/*
+//*
+//* === STEP DELSEQ: DELETAR SEQUENCIAIS DO CICLO ===============
+//*   Inclui os datasets do redesenho que nao constavam no
+//*   EBRESET legado: TRAILER, CONCIL, ACCR.MOV.
+//*
+//DELSEQ   EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE 'Z77948.EMUNAH.ARQ.ENTRADA.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.ENTRADA.TRAILER.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.REJEITOS.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.AUDIT.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.CONCIL.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.ACCR.MOV.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.FECHTO.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.REPR.LANCTO.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.REPR.REJPERM.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+/*
+//*
+//* === STEP DELCTL: DELETAR CONTROLE E STAGING =================
+//*   CTL.STATUS e CTL.PROCDATE voltam vazios -> proximo
+//*   EBJPRECK aceita o ambiente como "nunca executado".
+//*
+//DELCTL   EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE 'Z77948.EMUNAH.ARQ.CTL.STATUS' NONVSAM PURGE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.CTL.PROCDATE' NONVSAM PURGE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.STAGE.ENTRADA.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+/*
+//*
+//* === STEP DELGDG: DELETAR BASES GDG (com geracoes) ===========
+//*   GDG FORCE deleta a base e todas as geracoes ativas.
+//*   Sera redefinido vazio em DEFGDG.
+//*
+//DELGDG   EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE 'Z77948.EMUNAH.ARQ.EXTRATO.GDG' GDG FORCE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.SALDO.GDG' GDG FORCE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.BKP.CLIENTE.GDG' GDG FORCE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.BKP.CONTA.GDG' GDG FORCE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.BKP.AUDIT.GDG' GDG FORCE
+  SET MAXCC = 0
+  DELETE 'Z77948.EMUNAH.ARQ.BKP.REJEITOS.GDG' GDG FORCE
+  SET MAXCC = 0
+/*
+//*
+//* === STEP DEFVSAM: REDEFINIR OS 3 VSAMs VAZIOS ===============
+//*   Mesmos atributos do EBALLOC (KEYS, RECORDSIZE, SHAREOPTIONS).
+//*
+//DEFVSAM  EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DEFINE CLUSTER -
+    (NAME('Z77948.EMUNAH.ARQ.CLIENTE.KSDS') -
+     INDEXED -
+     RECORDS(500 100) -
+     RECORDSIZE(80 80) -
+     KEYS(5 0) -
+     SHAREOPTIONS(2 3)) -
+    DATA -
+    (NAME('Z77948.EMUNAH.ARQ.CLIENTE.KSDS.DATA')) -
+    INDEX -
+    (NAME('Z77948.EMUNAH.ARQ.CLIENTE.KSDS.INDEX'))
+
+  DEFINE CLUSTER -
+    (NAME('Z77948.EMUNAH.ARQ.CONTA.KSDS') -
+     INDEXED -
+     RECORDS(1000 200) -
+     RECORDSIZE(100 100) -
+     KEYS(12 0) -
+     SHAREOPTIONS(2 3)) -
+    DATA -
+    (NAME('Z77948.EMUNAH.ARQ.CONTA.KSDS.DATA')) -
+    INDEX -
+    (NAME('Z77948.EMUNAH.ARQ.CONTA.KSDS.INDEX'))
+
+  DEFINE CLUSTER -
+    (NAME('Z77948.EMUNAH.ARQ.LANCTO.ESDS') -
+     NONINDEXED -
+     RECORDS(5000 1000) -
+     RECORDSIZE(120 120) -
+     SHAREOPTIONS(2 3)) -
+    DATA -
+    (NAME('Z77948.EMUNAH.ARQ.LANCTO.ESDS.DATA'))
+/*
+//*
+//* === STEP RECRSEQ: RECRIAR SEQUENCIAIS VAZIOS ================
+//*   IEFBR14 + DD NEW,CATLG mantem mesmos DCB do EBALLOC.
+//*   ACCR.MOV.SEQ e FECHTO.SEQ NAO sao recriados aqui:
+//*   sao alocados dinamicamente em EBJACCR/EBJEOD a cada ciclo.
+//*
+//RECRSEQ  EXEC PGM=IEFBR14
+//ENTRADA  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//TRAILER  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.TRAILER.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(1,1)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
+//REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(10,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//CONCIL   DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(10,5)),
+//             DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)
+//REPRLCT  DD DSN=Z77948.EMUNAH.ARQ.REPR.LANCTO.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//REPRREJ  DD DSN=Z77948.EMUNAH.ARQ.REPR.REJPERM.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//*
+//* === STEP RECRCTL: RECRIAR CTL E STAGE VAZIOS ================
+//*
+//RECRCTL  EXEC PGM=IEFBR14
+//CTLSTAT  DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(1,1)),
+//             DCB=(RECFM=FB,LRECL=8,BLKSIZE=0)
+//CTLDATE  DD DSN=Z77948.EMUNAH.ARQ.CTL.PROCDATE,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(1,1)),
+//             DCB=(RECFM=FB,LRECL=8,BLKSIZE=0)
+//STAGE    DD DSN=Z77948.EMUNAH.STAGE.ENTRADA.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//*
+//* === STEP DEFGDG: REDEFINIR AS 6 BASES GDG VAZIAS ============
+//*   Mesmos LIMITs do EBDEFGDG (30/30/7/7/14/14).
+//*
+//DEFGDG   EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DEFINE GENERATIONDATAGROUP -
+    (NAME('Z77948.EMUNAH.ARQ.EXTRATO.GDG') -
+     LIMIT(30) -
+     NOEMPTY -
+     SCRATCH)
+  DEFINE GENERATIONDATAGROUP -
+    (NAME('Z77948.EMUNAH.ARQ.SALDO.GDG') -
+     LIMIT(30) -
+     NOEMPTY -
+     SCRATCH)
+  DEFINE GENERATIONDATAGROUP -
+    (NAME('Z77948.EMUNAH.ARQ.BKP.CLIENTE.GDG') -
+     LIMIT(7) -
+     NOEMPTY -
+     SCRATCH)
+  DEFINE GENERATIONDATAGROUP -
+    (NAME('Z77948.EMUNAH.ARQ.BKP.CONTA.GDG') -
+     LIMIT(7) -
+     NOEMPTY -
+     SCRATCH)
+  DEFINE GENERATIONDATAGROUP -
+    (NAME('Z77948.EMUNAH.ARQ.BKP.AUDIT.GDG') -
+     LIMIT(14) -
+     NOEMPTY -
+     SCRATCH)
+  DEFINE GENERATIONDATAGROUP -
+    (NAME('Z77948.EMUNAH.ARQ.BKP.REJEITOS.GDG') -
+     LIMIT(14) -
+     NOEMPTY -
+     SCRATCH)
+/*
+//*
+//* === STEP LISTRESF: EVIDENCIA DO ESTADO ZERO =================
+//*   Spool deste step e a prova de que o factory reset
+//*   foi concluido. KSDSs com 0 records, GDGs com 0 generations.
+//*
+//LISTRESF EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.CLIENTE.KSDS')      ALL
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.CONTA.KSDS')        ALL
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.LANCTO.ESDS')       ALL
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.EXTRATO.GDG')       ALL
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.SALDO.GDG')         ALL
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.BKP.CLIENTE.GDG')   ALL
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.BKP.CONTA.GDG')     ALL
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.BKP.AUDIT.GDG')     ALL
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.BKP.REJEITOS.GDG')  ALL
+/*
