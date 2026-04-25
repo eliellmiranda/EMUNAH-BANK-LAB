@@ -47,7 +47,7 @@
 //*           DDNAME esperado pelo programa: CONTAIN.
 //CLIENTE  DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
 //*           VSAM KSDS de clientes - destino da carga.
-//*           Chave: CLI-CPF. INVALID KEY detecta duplicatas.
+//*           Chave: CLI-ID-CLIENTE. INVALID KEY detecta duplicatas.
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
 //*           VSAM KSDS de contas - destino da carga.
 //*           Chave: CNT-CHAVE (agencia 4 + conta 8).
