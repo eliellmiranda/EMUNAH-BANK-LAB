@@ -18,7 +18,9 @@
 
 ## Sobre o laboratório
 
-O **Emunah Bank Lab** replica, de forma controlada, os padrões operacionais de instituições financeiras que sustentam seus sistemas críticos em mainframe. O laboratório cobre o ciclo completo de um processamento bancário batch: recepção do arquivo do dia, validação, aplicação de lançamentos, cutoff financeiro, cálculo de accruals, snapshot de saldo, cutoff contábil, extrato, conciliação three-way e fechamento, com cadeia de housekeeping para manter o ambiente estável entre dias.
+O **Emunah Bank Lab** replica, de forma controlada, os padrões operacionais de instituições financeiras que sustentam seus sistemas críticos em mainframe. A cadeia foi redesenhada (branch `refactor/cadeia-batch`) para refletir o ciclo canônico de core-banking — inspirado em FLEXCUBE — e cobre o dia inteiro do processamento bancário batch: Start of Day, backup, file-watcher, carga, validação, postagem, accrual, cutoff financeiro (`EOTI`), snapshot de saldo em GDG, cutoff contábil (`EOFI`), conciliação three-way bloqueante, extrato e fechamento (`CLOSED`), com cadeia de housekeeping mantendo o ambiente estável entre dias e ciclo de reprocessamento de rejeitos fora da janela oficial.
+
+O dataset `ARQ.CTL.STATUS` é a *source of truth* da cadeia — horários são apenas sugestão de janela.
 
 O nome *Emunah* (אֱמוּנָה) remete ao conceito hebraico de fidelidade e confiança — qualidades centrais tanto no setor bancário quanto nos sistemas mainframe, conhecidos por décadas de disponibilidade ininterrupta.
 
@@ -52,9 +54,10 @@ O nome *Emunah* (אֱמוּנָה) remete ao conceito hebraico de fidelidade e c
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │  Arquivos Operacionais (ARQ)                         │   │
 │  │  CLIENTE.KSDS   CONTA.KSDS   LANCTO.ESDS             │   │
-│  │  ENTRADA.SEQ    REJEITOS.SEQ  AUDIT.SEQ              │   │
-│  │  CONCIL.SEQ     CTL.STATUS   CTL.PROCDATE            │   │
-│  │  ACCR.MOV.SEQ   REPR.LANCTO.SEQ                      │   │
+│  │  ENTRADA.SEQ    ENTRADA.TRAILER.SEQ                  │   │
+│  │  REJEITOS.SEQ   AUDIT.SEQ   CONCIL.SEQ               │   │
+│  │  ACCR.MOV.SEQ   REPR.LANCTO.SEQ   FECHTO.SEQ         │   │
+│  │  CTL.STATUS     CTL.PROCDATE                         │   │
 │  │  EXTRATO.GDG    SALDO.GDG                            │   │
 │  └──────────────────────────────────────────────────────┘   │
 │                                                             │
@@ -83,33 +86,50 @@ O nome *Emunah* (אֱמוּנָה) remete ao conceito hebraico de fidelidade e c
 
 ## Cadeia Batch
 
-A cadeia principal é governada pelo dataset `ARQ.CTL.STATUS`, que transita entre as fases inspiradas em FLEXCUBE (`OPEN → EOTI → EOFI → CLOSED`). Cada job ou lê o status esperado ou grava o próximo.
+A cadeia principal é governada pelo dataset `ARQ.CTL.STATUS`, fonte de verdade do ciclo. As fases seguem o modelo canônico de core-banking inspirado em FLEXCUBE (`OPEN → EOTI → EOFI → CLOSED`), com cutoffs financeiro e contábil, accruals, snapshot de saldo em GDG, conciliação three-way bloqueante e housekeeping de trilhas. Horários são apenas sugestão de janela — a dependência real é o estado em `CTL.STATUS`.
 
 ```
-06:00  EBJPRECK   ── valida ambiente e lê CTL.STATUS
-06:05  EBJSOD     ── Start of Day — grava CTL.STATUS=OPEN
-06:15  EBJBACKP   ── backup CLIENTE/CONTA/AUDIT em GDG
-06:20  EBJWAIT    ── file-watcher sobre STAGE.ENTRADA.SEQ
-06:30  EBJLOAD    ── promove STAGE.ENTRADA → ARQ.ENTRADA
-07:00  EBJVALD    ── valida layout e regras de negócio
-07:30  EBJPOST    ── aplica lançamentos válidos (ENTRADA+REPR)
-08:00  EBJCUTF    ── cutoff financeiro (CTL.STATUS=EOTI)
-08:15  (EBACCR01) ── accruals (juros/tarifas → ACCR.MOV.SEQ)
-08:30  EBJSNAP    ── snapshot diário de saldo → SALDO.GDG(+1)
-08:45  EBJCUTE    ── cutoff contábil (CTL.STATUS=EOFI)
-09:00  EBJCONC    ── conciliação three-way (CONCIL.SEQ)
-09:30  EBJEXTR    ── gera EXTRATO.GDG(+1)
-10:00  EBJEOD     ── fechamento — grava CTL.STATUS=CLOSED
+FASE 1 · SOD
+  06:00  EBJPRECK   ── valida ambiente e lê CTL.STATUS (espera CLOSED ou vazio)
+  06:05  EBJSOD     ── Start of Day — grava CTL.STATUS=OPEN
+  06:15  EBJBCKPD   ── backup CLIENTE/CONTA/AUDIT em GDG (BKP.*.GDG(+1))
 
-  (sob demanda, fora da cadeia)
-  EBJREPR   ── reaplicação de rejeitos corrigidos
-  EBJRPOST  ── postagem de REPR.LANCTO.SEQ via EBPOST01
-  EBJHKGDG  ── monitor passivo das bases GDG
-  EBJHKAUD  ── housekeeping ativo de ARQ.AUDIT.SEQ
-  EBJHKREJ  ── housekeeping ativo de ARQ.REJEITOS.SEQ
+FASE 2 · INTAKE
+  06:20  EBJWAIT    ── file-watcher sobre STAGE.ENTRADA.SEQ (existência + trailer)
+  06:30  EBJLOAD    ── promove STAGE.ENTRADA → ARQ.ENTRADA
+
+FASE 3 · VALIDAÇÃO
+  07:00  EBJVALD    ── EBVALI01 → VALIDOS.OUT + REJEITOS.SEQ
+
+FASE 4 · POSTAGEM
+  07:30  EBJPOST    ── EBPOST01 → atualiza CONTA.KSDS + LANCTO.ESDS
+
+FASE 5 · ACCRUAL
+  08:00  EBJACCR    ── EBACCR01 → ACCR.MOV.SEQ + append em LANCTO.ESDS
+  08:00  EBJCUTF    ── cutoff financeiro (CTL.STATUS=EOTI)
+
+FASE 6 · SNAPSHOT
+  08:30  EBJSNAP    ── EBSNAP01 → SALDO.GDG(+1)
+
+FASE 7 · RECONCILIATION
+  08:45  EBJCUTE    ── cutoff contábil (CTL.STATUS=EOFI)
+  09:00  EBJCONC    ── conciliação three-way em CONCIL.SEQ (BLOQUEANTE)
+
+FASE 8 · OUTPUT
+  09:30  EBJEXTR    ── EBEXTR01 → EXTRATO.GDG(+1)
+  10:00  EBJEOD     ── fechamento — grava CTL.STATUS=CLOSED
+
+FASE 9 · HOUSEKEEPING (sob demanda)
+  EBJHKGDG  ── monitor/roll de gerações antigas de GDG
+  EBJHKAUD  ── arquiva ARQ.AUDIT.SEQ → BKP.AUDIT.GDG e recria vazio
+  EBJHKREJ  ── arquiva ARQ.REJEITOS.SEQ → BKP.REJEITOS.GDG e recria vazio
+
+OFF-CYCLE (fora da cadeia oficial)
+  EBJREPR   ── revalida rejeitos corrigidos → REPR.LANCTO.SEQ
+  EBJRPOST  ── reinjeta recuperados em EBPOST01 (exige STATUS=EOTI)
 ```
 
-Detalhes de dependência, critérios de bloqueio, janelas e datasets envolvidos estão em [`docs/05-grade-batch.md`](docs/05-grade-batch.md).
+Detalhes de dependência, transições de status, critérios de bloqueio e datasets envolvidos estão em [`docs/05-grade-batch.md`](docs/05-grade-batch.md). O racional do redesenho está em [`docs/sob revisao/proposta-cadeia-batch-realista.md`](docs/sob%20revisao/proposta-cadeia-batch-realista.md).
 
 ---
 
@@ -121,14 +141,15 @@ emunah-bank-lab/
 ├── cobol/
 │   ├── batch/              # Programas COBOL batch da cadeia principal
 │   │   ├── EBCLLOAD.cbl    # Carga de clientes e contas (seed)
+│   │   ├── EBPCHK01.cbl    # Precheck programático do ambiente
+│   │   ├── EBCTL01.cbl     # Utilitário de CTL.STATUS / CTL.PROCDATE
 │   │   ├── EBVALI01.cbl    # Validação de lançamentos
-│   │   ├── EBPOST01.cbl    # Aplicação de lançamentos
+│   │   ├── EBPOST01.cbl    # Aplicação de lançamentos (POST e RPOST)
 │   │   ├── EBACCR01.cbl    # Accruals (juros e tarifas)
-│   │   ├── EBSNAP01.cbl    # Snapshot de saldo para SALDO.GDG
+│   │   ├── EBSNAP01.cbl    # Snapshot de saldo → SALDO.GDG
 │   │   ├── EBCONC01.cbl    # Conciliação three-way
-│   │   ├── EBEXTR01.cbl    # Geração de extrato
-│   │   ├── EBREPR01.cbl    # Reprocessamento de rejeitos
-│   │   ├── EBCTL01.cbl     # Controle de CTL.STATUS / CTL.PROCDATE
+│   │   ├── EBEXTR01.cbl    # Geração de extrato (GDG)
+│   │   ├── EBREPR01.cbl    # Revalidação de rejeitos corrigidos
 │   │   └── EBJEOD01.cbl    # Fechamento diário
 │   │
 │   ├── common/
@@ -139,55 +160,77 @@ emunah-bank-lab/
 │   │   ├── EBCSSLD.cbl
 │   │   └── EBCSTRF.cbl
 │   │
-│   ├── hml/                # Cópias promovidas para HML
+│   ├── hml/                # Cópias promovidas para HML (smoke tests)
+│   │   └── EBSMKH01.cbl
 │   │
 │   └── util/
 │       └── EBSALD01.cbl    # Utilitário manual de consulta de saldo
 │
 ├── copybooks/
-│   └── layouts/            # Copybooks e layouts de registro
+│   ├── layouts/            # Layouts de registro (CPCLI, CPCNT, CPLCT,
+│   │                       # CPAUD, CPSLD, CPSNP, CPSTS, CPCNC, CPREJ, CPEXT)
+│   ├── telas/              # Mapas de tela (EBMEXT, EBMSLD, EBMTRF)
+│   └── db2/                # DCLGEN (DCLCLI, DCLCONTA, DCLLNCTO)
 │
 ├── jcl/
 │   ├── batch/              # JCLs da cadeia batch e off-cycle
 │   │   ├── EBJPRECK.jcl    # Precheck de ambiente + CTL.STATUS
-│   │   ├── EBJSOD.jcl      # Start of Day
+│   │   ├── EBJSOD.jcl      # Start of Day → CTL.STATUS=OPEN
 │   │   ├── EBJBCKPD.jcl    # Backup GDG (CLIENTE/CONTA/AUDIT)
 │   │   ├── EBJWAIT.jcl     # File-watcher STAGE.ENTRADA.SEQ
 │   │   ├── EBJLOAD.jcl     # STAGE → ARQ.ENTRADA
 │   │   ├── EBJVALD.jcl     # Validação
 │   │   ├── EBJPOST.jcl     # Postagem
-│   │   ├── EBJCUTF.jcl     # Cutoff financeiro
-│   │   ├── EBJSNAP.jcl     # Snapshot de saldo
-│   │   ├── EBJCUTE.jcl     # Cutoff contábil
+│   │   ├── EBJCUTF.jcl     # Cutoff financeiro → CTL.STATUS=EOTI
+│   │   ├── EBJACCR.jcl     # Accruals (juros e tarifas)
+│   │   ├── EBJSNAP.jcl     # Snapshot de saldo → SALDO.GDG
+│   │   ├── EBJCUTE.jcl     # Cutoff contábil → CTL.STATUS=EOFI
 │   │   ├── EBJCONC.jcl     # Conciliação three-way
-│   │   ├── EBJEXTR.jcl     # Geração de extrato GDG
-│   │   ├── EBJEOD.jcl      # Fechamento diário
-│   │   ├── EBJREPR.jcl     # Reprocessamento (off-cycle)
-│   │   ├── EBJRPOST.jcl    # Postagem de reprocessados
-│   │   ├── EBJHKGDG.jcl    # Monitor passivo de GDGs
+│   │   ├── EBJEXTR.jcl     # Extrato → EXTRATO.GDG
+│   │   ├── EBJEOD.jcl      # Fechamento → CTL.STATUS=CLOSED
+│   │   ├── EBJREPR.jcl     # Reprocessamento de rejeitos (off-cycle)
+│   │   ├── EBJRPOST.jcl    # Postagem de reprocessados (off-cycle)
+│   │   ├── EBJHKGDG.jcl    # Monitor/roll de GDGs
 │   │   ├── EBJHKAUD.jcl    # Housekeeping AUDIT.SEQ
 │   │   ├── EBJHKREJ.jcl    # Housekeeping REJEITOS.SEQ
 │   │   ├── EBJCLLD.jcl     # Carga inicial via EBCLLOAD
 │   │   └── EBSEED.jcl      # Envio/carga de seed
 │   │
 │   ├── deploy/             # JCLs de alocação e deploy
-│   │   ├── EBALLOC.jcl     # Aloca PDS, VSAM, sequenciais base
-│   │   ├── EBALLOC2.jcl    # Aloca PARM/ACCR/CTL.PROCDATE/TRAILER
-│   │   ├── EBDEFGDG.jcl    # Define bases GDG
+│   │   ├── EBALLOC.jcl     # Aloca PDS, VSAM e sequenciais base
+│   │   ├── EBDEFGDG.jcl    # Define bases GDG (BKP/SALDO/EXTRATO)
 │   │   └── EBDEPLOY.jcl    # Pipeline de deploy
+│   │
+│   ├── compile/            # Pipeline de compilação
+│   │   ├── EBBUILD.jcl
+│   │   ├── EBCOMP.jcl
+│   │   └── EBLINK.jcl
+│   │
+│   ├── hml/                # JCLs de HML (smoke + concil. paralela)
+│   │   ├── EBJSMKH.jcl
+│   │   └── EBJCONCH.jcl
+│   │
+│   ├── prd/                # JCLs de PRD simulado
+│   │   └── EBJEODP.jcl
 │   │
 │   └── util/
 │       ├── EBLISTDS.jcl    # Lista datasets do lab
 │       └── EBRESET.jcl     # Reset controlado do ambiente
 │
-├── rexx/
-│   └── util/               # Scripts REXX de automação
+├── rexx/                   # Scripts REXX de automação
+│   ├── EBCHKLAB.rexx       # Health-check do lab
+│   ├── EBSUBJCL.rexx       # Submissor genérico
+│   ├── operador/           # EBCADEIA, EBCHKENV, EBSUBMIT
+│   └── util/               # EBDSLIST, EBRESET
 │
 ├── data/
-│   ├── entrada/            # Arquivos de entrada batch
-│   └── seed/               # Massa de dados inicial
-│       ├── clientes.txt
-│       └── contas.txt
+│   ├── seed/               # Massa de carga inicial
+│   │   ├── clientes.txt
+│   │   └── contas.txt
+│   ├── entrada/            # Arquivos de entrada batch (formato local)
+│   │   ├── lancamentos_d0.txt
+│   │   └── lancamentos_simulados.txt
+│   └── normalized/         # Massa pronta para upload (LRECL fixo z/OS)
 │
 ├── ebops/                  # EBOPS — Simulador de operações bancárias
 │
@@ -203,8 +246,13 @@ emunah-bank-lab/
     ├── 07-cenarios-incidente.md
     ├── 08-fluxo-zowe.md
     ├── 09-padroes-publicacao.md
-    ├── inventario-mudancas-cadeia-batch.md
-    ├── proposta-cadeia-batch-realista.md
+    ├── 10-gerador-lancamentos.md
+    ├── setup.md
+    ├── change-log/         # Estudos de caso (case-005, case-006, case-007 …)
+    ├── sob revisao/        # Propostas e inventários do redesenho
+    │   ├── proposta-cadeia-batch-realista.md
+    │   ├── inventario-mudancas-cadeia-batch.md
+    │   └── fluxo-cadeia-batch.md
     └── mapa-emunah-bank-lab.html
 ```
 
@@ -253,13 +301,13 @@ zowe config set profiles.zosmf.properties.rejectUnauthorized false
 # Sobe JCLs de deploy
 zowe files upload dir-to-pds ./jcl/deploy "<HLQ>.EMUNAH.DEV.JCL"
 
-# Aloca PDS, VSAM e sequenciais base
+# Aloca PDS, VSAM, sequenciais base e datasets auxiliares
+# (PARM.JUROS.CONFIG, ACCR.MOV.SEQ, CTL.STATUS, CTL.PROCDATE,
+#  ENTRADA.TRAILER.SEQ etc.)
 zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBALLOC)"
 
-# Aloca datasets auxiliares (PARM, ACCR, CTL.PROCDATE, TRAILER)
-zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBALLOC2)"
-
-# Define bases GDG (EXTRATO, SALDO, BKP.*)
+# Define bases GDG (BKP.CLIENTE, BKP.CONTA, BKP.AUDIT,
+# BKP.REJEITOS, SALDO, EXTRATO)
 zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBDEFGDG)"
 ```
 
@@ -289,13 +337,18 @@ zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJCLLD)"
 
 ```bash
 # Envie o arquivo de entrada para staging
-zowe files upload file-to-data-set ./data/entrada/lancamentos.txt \
+zowe files upload file-to-data-set ./data/normalized/lancamentos_simulados.txt \
   "<HLQ>.EMUNAH.STAGE.ENTRADA.SEQ" --record-length 120
 
 # Dispare a cadeia, do precheck ao fechamento
 zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJPRECK)"
-# depois: EBJSOD → EBJBACKP → EBJWAIT → EBJLOAD → EBJVALD → EBJPOST →
-#         EBJCUTF → EBJSNAP → EBJCUTE → EBJCONC → EBJEXTR → EBJEOD
+# depois, na ordem das fases:
+#   EBJSOD  → EBJBCKPD → EBJWAIT → EBJLOAD →
+#   EBJVALD → EBJPOST  → EBJACCR → EBJCUTF →
+#   EBJSNAP → EBJCUTE  → EBJCONC → EBJEXTR → EBJEOD
+#
+# Cada job lê e/ou grava ARQ.CTL.STATUS — execuções fora de ordem
+# abortam por inconsistência de status.
 ```
 
 ---
@@ -308,13 +361,17 @@ zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJPRECK)"
 | [02 - Arquitetura](docs/02-arquitetura.md) | Camadas, ferramentas e fluxo de integração |
 | [03 - Módulos](docs/03-modulos.md) | Módulos funcionais do sistema e seus programas |
 | [04 - Mapa de Datasets](docs/04-mapa-datasets.md) | Datasets operacionais, backups, GDG, STAGE, PARM e SEED |
-| [05 - Grade Batch](docs/05-grade-batch.md) | Cadeia batch completa, CTL.STATUS, cutoffs e housekeeping |
+| [05 - Grade Batch](docs/05-grade-batch.md) | Cadeia batch redesenhada, fases, CTL.STATUS, cutoffs e housekeeping |
 | [06 - Runbooks](docs/06-runbooks.md) | Procedimentos de diagnóstico e correção por incidente |
 | [07 - Cenários de Incidente](docs/07-cenarios-incidente.md) | Cenários controlados para prática de troubleshooting |
 | [08 - Fluxo Zowe](docs/08-fluxo-zowe.md) | Como o Zowe integra o ambiente local ao mainframe |
 | [09 - Padrões de Publicação](docs/09-padroes-publicacao.md) | Mapeamento local→remoto e regras de promoção |
-| [Inventário de Mudanças](docs/inventario-mudancas-cadeia-batch.md) | Inventário detalhado do redesenho da cadeia batch |
-| [Proposta da Cadeia](docs/proposta-cadeia-batch-realista.md) | Baseline da cadeia batch realista |
+| [10 - Gerador de Lançamentos](docs/10-gerador-lancamentos.md) | Geração controlada de massa de entrada |
+| [Setup do Lab](docs/setup.md) | Passo a passo de inicialização |
+| [Proposta da Cadeia](docs/sob%20revisao/proposta-cadeia-batch-realista.md) | Racional, fases canônicas e decisões do redesenho |
+| [Inventário de Mudanças](docs/sob%20revisao/inventario-mudancas-cadeia-batch.md) | Checklist do que foi mantido/alterado/criado/descartado |
+| [Fluxo da Cadeia](docs/sob%20revisao/fluxo-cadeia-batch.md) | Diagrama detalhado do encadeamento por fase |
+| [Estudos de Caso](docs/change-log/) | Diários de bordo dos incidentes resolvidos no lab |
 | [Mapa Visual do Lab](docs/mapa-emunah-bank-lab.html) | Mapa interativo navegável em HTML |
 | [EBOPS — Guia Completo](ebops/EBOPS-GUIA-COMPLETO.md) | Guia de implantação e uso do simulador |
 
@@ -324,20 +381,20 @@ zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJPRECK)"
 
 | Módulo | Programa(s) | Job(s) |
 |---|---|---|
-| Cliente | `EBCLLOAD` | `EBJCLLD` |
-| Conta | `EBCLLOAD` | `EBJCLLD` |
-| Controle (CTL.STATUS) | `EBCTL01` | `EBJSOD`, `EBJCUTF`, `EBJCUTE`, `EBJEOD` |
-| Entrada (staging) | — | `EBJWAIT`, `EBJLOAD` |
+| Precheck | `EBPCHK01` | `EBJPRECK` |
+| Cliente / Conta (seed) | `EBCLLOAD` | `EBJCLLD` |
+| Controle (CTL.STATUS / CTL.PROCDATE) | `EBCTL01` | `EBJSOD`, `EBJCUTF`, `EBJCUTE`, `EBJEOD` |
+| Backup pré-batch | — | `EBJBCKPD` |
+| Entrada (staging + watcher) | — | `EBJWAIT`, `EBJLOAD` |
 | Lançamentos | `EBVALI01`, `EBPOST01` | `EBJVALD`, `EBJPOST` |
-| Accrual | `EBACCR01` | — |
+| Accrual | `EBACCR01` | `EBJACCR` |
 | Saldo (snapshot) | `EBSNAP01` | `EBJSNAP` |
-| Conciliação | `EBCONC01` | `EBJCONC` |
+| Conciliação three-way | `EBCONC01` | `EBJCONC` |
 | Extrato | `EBEXTR01` | `EBJEXTR` |
 | Fechamento | `EBJEOD01` | `EBJEOD` |
-| Reprocessamento | `EBREPR01` | `EBJREPR`, `EBJRPOST` |
-| Backup | — | `EBJBCKPD` |
+| Reprocessamento | `EBREPR01`, `EBPOST01` | `EBJREPR`, `EBJRPOST` |
 | Housekeeping | — | `EBJHKGDG`, `EBJHKAUD`, `EBJHKREJ` |
-| Utilitários | `EBSALD01` | — |
+| Utilitário (consulta de saldo) | `EBSALD01` (em `cobol/util/`) | — |
 
 ---
 
