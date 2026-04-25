@@ -13,11 +13,23 @@ Toda publicação deve partir do ambiente local para o ambiente remoto. Alteraç
 | Pasta local | Dataset remoto | Tipo |
 |---|---|---|
 | `copybooks/layouts/` | `<HLQ>.EMUNAH.DEV.COPY` | copybook |
-| `cobol/batch/` | `<HLQ>.EMUNAH.DEV.COBOL` | fonte COBOL |
-| `jcl/compile/` | `<HLQ>.EMUNAH.DEV.JCL` | JCL |
-| `jcl/batch/` | `<HLQ>.EMUNAH.DEV.JCL` | JCL |
-| `rexx/util/` | `<HLQ>.EMUNAH.DEV.REXX` | script REXX |
-| `data/entrada/` | `<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ` | dataset sequencial |
+| `copybooks/telas/` | `<HLQ>.EMUNAH.DEV.COPY` | mapas de tela |
+| `copybooks/db2/` | `<HLQ>.EMUNAH.DEV.COPY` | DCLGEN |
+| `cobol/batch/` | `<HLQ>.EMUNAH.DEV.COBOL` | fonte COBOL batch |
+| `cobol/util/` | `<HLQ>.EMUNAH.DEV.COBOL` | fonte COBOL utilitário (ex.: `EBSALD01`) |
+| `cobol/online/` | `<HLQ>.EMUNAH.DEV.COBOL` | fonte COBOL online (CICS) |
+| `cobol/common/` | `<HLQ>.EMUNAH.DEV.COBOL` | rotinas comuns |
+| `jcl/compile/` | `<HLQ>.EMUNAH.DEV.JCL` | JCL de build |
+| `jcl/batch/` | `<HLQ>.EMUNAH.DEV.JCL` | JCL da cadeia batch |
+| `jcl/deploy/` | `<HLQ>.EMUNAH.DEV.JCL` | JCL de alocação e deploy |
+| `jcl/util/` | `<HLQ>.EMUNAH.DEV.JCL` | JCL utilitário (`EBLISTDS`, `EBRESET`) |
+| `jcl/hml/` | `<HLQ>.EMUNAH.HML.JCL` | JCL de homologação |
+| `jcl/prd/` | `<HLQ>.EMUNAH.PRD.JCL` | JCL de produção simulada |
+| `rexx/util/` | `<HLQ>.EMUNAH.DEV.REXX` | script REXX utilitário |
+| `rexx/operador/` | `<HLQ>.EMUNAH.DEV.REXX` | script REXX de operação |
+| `data/normalized/lancamentos_simulados.txt` | `<HLQ>.EMUNAH.STAGE.ENTRADA.SEQ` | massa do dia (entra pelo `EBJWAIT`/`EBJLOAD`) |
+| `data/normalized/clientes.txt` | `<HLQ>.EMUNAH.SEED.CLIENTES.SEQ` | seed de clientes |
+| `data/normalized/contas.txt` | `<HLQ>.EMUNAH.SEED.CONTAS.SEQ` | seed de contas |
 
 ---
 
@@ -48,10 +60,11 @@ zowe files upload file-to-data-set \
   ./copybooks/layouts/CPCONTA.cpy \
   "<HLQ>.EMUNAH.DEV.COPY(CPCONTA)"
 
-# Publicar arquivo sequencial de entrada
+# Publicar arquivo sequencial de entrada (entra por STAGE,
+# não direto em ARQ — quem promove é o EBJLOAD após o EBJWAIT)
 zowe files upload file-to-data-set \
-  ./data/entrada/lancamentos.txt \
-  "<HLQ>.EMUNAH.ARQ.ENTRADA.SEQ" --binary
+  ./data/normalized/lancamentos_simulados.txt \
+  "<HLQ>.EMUNAH.STAGE.ENTRADA.SEQ" --binary
 ```
 
 ---
