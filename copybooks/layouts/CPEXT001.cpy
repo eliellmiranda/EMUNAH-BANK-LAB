@@ -1,4 +1,4 @@
-*----------------------------------------------------------------
+      *----------------------------------------------------------------
       * ARQUIVO      : CPEXT001.cpy
       * CAMINHO LOCAL: copybooks/layouts/CPEXT001.cpy
       * HOST / PDS   : Z77948.EMUNAH.DEV.CPY(CPEXT001)
