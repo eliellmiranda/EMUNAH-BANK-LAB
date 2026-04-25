@@ -1,99 +1,68 @@
       *===============================================================*
-      * COPYBOOK: CPLCT001                                            *
-      * FUNCAO  : LAYOUT DE LANCAMENTO / MOVIMENTO                    *
-      * REGISTRO: 120 BYTES                                           *
+      * COPYBOOK: CPCLI001                                            *
+      * FUNCAO  : LAYOUT DE REGISTRO DE CLIENTE                       *
+      * REGISTRO: 80 BYTES                                            *
       *                                                               *
-      * USADO EM: EBVALI01 (VALIDACAO), EBPOST01 (POSTAGEM),          *
-      *           EBEXTR01 (EXTRATO), EBREPR01 (REPROCESSAMENTO),     *
-      *           EBCONC01 (CONCILIACAO)                              *
-      * DATASET : Z77948.EMUNAH.ARQ.ENTRADA.SEQ  (entrada do dia)     *
-      *           Z77948.EMUNAH.ARQ.LANCTO.ESDS  (lancamentos validos)*
-      * DDNAME  : ENTRADA / VALIDOS                                   *
+      * USADO EM: EBCLLOAD (CARGA DE CLIENTES NO KSDS)                *
+      * DATASET : Z77948.EMUNAH.ARQ.CLIENTE.KSDS                      *
+      *           Z77948.EMUNAH.SEED.CLIENTES.SEQ (entrada do seed)   *
+      * DDNAME  : CLIENTE / CLIIN                                     *
       *                                                               *
       * FINALIDADE:                                                   *
-      * - Padronizar o layout de lancamento/movimento do laboratorio  *
-      * - Reutilizar a mesma estrutura em validacao, postagem,        *
-      *   extrato, reprocessamento e conciliacao                      *
-      * - Evitar repeticao de definicoes em varios programas COBOL    *
+      * - Define a estrutura padrao de um registro de cliente         *
+      * - Permite reutilizar o mesmo layout em arquivo de entrada     *
+      *   sequencial (SEED), KSDS de cadastro, validacoes e consultas *
+      * - Centraliza o layout de cliente para evitar repeticao em     *
+      *   programas COBOL                                             *
       *                                                               *
-      * VALORES DE TIPO DE LANCAMENTO:                                *
-      *   C = Credito — aumenta saldo da conta                        *
-      *   D = Debito  — diminui saldo da conta                        *
-      *                                                               *
-      * VALORES DE STATUS DO LANCAMENTO:                              *
-      *   P = Pendente   — aguardando validacao                       *
-      *   V = Validado   — aprovado pelo EBVALI01                     *
-      *   R = Rejeitado  — reprovado, gravado no REJEITO.SEQ          *
-      *   C = Conciliado — confirmado pelo EBCONC01                   *
+      * VALORES DE STATUS DO CLIENTE:                                 *
+      *   A = Ativo     - cliente ativo, todas operacoes permitidas   *
+      *   I = Inativo   - cliente encerrado                           *
+      *   B = Bloqueado - cliente com restricao de operacoes          *
       *===============================================================*
 
       *---------------------------------------------------------------*
-      * Chave da conta associada ao lancamento                        *
-      * Grupo compativel com CNT-CHAVE (CPCNT001) e REJ-CHAVE-CONTA  *
-      * Usado como argumento de leitura no KSDS de contas             *
+      * Identificador unico do cliente - chave do cadastro            *
+      * Usado como RECORD KEY no CLIENTE.KSDS                         *
+      * Relacionado a CNT-ID-CLIENTE no CPCNT001                      *
       *---------------------------------------------------------------*
-           05 LCT-CHAVE-CONTA.
-              10 LCT-AGENCIA          PIC 9(04).
-              10 LCT-NUM-CONTA        PIC 9(08).
+           05 CLI-ID-CLIENTE         PIC 9(5).
 
       *---------------------------------------------------------------*
-      * Data do lancamento no formato AAAAMMDD (padrao mainframe)     *
-      * Preenchida na carga do arquivo de entrada do dia              *
-      * Ex.: 20240315 = 15 de marco de 2024                           *
+      * Nome completo do cliente                                      *
+      * Padded com espacos a direita ate 30 bytes                     *
       *---------------------------------------------------------------*
-           05 LCT-DATA                PIC 9(08).
+           05 CLI-NOME               PIC X(30).
 
       *---------------------------------------------------------------*
-      * Tipo do lancamento                                            *
-      * C = Credito — soma ao saldo                                   *
-      * D = Debito  — subtrai do saldo, exige validacao de limite     *
+      * CPF do cliente, sem mascara (apenas digitos)                  *
+      * Ex.: 12345678901 (sem pontos nem traco)                       *
       *---------------------------------------------------------------*
-           05 LCT-TIPO                PIC X(01).
+           05 CLI-CPF                PIC 9(11).
 
       *---------------------------------------------------------------*
-      * Valor do lancamento em formato DISPLAY sinalizado             *
-      * Sinalizado para suportar estornos e ajustes                   *
-      * Para calculos internos mover para WS com PIC S9(13)V99 COMP-3 *
+      * Data de nascimento no formato AAAAMMDD                        *
+      * Ex.: 19900101 = 01 de janeiro de 1990                         *
       *---------------------------------------------------------------*
-           05 LCT-VALOR               PIC S9(11)V99.
+           05 CLI-DATA-NASC          PIC 9(8).
 
       *---------------------------------------------------------------*
-      * Historico ou descricao resumida do movimento                  *
-      * Gravado na linha de extrato pelo EBEXTR01                     *
-      * Ex.: 'PAGAMENTO PIX', 'DEPOSITO ATM', 'TED RECEBIDA'         *
+      * Status do cliente - controla permissao de operacoes           *
+      * A = Ativo     - todas as operacoes permitidas                 *
+      * I = Inativo   - cliente encerrado, bloqueado para operacoes   *
+      * B = Bloqueado - cliente com restricao temporaria              *
       *---------------------------------------------------------------*
-           05 LCT-HISTORICO           PIC X(30).
+           05 CLI-STATUS             PIC X(1).
 
       *---------------------------------------------------------------*
-      * Canal de origem do lancamento                                 *
-      * Registrado no extrato e na auditoria para rastreabilidade     *
-      * Exemplos: ATM, APP, PIX, CX, INTERNET, TED, DOC              *
+      * Data de cadastro do cliente no formato AAAAMMDD               *
+      * Preenchida na carga inicial via EBCLLOAD                      *
+      * Ex.: 20260312 = 12 de marco de 2026                           *
       *---------------------------------------------------------------*
-           05 LCT-CANAL               PIC X(10).
+           05 CLI-DATA-CAD           PIC 9(8).
 
       *---------------------------------------------------------------*
-      * Identificador do lote de processamento                        *
-      * Agrupa lancamentos submetidos na mesma execucao do job        *
-      * Usado em conciliacao e reprocessamento para isolar o lote     *
+      * Completa o tamanho fisico do registro (80 bytes)              *
+      * Reservado para evolucao futura (telefone, email, endereco)    *
       *---------------------------------------------------------------*
-           05 LCT-LOTE                PIC 9(06).
-
-      *---------------------------------------------------------------*
-      * Sequencial do lancamento dentro do lote                       *
-      * Combinado com LCT-LOTE forma identificador unico do registro  *
-      * Preservado no REJEITO para rastreabilidade do lancamento orig *
-      *---------------------------------------------------------------*
-           05 LCT-NSEQ                PIC 9(06).
-
-      *---------------------------------------------------------------*
-      * Status atual do lancamento no ciclo de processamento          *
-      * P = Pendente  V = Validado  R = Rejeitado  C = Conciliado     *
-      * Atualizado a cada etapa pelo programa responsavel             *
-      *---------------------------------------------------------------*
-           05 LCT-STATUS              PIC X(01).
-
-      *---------------------------------------------------------------*
-      * Reserva para completar o tamanho fisico do registro (120 bytes)*
-      * Nao utilizar — reservado para evolucao futura do layout       *
-      *---------------------------------------------------------------*
-           05 FILLER                  PIC X(33).
+           05 CLI-FILLER             PIC X(17).
