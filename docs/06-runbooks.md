@@ -152,6 +152,70 @@ Cada incidente é tratado a partir de seis perguntas principais:
 
 ---
 
+## Procedimento: reset de ambiente (EBRESET vs EBRESETF)
+
+O laboratório oferece dois utilitários de reset, com escopos diferentes. Escolher o errado **destrói trabalho** (reset de fábrica acidental) ou **deixa sujeira** (reset de ciclo quando o ambiente já está corrompido).
+
+### Decisão rápida
+
+| Pergunta | Sim → use |
+|---|---|
+| O ciclo do dia falhou e você quer rodar de novo com os mesmos clientes/contas? | `EBRESET` |
+| Os masters (`CLIENTE.KSDS` ou `CONTA.KSDS`) estão suspeitos de corrupção? | `EBRESETF` |
+| Você quer demonstrar o lab "do zero" para alguém? | `EBRESETF` |
+| `CTL.STATUS` está num estado inconsistente que você não consegue corrigir? | `EBRESET` (mantém masters) ou `EBRESETF` (se quiser zero absoluto) |
+| Você só quer apagar rejeitos/auditoria do dia anterior? | `EBRESET` |
+
+### O que cada um toca
+
+| Coisa | `EBRESET` | `EBRESETF` |
+|---|---|---|
+| `ARQ.LANCTO.ESDS` | DELETE + DEFINE | DELETE + DEFINE |
+| `ARQ.ENTRADA.SEQ`, `ENTRADA.TRAILER.SEQ` | recria vazio | recria vazio |
+| `ARQ.REJEITOS.SEQ`, `AUDIT.SEQ`, `CONCIL.SEQ` | recria vazio | recria vazio |
+| `ARQ.ACCR.MOV.SEQ`, `FECHTO.SEQ` | apaga (re-aloc dinâmica) | apaga (re-aloc dinâmica) |
+| `ARQ.REPR.LANCTO.SEQ`, `REPR.REJPERM.SEQ` | recria vazio | recria vazio |
+| **`ARQ.CLIENTE.KSDS`, `ARQ.CONTA.KSDS`** | **preserva** | **DELETE + DEFINE** |
+| **`ARQ.CTL.STATUS`, `ARQ.CTL.PROCDATE`** | **preserva** | **apaga e recria vazio** |
+| **`STAGE.ENTRADA.SEQ`** | **preserva** | **apaga e recria vazio** |
+| **GDGs (`SALDO`, `EXTRATO`, `BKP.*`)** | **preserva** | **GDG FORCE + DEFINE base vazia** |
+| `SEED.*`, `PARM.JUROS.CONFIG` | não toca | não toca |
+| `DEV.COBOL/COPY/JCL/LOADLIB/REXX` | não toca | não toca |
+
+### Sequência pós-reset
+
+**Após `EBRESET`** (reset de ciclo):
+
+1. Conferir `ARQ.CTL.STATUS` — se ficou em estado intermediário, ajustar para `CLOSED` via `EBCTL01` ou edição manual.
+2. Re-promover o arquivo do dia (se necessário): `EBJWAIT` lê `STAGE.ENTRADA.SEQ` (preservado), `EBJLOAD` repopula `ARQ.ENTRADA.SEQ`.
+3. Reexecutar a cadeia: `EBJPRECK → EBJSOD → EBJBCKPD → EBJWAIT → EBJLOAD → EBJVALD → EBJPOST → EBJACCR → EBJCUTF → EBJSNAP → EBJCUTE → EBJCONC → EBJEXTR → EBJEOD`.
+
+**Após `EBRESETF`** (reset de fábrica):
+
+1. Recarregar os masters: submeter `EBJCLLD` (executa `EBCLLOAD` lendo `SEED.CLIENTES.SEQ` e `SEED.CONTAS.SEQ`).
+2. Confirmar via `LISTRESF` no spool que os KSDS têm registros e os GDGs estão em `LIMIT(0)`.
+3. Fazer upload de um arquivo do dia para `STAGE.ENTRADA.SEQ` (via Zowe ou Zowe Explorer).
+4. Reexecutar a cadeia normal.
+
+### Quando os dois falham
+
+Se `EBRESETF` também não resolve, suspeitar de:
+
+- catálogo do z/OS com entradas órfãs → `LISTCAT` e `DELETE NOSCRATCH` manual
+- `MODEL.DSCB` ausente (necessário para alocar gerações GDG) → recriar via `EBALLOC`
+- limite do GDG configurado com `EMPTY` em vez de `NOEMPTY` → reexecutar `EBDEFGDG`
+
+Nesse cenário, o caminho é o reseed completo do ambiente: `EBALLOC + EBDEFGDG + EBSEED + EBJCLLD`.
+
+### Evidências a preservar
+
+- spool do `EBRESET` ou `EBRESETF` com o `LISTCAT` final dos datasets afetados
+- valor de `ARQ.CTL.STATUS` antes da decisão de reset
+- motivo da decisão (ciclo falhou? master corrompido? demonstração?)
+- nome do operador e timestamp
+
+---
+
 ## Regra geral de evidências
 
 Sempre que ocorrer uma falha, devem ser preservados:
