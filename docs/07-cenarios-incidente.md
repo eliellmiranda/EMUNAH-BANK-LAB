@@ -25,9 +25,9 @@ Cada cenário deve registrar:
 
 Representa a execução normal do dia, sem falhas.
 
-**Setup:** baseline restaurada, massa válida carregada e arquivo de entrada presente.  
-**Jobs:** `EBJLOAD`, `EBJVALD`, `EBJPOST`, `EBJSALD`, `EBJEXTR`, `EBJCONC`, `EBJEOD`  
-**Resultado esperado:** RC aceitável em toda a cadeia, conciliação correta e fechamento concluído.
+**Setup:** baseline restaurada, `CTL.STATUS=CLOSED` (ou vazio), massa válida em `STAGE.ENTRADA.SEQ` e bases GDG definidas.
+**Jobs (ordem):** `EBJPRECK` → `EBJSOD` → `EBJBCKPD` → `EBJWAIT` → `EBJLOAD` → `EBJVALD` → `EBJPOST` → `EBJACCR` → `EBJCUTF` → `EBJSNAP` → `EBJCUTE` → `EBJCONC` → `EBJEXTR` → `EBJEOD`.
+**Resultado esperado:** RC aceitável em toda a cadeia, transições `OPEN → EOTI → EOFI → CLOSED` consistentes, snapshot e extrato em GDG e conciliação three-way `OK` em `CONCIL.SEQ`.
 
 ---
 
@@ -35,9 +35,9 @@ Representa a execução normal do dia, sem falhas.
 
 Representa a ausência do arquivo de entrada no início do processamento.
 
-**Setup:** baseline restaurada, mas sem envio de arquivo para `ARQ.ENTRADA.SEQ`.  
-**Job principal:** `EBJLOAD`  
-**Resultado esperado:** falha no início da cadeia, acionamento do runbook de arquivo ausente e bloqueio do processamento.
+**Setup:** baseline restaurada, mas sem envio de arquivo para `STAGE.ENTRADA.SEQ`.
+**Job principal:** `EBJWAIT` (porteiro novo da intake).
+**Resultado esperado:** falha no início da cadeia ainda na FASE 2, acionamento do runbook de arquivo ausente, `EBJLOAD` não chega a ser submetido e a cadeia não progride. `CTL.STATUS` permanece em `OPEN`.
 
 ---
 
@@ -81,11 +81,11 @@ Representa um job submetido, mas não liberado ou bloqueado por dependência.
 
 ## `saldo-inconsistente`
 
-Representa divergência entre totais aplicados e saldo consolidado.
+Representa divergência entre totais aplicados, snapshot de saldo e conciliação three-way.
 
-**Setup:** massa preparada com erro ou alteração proposital no cálculo.  
-**Jobs afetados:** `EBJSALD`, `EBJCONC`  
-**Resultado esperado:** falha de conciliação e bloqueio do fechamento.
+**Setup:** massa preparada com erro ou alteração proposital no cálculo de accrual / postagem.
+**Jobs afetados:** `EBJSNAP` (snapshot do dia), `EBJCONC` (conciliação three-way bloqueante).
+**Resultado esperado:** `EBJCONC` grava linhas `DIVERGENTE` em `CONCIL.SEQ` (seção S2 ou S3), `EBJEOD` é bloqueado e o dia não fecha até a divergência ser resolvida — usar runbook de divergência three-way.
 
 ---
 
@@ -102,9 +102,40 @@ Representa atraso na chegada do arquivo do dia.
 
 Representa a necessidade de reaplicar registros antes rejeitados e depois corrigidos.
 
-**Setup:** gerar rejeitos controlados e preparar arquivo corrigido.  
-**Job principal:** `EBJREPR`  
-**Resultado esperado:** reaplicação correta, ajuste de totais e registro de evidência antes e depois.
+**Setup:** gerar rejeitos controlados (`REJEITOS.SEQ`), corrigi-los, e preparar `REPR.LANCTO.SEQ`.
+**Jobs principais:** `EBJREPR` (revalida rejeitos corrigidos) seguido de `EBJRPOST` (reinjeta os recuperados em `EBPOST01`, fechando o ciclo).
+**Pré-condição:** janela de input ainda aberta (`CTL.STATUS=EOTI`).
+**Resultado esperado:** reaplicação correta, ajuste de totais e registro de evidência antes/depois (`AUDIT.SEQ`, `LANCTO.ESDS`).
+
+---
+
+## `cutoff-out-of-window`
+
+Representa um cutoff disparado fora de ordem ou em duplicidade.
+
+**Setup:** executar `EBJCUTF` ou `EBJCUTE` sem que a fase anterior tenha completado, ou disparar duas vezes seguidas.
+**Jobs afetados:** `EBJCUTF`, `EBJCUTE`, `EBCTL01`.
+**Resultado esperado:** `EBCTL01` recusa a transição inválida; runbook de cutoff fora de janela aciona reset controlado de `CTL.STATUS`.
+
+---
+
+## `gdg-allocation-fail`
+
+Representa falha de alocação em uma das bases GDG.
+
+**Setup:** simular base GDG não definida (esquecer `EBDEFGDG`) ou estourar limite de gerações.
+**Jobs afetados:** `EBJBCKPD`, `EBJSNAP`, `EBJEXTR`, `EBJHKAUD`, `EBJHKREJ`.
+**Resultado esperado:** falha de allocation com mensagem `IGD17xxx`, runbook de GDG aciona `LISTCAT` da base, ajuste de `LIMIT` e reexecução.
+
+---
+
+## `housekeeping-skip`
+
+Representa um dia em que `AUDIT.SEQ` ou `REJEITOS.SEQ` cresce sem rotação.
+
+**Setup:** suprimir os jobs de housekeeping por vários ciclos.
+**Jobs afetados:** `EBJHKAUD`, `EBJHKREJ`, e indiretamente `EBJVALD`/`EBJPOST` (escrita lenta).
+**Resultado esperado:** sequenciais cheios, alocação futura recusada, e necessidade de archive manual via `EBJHKAUD`/`EBJHKREJ` antes de retomar a cadeia.
 
 ---
 
