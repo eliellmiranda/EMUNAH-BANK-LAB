@@ -23,7 +23,7 @@ A data em `ARQ.CTL.PROCDATE` é gravada aqui, também pelo `EBJSOD`.
 
 ### 2. Backup
 
-Executado pelo `EBJBCKPD` (há dívida técnica de renomear para `EBJBACKP`, mas por enquanto é `EBJBCKPD`).
+Executado pelo `EBJBCKPD` (renomeado a partir do antigo `EBJBACKP` na Onda 7 do redesenho).
 
 Os DSN corretos são `BKP.CONTA.GDG`, `BKP.CLIENTE.GDG`, `BKP.AUDIT.GDG` — **sem** o `ARQ.` na frente. O prefixo `ARQ.` era o bug que o `EBFIXBKP` corrigiu.
 
