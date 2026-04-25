@@ -103,6 +103,54 @@ Instale as extensões recomendadas quando o VS Code perguntar (IBM Z Open Editor
 
 ---
 
+## Conceitos: build, deploy e carga inicial
+
+Antes de executar as próximas seções, vale entender três termos que aparecem o tempo todo na operação do lab e são frequentemente confundidos.
+
+**Build** = transformar código-fonte em módulo executável.
+
+Pega o COBOL escrito (ex.: `EBCLLOAD.cbl` no PDS `DEV.COBOL`) e roda dois processos: o **compilador** (IGYCRCTL) traduz COBOL para código-objeto, e o **link-editor** (IEWBLINK) junta esse objeto com bibliotecas externas e gera o módulo binário pronto pra rodar, gravado em `DEV.LOADLIB`. É o que o `EBBUILD` faz para um único programa. Resultado: arquivo executável na LOADLIB.
+
+**Deploy** = colocar o sistema (ou parte dele) em condições de rodar num ambiente.
+
+É um conceito mais amplo que normalmente **inclui o build**, mas cobre a cadeia inteira: compila vários programas de uma vez, promove os módulos para a LOADLIB do ambiente alvo (DEV, HML, PRD), atualiza copybooks correlatos e valida que nada quebrou. É o que o `EBDEPLOY` faz — compila os 13 programas COBOL do laboratório em sequência via `IGYWCL` e grava todos os módulos na `DEV.LOADLIB` num único job.
+
+**Carga inicial** (também chamada de *seed* ou *load*) = popular datasets vazios com dados de partida.
+
+Os datasets foram alocados vazios pelo `EBALLALL`/`EBALLOC` (`CLIENTE.KSDS` existe mas tem 0 registros). A carga inicial roda um programa **já compilado** que lê os arquivos de seed (`SEED.CLIENTES.SEQ`, `SEED.CONTAS.SEQ`) e escreve os registros no VSAM. É o que o `EBSEED` faz — invoca o `EBCLLOAD` (que já está buildado na LOADLIB) pra ler os seeds sequenciais e gravar nos KSDS. Resultado: dados iniciais nos arquivos do laboratório.
+
+### Comparativo rápido
+
+| | Build | Deploy | Carga inicial |
+|---|---|---|---|
+| **O que processa** | Código-fonte | Código-fonte (vários) | Dados |
+| **Entrada** | `.cbl` em `DEV.COBOL` | múltiplos `.cbl` + copybooks | seeds em `SEED.*.SEQ` |
+| **Saída** | Módulo `.LOAD` em LOADLIB | Vários módulos em LOADLIB | Registros em VSAM |
+| **Escopo** | Um módulo | Sistema / conjunto | Dados, não código |
+| **Job** | `EBBUILD` | `EBDEPLOY` | `EBSEED` |
+| **Frequência** | Quando muda 1 programa | Quando muda copybook ou release completo | Setup inicial / após reset |
+
+### Ordem obrigatória no setup do zero
+
+```
+1. EBALLALL   → aloca todos os datasets vazios (incluindo LOADLIB vazia)
+2. Upload     → sobe fontes COBOL para DEV.COBOL e copybooks para DEV.COPY
+3. EBDEPLOY   → DEPLOY: compila os 13 programas, popula a LOADLIB
+4. Upload     → sobe SEED.CLIENTES.SEQ e SEED.CONTAS.SEQ
+5. EBSEED     → CARGA INICIAL: invoca EBCLLOAD para popular VSAMs
+6. EBJSOD     → abre o primeiro ciclo batch (sistema "no ar")
+```
+
+A relação essencial: **a carga inicial só funciona depois do deploy**, porque ela executa um módulo que precisa estar buildado na LOADLIB. Se o `EBCLLOAD` na LOADLIB foi compilado com um copybook desatualizado, o `EBSEED` vai falhar com erros de layout (ex.: VSAM File Status 37 = atributos conflitantes), mesmo que o copybook local esteja correto. Fluxo de correção nesse caso: corrigir copybook → re-buildar (`EBBUILD` ou `EBDEPLOY`) → rodar carga inicial (`EBSEED`).
+
+### Para mudanças incrementais durante o desenvolvimento
+
+- Mudou **um** programa COBOL → **`EBBUILD`** (build pontual)
+- Mudou **um copybook** (afeta vários programas) → **`EBDEPLOY`** (deploy completo, recompila tudo que usa o copy)
+- Quer **resetar dados** sem mexer em código → **`EBSEED`** (só carga inicial)
+
+---
+
 ## 5. Alocar os datasets no mainframe
 
 Execute o JCL de alocação inicial via Zowe:
