@@ -4,46 +4,59 @@
 //* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBBUILD)
 //*
 //* FINALIDADE:
-//*   Compilar e link-editar um unico programa COBOL em um
-//*   job, usando a procedure catalogada IBM IGYWCL.
+//*   Compilar e link-editar UM programa COBOL isolado.
+//*   Build rapido para correcoes pontuais.
 //*
-//* QUANDO USAR ESTE JCL:
-//*   - Build rapido de um programa isolado apos correcao
-//*   - Alternativa ao EBDEPLOY quando so um fonte mudou
-//*   - Para alterar o programa compilado: editar COBOL.SYSIN
-//*     e LKED.SYSLMOD com o nome do programa desejado
+//* QUANDO USAR:
+//*   - Apos editar 1 fonte e querer testar a compilacao
+//*   - Build rapido sem rodar o pipeline completo (EBDEPLOY)
 //*
-//* PROCEDURE IGYWCL:
-//*   Procedure IBM catalogada que encadeia:
-//*   1. COBOL step: IGYCRCTL (compilador Enterprise COBOL)
-//*      - Le fonte de COBOL.SYSIN
-//*      - Resolve COPYs de COBOL.SYSLIB
-//*      - Gera objeto em &&OBJSET (temporario)
-//*   2. LKED step: IEWBLINK (binder/link-editor)
-//*      - Le objeto de &&OBJSET
-//*      - Grava executavel em LKED.SYSLMOD
+//* COMO TROCAR DE PROGRAMA:
+//*   Substituir EBCLLOAD pelo nome desejado em DOIS lugares:
+//*     1. COBOL.SYSIN  -> membro do fonte a compilar
+//*     2. LKED.SYSLMOD -> membro de saida na LOADLIB
+//*   Os dois nomes DEVEM ser iguais (convencao do projeto).
+//*
+//* PROCEDURE IGYWCL (catalogada IBM):
+//*   Step COBOL: IGYCRCTL (Enterprise COBOL) -> &&OBJSET temp
+//*   Step LKED : IEWBLINK (binder)           -> SYSLMOD
+//*
+//* ESTE JCL NAO EXECUTA O PROGRAMA.
+//*   DDs de runtime (CLIENTIN, CONTAIN, CLIENTE, CONTA, AUDIT)
+//*   ficam em JCL separado de execucao (EBRUN ou similar).
+//*   Build e execucao sao responsabilidades distintas.
 //*
 //* CODIGOS DE RETORNO:
-//*   RC 0  = compilacao e link sem erros
-//*   RC 4  = avisos de compilacao (aceitar se SYSPRINT ok)
+//*   RC 0  = compile e link OK
+//*   RC 4  = warnings (revisar SYSPRINT, geralmente aceitavel)
 //*   RC 8  = erros de compilacao - modulo NAO gerado
-//*   RC 12 = erros severos - verificar SYSPRINT imediatamente
+//*   RC 12 = erros severos - LKED sera FLUSH
 //* ============================================================
 //EBBUILD  JOB ,'EMUNAH BUILD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
 //* === STEP CL: COMPILE + LINK (IGYWCL) ========================
-//*   Para compilar outro programa: substituir EBCLLOAD pelo
-//*   nome do programa desejado em SYSIN e SYSLMOD.
-//*
 //CL       EXEC IGYWCL
-//COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCLLOAD),DISP=SHR
-//*              Fonte COBOL a compilar (membro do PDS de fontes).
-//COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//*              Biblioteca de copybooks resolvida pelo compilador
-//*              ao processar cada instrucao COPY no fonte.
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBCLLOAD),DISP=SHR
-//*              Destino do modulo executavel na LOADLIB.
-//*              O membro deve ter o mesmo nome do programa.
-//LKED.SYSPRINT DD SYSOUT=*
-//*              Relatorio do link-editor: mapa de memoria,
-//*              modulos incluidos e diagnostico de erros.
+//*
+//* --- Entradas do compilador ---
+//COBOL.SYSIN    DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCLLOAD),DISP=SHR
+//*               Fonte COBOL a compilar.
+//COBOL.SYSLIB   DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
+//*               Biblioteca de copybooks. Toda instrucao COPY
+//*               do fonte e resolvida lendo membros deste PDS.
+//*               IMPORTANTE: copybooks alterados localmente
+//*               precisam ser sincronizados aqui antes do build.
+//*
+//* --- Saida do link-editor ---
+//LKED.SYSLMOD   DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBCLLOAD),DISP=SHR
+//*               Modulo executavel resultante. Membro deve ter
+//*               o mesmo nome do programa (PROGRAM-ID).
+//*
+//* --- Relatorios ---
+//COBOL.SYSPRINT DD SYSOUT=*
+//*               Listagem do compilador: fonte expandido com
+//*               COPYs resolvidos, mapa de WORKING-STORAGE,
+//*               cross-reference e diagnosticos (IGY...).
+//*               Primeiro lugar a olhar quando RC <> 0.
+//LKED.SYSPRINT  DD SYSOUT=*
+//*               Relatorio do binder: modulos incluidos, mapa
+//*               de memoria e diagnosticos (IEW...).
