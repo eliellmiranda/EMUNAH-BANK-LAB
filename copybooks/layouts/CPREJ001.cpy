@@ -22,7 +22,7 @@
       *   EBPOST01 - rejeita na postagem (conta not found no KSDS,     *
       *              regra de negocio falha, KSDS travado).            *
       *   EBREPR01 - le REJIN (este mesmo layout), tenta reprocessar,  *
-      *              e regrava os que falharam novamente em REJOUT.    *
+      *               e regrava os que falharam novamente em REJOUT.    *
       *                                                                *
       * QUEM LE:                                                       *
       *   EBCONC01 - usa na secao S1 (entrada vs validos+rejeitos).    *
