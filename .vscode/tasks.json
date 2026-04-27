@@ -1,0 +1,24 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-cobol",
+      "type": "shell",
+      "command": "cobc",
+      "args": [
+        "-x",
+        "-g",
+        "-I", "${workspaceFolder}/copybooks/db2",
+        "-I", "${workspaceFolder}/copybooks/layouts",
+        "-I", "${workspaceFolder}/copybooks/telas",
+        "-o",
+        "${fileBasenameNoExtension}.exe",
+        "${file}"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
