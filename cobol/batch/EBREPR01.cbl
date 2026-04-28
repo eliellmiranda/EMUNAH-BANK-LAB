@@ -82,7 +82,7 @@
            RECORD CONTAINS 120 CHARACTERS
            RECORDING MODE IS F.
        01  REJEIT-IN-RAW              PIC X(120).
-       01  REJEIT-IN-REG REDEFINES REJEIT-IN-RAW.
+       01  REJEIT-IN-REG.
            05 RJ-AGENCIA              PIC 9(4).
            05 RJ-NUM-CONTA            PIC 9(8).
            05 RJ-DATA                 PIC 9(8).
