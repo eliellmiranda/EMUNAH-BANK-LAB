@@ -210,3 +210,79 @@
                WHEN WS-STATUS-ATUAL = 'OPEN    '
                     AND WS-STATUS-DESTINO = 'EOTI    '
                    CONTINUE
+      *        Progressao normal (continuacao)
+               WHEN WS-STATUS-ATUAL = 'EOTI    '
+                    AND WS-STATUS-DESTINO = 'EOFI    '
+                   CONTINUE
+               WHEN WS-STATUS-ATUAL = 'EOFI    '
+                    AND WS-STATUS-DESTINO = 'CLOSED  '
+                   CONTINUE
+      *        Qualquer outra combinacao e invalida
+               WHEN OTHER
+                   DISPLAY '*** EBCTL01 ERRO - TRANSICAO INVALIDA'
+                   DISPLAY '    STATUS ATUAL   : [' WS-STATUS-ATUAL
+                           ']'
+                   DISPLAY '    STATUS DESTINO : [' WS-STATUS-DESTINO
+                           ']'
+                   SET OCORREU-ERRO-IO TO TRUE
+           END-EVALUATE.
+
+      *---------------------------------------------------------------*
+      * 5000-GRAVAR                                                   *
+      * Se arquivo vazio -> WRITE (primeiro registro)                 *
+      * Se ja tinha registro -> REWRITE (atualiza in-place)           *
+      * Em ambos os casos move o destino para o campo do copybook     *
+      *---------------------------------------------------------------*
+       5000-GRAVAR.
+           MOVE WS-STATUS-DESTINO TO STS-CODIGO
+
+           IF ARQUIVO-VAZIO
+               WRITE CTL-STATUS-REG
+               IF FS-CTL-OK
+                   DISPLAY '*** EBCTL01 - WRITE OK. NOVO STATUS: ['
+                           WS-STATUS-DESTINO ']'
+               ELSE
+                   DISPLAY '*** EBCTL01 ERRO WRITE CTL.STATUS - FS: '
+                           WS-FS-CTL
+                   SET OCORREU-ERRO-IO TO TRUE
+               END-IF
+           ELSE
+               REWRITE CTL-STATUS-REG
+               IF FS-CTL-OK
+                   DISPLAY '*** EBCTL01 - REWRITE OK. NOVO STATUS: ['
+                           WS-STATUS-DESTINO ']'
+               ELSE
+                   DISPLAY '*** EBCTL01 ERRO REWRITE CTL.STATUS - FS: '
+                           WS-FS-CTL
+                   SET OCORREU-ERRO-IO TO TRUE
+               END-IF
+           END-IF.
+
+      *---------------------------------------------------------------*
+      * 9000-FECHAR                                                   *
+      * Fecha o arquivo somente se ele foi aberto com sucesso         *
+      * Evita ABEND por CLOSE em arquivo nao aberto                   *
+      *---------------------------------------------------------------*
+       9000-FECHAR.
+           IF CTL-ABERTO
+               CLOSE CTL-STATUS-FILE
+               IF NOT FS-CTL-OK
+                   DISPLAY '*** EBCTL01 ERRO CLOSE CTL.STATUS - FS: '
+                           WS-FS-CTL
+                   SET OCORREU-ERRO-IO TO TRUE
+               END-IF
+           END-IF.
+
+      *---------------------------------------------------------------*
+      * 9100-RETORNO                                                  *
+      * RC=0 : tudo correu bem                                        *
+      * RC=8 : qualquer erro detectado ao longo do fluxo             *
+      *---------------------------------------------------------------*
+       9100-RETORNO.
+           IF OCORREU-ERRO-IO
+               DISPLAY '*** EBCTL01 - ENCERRADO COM RC=8'
+               MOVE 8 TO RETURN-CODE
+           ELSE
+               DISPLAY '*** EBCTL01 - ENCERRADO COM RC=0'
+               MOVE 0 TO RETURN-CODE
+           END-IF.
