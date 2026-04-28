@@ -27,7 +27,7 @@
       *   AUDIT    = Z77948.EMUNAH.ARQ.AUDIT.SEQ    (trilha)          *
       *                                                               *
       * COPYBOOKS UTILIZADOS:                                         *
-      *   CPCONC001 = layout de conciliacao (132 bytes)               *
+      *   CPCNC001 = layout de conciliacao (132 bytes)               *
       *   CPCNT001  = layout de conta       (100 bytes)               *
       *   CPSNP001  = layout de snapshot    (120 bytes)               *
       *                                                               *
@@ -100,14 +100,14 @@
        FILE SECTION.
 
       *---------------------------------------------------------------*
-      * Arquivo de conciliacao — layout via CPCONC001                 *
+      * Arquivo de conciliacao — layout via CPCNC001                 *
       * Lido para identificar registros R11 (contagem) e R31 (saldo)  *
       *---------------------------------------------------------------*
        FD  CONCIL-IN
            RECORD CONTAINS 132 CHARACTERS
            RECORDING MODE IS F.
        01  CONCIL-REG.
-           COPY CPCONC001.
+           COPY CPCNC001.
 
       *---------------------------------------------------------------*
       * KSDS de contas — lido sequencialmente para soma de saldo      *
@@ -388,13 +388,13 @@
            MOVE SPACES TO AUDIT-REG
            EVALUATE TRUE
                WHEN DIV-CONTAGEM
-                   MOVE 'EBJEOD01 - BLOQUEIO POR DIVERGENCIA DE '
-                        'CONTAGEM' TO AUDIT-REG
+                  MOVE 'EBJEOD01 - BLOQUEIO POR DIVERGENCIA DE CONTAGEM'
+               TO AUDIT-REG
                WHEN DIV-SALDO
-                   MOVE 'EBJEOD01 - ALERTA POR DIVERGENCIA DE SALDO'
+                  MOVE 'EBJEOD01 - ALERTA POR DIVERGENCIA DE SALDO'
                        TO AUDIT-REG
                WHEN OTHER
-                   MOVE 'EBJEOD01 - FECHAMENTO OK' TO AUDIT-REG
+                  MOVE 'EBJEOD01 - FECHAMENTO OK' TO AUDIT-REG
            END-EVALUATE
            WRITE AUDIT-REG.
 
