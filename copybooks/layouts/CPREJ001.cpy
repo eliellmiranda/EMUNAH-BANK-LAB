@@ -1,15 +1,23 @@
       *===============================================================*
-      * GRAVACAO DO REGISTRO DE REJEICAO (EBPOST01)                   *
+      * COPYBOOK: CPREJ001                                            *
+      * FUNCAO  : LAYOUT DE REGISTRO DE REJEICAO                      *
+      * REGISTRO: 156 BYTES (Ajustado para novo Timestamp)            *
       *===============================================================*
-      * 1. Copia a imagem exata e completa do lancamento (120 bytes)
-           MOVE MOVTO-REG           TO REJ-REGISTRO-ORIG
-           
-      * 2. Preenche os metadados do erro
-           MOVE WS-REJ-COD          TO REJ-COD-MOTIVO
-           MOVE WS-REJ-DESC         TO REJ-TXT-MOTIVO
-           
-      * 3. Move o Timestamp unificado (AAAAMMDDHHMMSS)
-           MOVE WS-TIMESTAMP        TO REJ-TIMESTAMP
-           
-      * 4. Define quem rejeitou usando o Nivel 88 do copybook
-           SET REJ-ORIGEM-POST      TO TRUE
+           05 REJ-REGISTRO-ORIG        PIC X(120).
+           05 REJ-MOTIVO.
+              10 REJ-COD-MOTIVO        PIC X(04).
+                 88 REJ-MOTIVO-TIPO    VALUE 'TIPO'.
+                 88 REJ-MOTIVO-AGEN    VALUE 'AGEN'.
+                 88 REJ-MOTIVO-CONT    VALUE 'CONT'.
+                 88 REJ-MOTIVO-VALR    VALUE 'VALR'.
+                 88 REJ-MOTIVO-DATA    VALUE 'DATA'.
+                 88 REJ-MOTIVO-TRNC    VALUE 'TRNC'.
+                 88 REJ-MOTIVO-SALD    VALUE 'SALD'.
+                 88 REJ-MOTIVO-DUPL    VALUE 'DUPL'.
+                 88 REJ-MOTIVO-TRVD    VALUE 'TRVD'.
+              10 REJ-TXT-MOTIVO        PIC X(14).
+           05 REJ-TIMESTAMP            PIC X(14).
+           05 REJ-ORIGEM               PIC X(04).
+              88 REJ-ORIGEM-VALI       VALUE 'VALI'.
+              88 REJ-ORIGEM-POST       VALUE 'POST'.
+              88 REJ-ORIGEM-REPR       VALUE 'REPR'.
