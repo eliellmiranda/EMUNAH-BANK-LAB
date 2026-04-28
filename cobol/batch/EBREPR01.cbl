@@ -1,4 +1,4 @@
-IDENTIFICATION DIVISION.
+       IDENTIFICATION DIVISION.
        PROGRAM-ID. EBREPR01.
       *===============================================================*
       * PROGRAMA : EBREPR01                                           *
