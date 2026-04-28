@@ -46,7 +46,7 @@
        FILE-CONTROL.
       *---------------------------------------------------------------*
       * MOVTO-IN: lancamentos aprovados pelo EBVALI01                 *
-      * Lido sequencialmente — um registro por iteracao do loop       *
+      * Lido sequencialmente  um registro por iteracao do loop       *
       * DDNAME: MOVTIN   LRECL: 120   RECFM: FB                       *
       *---------------------------------------------------------------*
            SELECT MOVTO-IN
@@ -93,7 +93,7 @@
        FILE SECTION.
 
       *---------------------------------------------------------------*
-      * Arquivo de movimentos validados — layout via CPLCT001         *
+      * Arquivo de movimentos validados  layout via CPLCT001         *
       *---------------------------------------------------------------*
        FD  MOVTO-IN
            RECORD CONTAINS 120 CHARACTERS
@@ -102,7 +102,7 @@
            COPY CPLCT001.
 
       *---------------------------------------------------------------*
-      * KSDS de contas — layout via CPCNT001                          *
+      * KSDS de contas  layout via CPCNT001                          *
       * Lido por chave e atualizado via REWRITE apos cada postagem    *
       *---------------------------------------------------------------*
        FD  CONTA-KSDS.
@@ -110,16 +110,16 @@
            COPY CPCNT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de rejeitos — layout via CPREJ001                     *
+      * Arquivo de rejeitos  layout via CPREJ001                     *
       *---------------------------------------------------------------*
        FD  REJEITOS-OUT
-           RECORD CONTAINS 120 CHARACTERS
+           RECORD CONTAINS 156 CHARACTERS
            RECORDING MODE IS F.
        01  REJEITOS-REG.
            COPY CPREJ001.
 
       *---------------------------------------------------------------*
-      * Arquivo de auditoria — layout via CPAUD001                    *
+      * Arquivo de auditoria  layout via CPAUD001                    *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
            RECORD CONTAINS 120 CHARACTERS
@@ -171,8 +171,9 @@
       *---------------------------------------------------------------*
       * Data e hora do sistema capturadas no inicio do programa       *
       *---------------------------------------------------------------*
-       01  WS-DATA-SISTEMA           PIC 9(8).
-       01  WS-HORA-SISTEMA           PIC 9(8).
+       01 WS-TIMESTAMP.
+           05  WS-DATA-SISTEMA           PIC 9(8).
+           05  WS-HORA-SISTEMA           PIC 9(8).
 
       *---------------------------------------------------------------*
       * Codigo e descricao do motivo de rejeicao de negocio           *
@@ -350,19 +351,23 @@
       * Monta registro de rejeito de negocio e grava em REJEITOS      *
       * Preserva dados originais do lancamento para rastreabilidade   *
       *---------------------------------------------------------------*
+      *---------------------------------------------------------------*
        4000-GRAVAR-REJEITO.
            MOVE SPACES TO REJEITOS-REG
-           MOVE LCT-AGENCIA   OF MOVTO-REG TO REJ-AGENCIA
-           MOVE LCT-NUM-CONTA OF MOVTO-REG TO REJ-NUM-CONTA
-           MOVE LCT-DATA      OF MOVTO-REG TO REJ-DATA-LANCTO
-           MOVE LCT-TIPO      OF MOVTO-REG TO REJ-TIPO-LANCTO
-           MOVE LCT-VALOR     OF MOVTO-REG TO REJ-VALOR
-           MOVE LCT-NSEQ      OF MOVTO-REG TO REJ-NSEQ-ORIG
-           MOVE WS-REJ-COD                 TO REJ-COD-MOTIVO
-           MOVE WS-REJ-DESC                TO REJ-DESC-MOTIVO
-           MOVE 'EBPOST01'                 TO REJ-PROGRAMA
-           MOVE WS-DATA-SISTEMA            TO REJ-DATA-REJEITO
-           MOVE WS-HORA-SISTEMA            TO REJ-HORA-REJEITO
+
+      * 1. Copia a imagem exata e completa do lancamento (120 bytes)
+           MOVE MOVTO-REG       TO REJ-REGISTRO-ORIG
+
+      * 2. Preenche os metadados do erro
+           MOVE WS-REJ-COD      TO REJ-COD-MOTIVO
+           MOVE WS-REJ-DESC     TO REJ-TXT-MOTIVO
+
+      * 3. Move o Timestamp unificado (AAAAMMDDHHMMSS)
+           MOVE WS-TIMESTAMP    TO REJ-TIMESTAMP
+
+      * 4. Define quem rejeitou usando o Nivel 88 do copybook
+           SET REJ-ORIGEM-POST  TO TRUE
+
            WRITE REJEITOS-REG
            IF FS-REJEITOS-OK
                ADD 1 TO WS-REJEITADOS
@@ -372,7 +377,6 @@
                        WS-FS-REJEITOS
                SET COM-ERRO TO TRUE
            END-IF.
-
       *---------------------------------------------------------------*
       * 5000-AUDITAR-SUCESSO                                          *
       * Grava auditoria de postagem bem-sucedida                      *
