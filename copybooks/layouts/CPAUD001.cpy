@@ -29,8 +29,8 @@
       * Permite mover o bloco completo ou campos individuais          *
       *---------------------------------------------------------------*
            05 AU-TIMESTAMP.
-              10 AU-DT-EVENTO          PIC 9(08).
-              10 AU-HR-EVENTO          PIC 9(06).
+              10 AU-DATA-EVENTO          PIC 9(08).
+              10 AU-HORA-EVENTO          PIC 9(06).
 
       *---------------------------------------------------------------*
       * Codigo resumido do evento auditado                            *
