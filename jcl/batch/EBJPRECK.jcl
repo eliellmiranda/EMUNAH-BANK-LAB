@@ -4,28 +4,30 @@
 //* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJPRECK)
 //*
 //* FINALIDADE:
-//*   Validar pre-condicoes do ambiente antes da cadeia batch.
-//*   Se qualquer recurso estiver ausente ou inacessivel,
-//*   o job termina com RC=12 bloqueando os jobs dependentes.
+//* Validar pre-condicoes do ambiente antes da cadeia batch.
+//* Se qualquer recurso estiver ausente, ou se o status do dia
+//* anterior nao estiver CLOSED, o job termina com RC > 0,
+//* bloqueando o inicio do novo ciclo.
 //*
 //* POSICAO NA CADEIA DIARIA:
-//*   EBJSOD --> EBJPRECK --> EBJWAIT --> EBJLOAD --> ...
+//* EBJPRECK (06:00) --> EBJSOD (06:05) --> EBJWAIT --> ...
 //*
 //* VERIFICACOES (5 steps):
-//*   1. CHKLOAD : LOADLIB catalogada e acessivel
-//*   2. CHKCOPY : Biblioteca de copybooks catalogada
-//*   3. CHKCLI  : VSAM de clientes existente
-//*   4. CHKCNT  : VSAM de contas existente
-//*   5. CHKCTL  : CTL.STATUS existente (EBJSOD ja rodou)
+//* 1. CHKLOAD : LOADLIB catalogada e acessivel
+//* 2. CHKCOPY : Biblioteca de copybooks catalogada
+//* 3. CHKCLI  : VSAM de clientes existente
+//* 4. CHKCNT  : VSAM de contas existente
+//* 5. CHKCTL  : CTL.STATUS com valor 'CLOSED' (EBCTL01 modo CHK)
 //*
 //* LOGICA DE ABORT EM CASCATA:
-//*   COND=(0,NE) em todos os steps apos o primeiro garante
-//*   que se qualquer step falhar (RC != 0), os subsequentes
-//*   nao executam - o job encerra com o RC do step que falhou.
+//* COND=(0,NE) em todos os steps apos o primeiro garante
+//* que se qualquer step falhar (RC != 0), os subsequentes
+//* nao executam - o job encerra com o RC do step que falhou.
 //*
 //* CODIGOS DE RETORNO:
-//*   RC 0  = todos os recursos confirmados - cadeia pode prosseguir
-//*   RC 12 = algum recurso ausente - CADEIA BLOQUEADA
+//* RC 0  = Todos os recursos ok e dia anterior fechado
+//* RC 8  = Falha na validacao logica do status (EBCTL01)
+//* RC 12 = Algum recurso fisico ausente (IDCAMS)
 //* ============================================================
 //EBJPRECK JOB ,'EMUNAH PRECK',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
@@ -38,7 +40,7 @@
   IF LASTCC > 0 THEN -
     SET MAXCC = 12
 /*
-//*           RC 0 = LOADLIB catalogada | RC 12 = LOADLIB ausente
+//* RC 0 = LOADLIB catalogada | RC 12 = LOADLIB ausente
 //*
 //* === STEP CHKCOPY: VERIFICAR BIBLIOTECA DE COPYBOOKS =========
 //*
@@ -49,7 +51,7 @@
   IF LASTCC > 0 THEN -
     SET MAXCC = 12
 /*
-//*           RC 0 = COPY lib catalogada | RC 12 = COPY lib ausente
+//* RC 0 = COPY lib catalogada | RC 12 = COPY lib ausente
 //*
 //* === STEP CHKCLI: VERIFICAR VSAM CLIENTES ====================
 //*
@@ -60,7 +62,7 @@
   IF LASTCC > 0 THEN -
     SET MAXCC = 12
 /*
-//*           RC 0 = KSDS de clientes ok | RC 12 = ausente
+//* RC 0 = KSDS de clientes ok | RC 12 = ausente
 //*
 //* === STEP CHKCNT: VERIFICAR VSAM CONTAS ======================
 //*
@@ -71,18 +73,15 @@
   IF LASTCC > 0 THEN -
     SET MAXCC = 12
 /*
-//*           RC 0 = KSDS de contas ok | RC 12 = ausente
+//* RC 0 = KSDS de contas ok | RC 12 = ausente
 //*
-//* === STEP CHKCTL: VERIFICAR CTL.STATUS (EBJSOD rodou) ========
-//*   Se CTL.STATUS nao existe, EBJSOD nao executou.
-//*   A cadeia nao pode prosseguir sem o Start of Day.
+//* === STEP CHKCTL: VERIFICAR STATUS DO DIA ANTERIOR ===========
+//* Usa o EBCTL01 em modo de checagem passiva (CHK).
+//* Garante que a cadeia so avance se o status for CLOSED.
+//* O COND=(0,NE) garante que so executa se os VSAMs existirem.
 //*
-//CHKCTL   EXEC PGM=IDCAMS,COND=(0,NE)
+//CHKCTL   EXEC PGM=EBCTL01,PARM='CHK,CLOSED',COND=(0,NE)
 //SYSPRINT DD SYSOUT=*
-//SYSIN    DD *
-  LISTCAT ENT('Z77948.EMUNAH.ARQ.CTL.STATUS') ALL
-  IF LASTCC > 0 THEN -
-    SET MAXCC = 12
-/*
-//*           RC 0 = CTL.STATUS ok (EBJSOD ja executou)
-//*           RC 12 = CTL.STATUS ausente - EBJSOD nao rodou
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,DISP=SHR
+//*
