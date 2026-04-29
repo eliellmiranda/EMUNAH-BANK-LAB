@@ -62,7 +62,7 @@
 //REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,
 //             DISP=(MOD,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//             DCB=(RECFM=FB,LRECL=156,BLKSIZE=0)
 //* Saida para lancamentos rejeitados.
 //* DISP=MOD: acumula rejeitos de multiplas execucoes
 //* do dia sem sobrescrever o conteudo anterior.
