@@ -72,7 +72,7 @@
       * DDNAME: VALIDOS   LRECL: 120   RECFM: FB                      *
       *---------------------------------------------------------------*
            SELECT VALIDOS-OUT
-               ASSIGN TO VALIDOS
+               ASSIGN TO AS-VALIDOS
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-VALIDOS.
