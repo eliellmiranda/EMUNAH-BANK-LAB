@@ -32,7 +32,7 @@
 //* antes de atualizar para 'OPEN'.
 //* DISP=OLD garante acesso exclusivo e previne concorrencia.
 //*
-//WRTSTAT  EXEC PGM=EBCTL01,PARM='OPEN'
+//WRTSTAT  EXEC PGM=EBCTL01,PARM='UPD,OPEN'
 //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
 //SYSPRINT DD SYSOUT=*
 //SYSOUT   DD SYSOUT=*
