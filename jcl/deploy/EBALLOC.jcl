@@ -141,7 +141,7 @@
 //REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//             DCB=(RECFM=FB,LRECL=156,BLKSIZE=0)
 //* Rejeitos acumulados via DISP=MOD pelo EBJVALD.
 //* Rotacionado pelo EBJHKREJ ao fim do ciclo.
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
