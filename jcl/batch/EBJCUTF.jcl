@@ -4,49 +4,35 @@
 //* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJCUTF)
 //*
 //* FINALIDADE:
-//*   Cutoff Financeiro - marca CTL.STATUS = EOTI
-//*   (End Of Transaction Input): fecha a janela de entrada de
-//*   movimentos do dia, impedindo novos lancamentos.
+//* Cutoff Financeiro - marca CTL.STATUS = EOTI
+//* (End Of Transaction Input): fecha a janela de entrada de
+//* movimentos do dia, impedindo novos lancamentos.
+//* Utiliza o programa EBCTL01 para validar a transicao.
 //*
 //* POSICAO NA CADEIA DIARIA:
-//*   EBJPOST (postagem) --> EBJCUTF (EOTI) --> EBJACCR (accruals)
+//* EBJPOST (postagem) --> EBJCUTF (EOTI) --> EBJACCR (accruals)
 //*
 //* MAQUINA DE ESTADOS CTL.STATUS:
-//*   OPEN (EBJSOD) -> EOTI (EBJCUTF) -> EOFI (EBJCUTE)
-//*                                    -> CLOSED (EBJEOD)
-//*   Apos EOTI: EBACCR01 pode calcular juros, mas EBVALI01
-//*   e EBPOST01 devem rejeitar novos lancamentos se consultarem
-//*   o status antes de processar.
+//* OPEN (EBJSOD) -> EOTI (EBJCUTF - este job) -> EOFI (EBJCUTE)
+//* -> CLOSED (EBJEOD)
+//* Apos EOTI: EBACCR01 pode calcular juros, mas EBVALI01
+//* e EBPOST01 devem rejeitar novos lancamentos se consultarem
+//* o status antes de processar.
 //*
-//* OBS: Esta versao usa IEBGENER para gravacao direta.
-//*      Sera substituida pelo programa EBCTL01 (COBOL).
-//*
-//* CODIGOS DE RETORNO:
-//*   RC 0  = EOTI gravado com sucesso
-//*   RC 12 = falha no IEBGENER - STATUS nao atualizado
+//* CODIGOS DE RETORNO (EBCTL01):
+//* RC 0  = EOTI gravado com sucesso - transicao permitida
+//* RC 8  = Transicao invalida ou erro de I/O
 //* ============================================================
 //EBJCUTF  JOB ,'EMUNAH CUTF',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
-//* === STEP WRTSTAT: GRAVAR STATUS = EOTI ======================
-//*   IEBGENER sobrescreve ARQ.CTL.STATUS com o literal "EOTI".
-//*   DISP=OLD garante acesso exclusivo ao arquivo de controle.
+//* === STEP WRTSTAT: CUTOFF FINANCEIRO (EOTI) =================
+//* Chama o EBCTL01 passando o status destino via PARM.
+//* O programa valida se o status atual e 'OPEN'
+//* antes de atualizar para 'EOTI'.
+//* DISP=OLD garante acesso exclusivo ao arquivo de controle.
 //*
-//WRTSTAT  EXEC PGM=IEBGENER
+//WRTSTAT  EXEC PGM=EBCTL01,PARM='EOTI'
 //SYSPRINT DD SYSOUT=*
-//SYSUT1   DD *
-EOTI
-/*
-//*           Literal de 4 bytes gravado no arquivo de status.
-//SYSUT2   DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
-//*           Arquivo de controle de status. DISP=OLD = exclusivo.
-//SYSIN    DD DUMMY
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
 //*
-//* === STEP VERIFY: CONFIRMAR STATUS GRAVADO ===================
-//*   Executa somente se WRTSTAT terminou RC=0.
-//*   LISTCAT gera evidencia auditavel no SYSPRINT.
-//*
-//VERIFY   EXEC PGM=IDCAMS,COND=(0,NE)
-//SYSPRINT DD SYSOUT=*
-//SYSIN    DD *
-  LISTCAT ENT('Z77948.EMUNAH.ARQ.CTL.STATUS') ALL
-/*
