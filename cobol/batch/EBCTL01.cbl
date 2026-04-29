@@ -51,7 +51,7 @@
 
        0000-PRINCIPAL.
            PERFORM 1000-VALIDAR-PARM
-           
+
            IF NAO-OCORREU-ERRO-IO
                PERFORM 2000-ABRIR
            END-IF
@@ -114,7 +114,7 @@
            ELSE
                OPEN I-O CTL-STATUS-FILE
            END-IF
-           
+
            IF FS-CTL-OK
                SET CTL-ABERTO TO TRUE
            ELSE
@@ -139,19 +139,19 @@
        4000-VALIDAR-TRANSICAO.
       * Mantida a logica original da maquina de estados para UPD
            EVALUATE TRUE
-               WHEN WS-STATUS-ATUAL = SPACES AND 
+               WHEN WS-STATUS-ATUAL = SPACES AND
                     WS-STATUS-ALVO = 'OPEN    '
                    CONTINUE
-               WHEN WS-STATUS-ATUAL = 'CLOSED  ' AND 
+               WHEN WS-STATUS-ATUAL = 'CLOSED  ' AND
                     WS-STATUS-ALVO = 'OPEN    '
                    CONTINUE
-               WHEN WS-STATUS-ATUAL = 'OPEN    ' AND 
+               WHEN WS-STATUS-ATUAL = 'OPEN    ' AND
                     WS-STATUS-ALVO = 'EOTI    '
                    CONTINUE
-               WHEN WS-STATUS-ATUAL = 'EOTI    ' AND 
+               WHEN WS-STATUS-ATUAL = 'EOTI    ' AND
                     WS-STATUS-ALVO = 'EOFI    '
                    CONTINUE
-               WHEN WS-STATUS-ATUAL = 'EOFI    ' AND 
+               WHEN WS-STATUS-ATUAL = 'EOFI    ' AND
                     WS-STATUS-ALVO = 'CLOSED  '
                    CONTINUE
                WHEN OTHER
@@ -163,11 +163,17 @@
 
        5000-GRAVAR.
            MOVE WS-STATUS-ALVO TO STS-CODIGO
+           
            IF ARQUIVO-VAZIO
+      * Para arquivo Sequencial, WRITE exige modo OUTPUT
+               CLOSE CTL-STATUS-FILE
+               OPEN OUTPUT CTL-STATUS-FILE
                WRITE CTL-STATUS-REG
            ELSE
+      * Se ja tem registro, REWRITE funciona no modo I-O
                REWRITE CTL-STATUS-REG
            END-IF
+           
            IF NOT FS-CTL-OK
                DISPLAY '*** EBCTL01 ERRO I/O (W/RW) - FS: ' WS-FS-CTL
                SET OCORREU-ERRO-IO TO TRUE
@@ -181,9 +187,9 @@
            IF ARQUIVO-VAZIO AND WS-STATUS-ALVO = 'CLOSED  '
                MOVE 'CLOSED  ' TO WS-STATUS-ATUAL
            END-IF
-           
+
            IF WS-STATUS-ATUAL = WS-STATUS-ALVO
-               DISPLAY '*** EBCTL01 - CHECAGEM OK. STATUS: [' 
+               DISPLAY '*** EBCTL01 - CHECAGEM OK. STATUS: ['
                         WS-STATUS-ATUAL ']'
            ELSE
                DISPLAY '*** EBCTL01 ERRO - CHECAGEM FALHOU'
