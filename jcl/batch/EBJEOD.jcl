@@ -4,65 +4,64 @@
 //* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJEOD)
 //*
 //* FINALIDADE:
-//*   Fechamento diario (End-Of-Day): consolida o dia contabil,
-//*   gera relatorio de fechamento e marca CTL.STATUS = CLOSED.
+//* Fechamento diario (End-Of-Day): consolida o dia contabil,
+//* gera relatorio de fechamento e marca CTL.STATUS = CLOSED.
+//* Utiliza o programa EBCTL01 para garantir a integridade.
 //*
 //* POSICAO NA CADEIA DIARIA:
-//*   EBJCONC (conciliacao) --> EBJEOD --> fim do ciclo
+//* EBJCONC (conciliacao) --> EBJEOD --> Fim do ciclo
 //*
 //* O QUE ESTE JOB FAZ:
-//*   1. STEP1   - EBJEOD01 le CONCIL.SEQ, detecta divergencias
-//*                (R11/R31 com CC-STATUS contendo 'DIVERGENTE'),
-//*                totaliza contas, gera FECHOUT (relatorio de
-//*                fechamento) e registra na auditoria.
-//*   2. CLOSDAY - IEBGENER grava "CLOSED" em CTL.STATUS apenas
-//*                se STEP1 terminou com RC=0 (dia sem erros).
+//* 0. CHKSTAT  - Valida se o status atual e EOFI.
+//* 1. FECHTO   - EBJEOD01 gera relatorio FECHOUT e totaliza contas.
+//* 2. CLOSDAY  - EBCTL01 marca o status final como CLOSED.
 //*
 //* CODIGOS DE RETORNO:
-//*   RC 0  = dia fechado com sucesso - CLOSED gravado
-//*   RC 4  = aviso em STEP1 - CLOSDAY nao executa, revisar
-//*   RC 8  = divergencia detectada - CLOSDAY bloqueado
-//*   RC 12 = falha critica - investigar antes de rerun
+//* RC 0  = Dia fechado com sucesso - CLOSED gravado.
+//* RC 8  = Erro na transicao de status ou divergencia no EOD.
+//* RC 12 = Falha critica em arquivos - investigar antes de rerun.
 //* ============================================================
 //EBJEOD   JOB ,'EMUNAH EOD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
-//* === STEP1: FECHAMENTO DIARIO (EBJEOD01) =====================
+//* === STEP CHKSTAT: GARANTIR ESTADO EOFI =====================
+//* Garante que o fechamento so inicie se o corte contabil
+//* ja tiver sido realizado (status EOFI).
 //*
-//STEP1    EXEC PGM=EBJEOD01
+//CHKSTAT  EXEC PGM=EBCTL01,PARM='CHK,EOFI'
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,DISP=SHR
+//*
+//* === STEP FECHTO: FECHAMENTO DIARIO (EBJEOD01) ==============
+//* Executa somente se a checagem de status retornou RC=0.
+//*
+//FECHTO   EXEC PGM=EBJEOD01,COND=(0,NE)
 //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
-//*           Biblioteca contendo o modulo executavel EBJEOD01.
+//* Biblioteca contendo o modulo executavel EBJEOD01.
 //CONCIN   DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,DISP=SHR
-//*           Arquivo de conciliacao gerado pelo EBJCONC.
-//*           EBJEOD01 le registros R11/R31 para detectar
-//*           divergencias (CC-STATUS(1:10)='DIVERGENTE').
+//* Arquivo de conciliacao gerado pelo EBJCONC.
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
-//*           VSAM KSDS de contas para totalizacao do dia.
+//* VSAM KSDS de contas para totalizacao do dia.
 //SALDOIN  DD DSN=Z77948.EMUNAH.ARQ.SALDO.GDG(0),DISP=SHR
-//*           GDG de saldo do dia anterior (opcional).
-//*           Se ausente, o programa usa saldo inicial zero.
+//* GDG de saldo do dia anterior (opcional).
 //FECHOUT  DD DSN=Z77948.EMUNAH.ARQ.FECHTO.SEQ,
-//             DISP=(NEW,CATLG,DELETE),
-//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//             DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)
-//*           Relatorio de fechamento do dia.
-//*           LRECL=132 = largura padrao de impressora mainframe.
+//            DISP=(NEW,CATLG,DELETE),
+//            UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//            DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)
+//* Relatorio de fechamento do dia.
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
-//*           Auditoria do fechamento. DISP=MOD = append.
+//* Auditoria do fechamento. DISP=MOD = append.
 //SYSOUT   DD SYSOUT=*
 //SYSPRINT DD SYSOUT=*
 //*
-//* === STEP CLOSDAY: GRAVAR STATUS = CLOSED ====================
-//*   COND=(0,NE): executa SOMENTE se STEP1 terminou com RC=0.
-//*   Isso garante que o dia so e marcado CLOSED se o EOD
-//*   processou sem erros ou divergencias bloqueantes.
-//*   DISP=OLD: sobrescreve o conteudo anterior (era EOFI).
+//* === STEP CLOSDAY: GRAVAR STATUS = CLOSED ===================
+//* COND=(0,NE): executa SOMENTE se os passos anteriores
+//* terminaram com sucesso.
+//* O programa EBCTL01 valida a transicao EOFI -> CLOSED.
 //*
-//CLOSDAY  EXEC PGM=IEBGENER,COND=(0,NE)
+//CLOSDAY  EXEC PGM=EBCTL01,PARM='UPD,CLOSED',COND=(0,NE)
 //SYSPRINT DD SYSOUT=*
-//SYSUT1   DD *
-CLOSED
-/*
-//*           Literal de 6 bytes gravado no arquivo de status.
-//SYSUT2   DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
-//*           Arquivo de controle. DISP=OLD = acesso exclusivo.
-//SYSIN    DD DUMMY
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
+//* DISP=OLD garante controle exclusivo para a gravacao final.
+//*
