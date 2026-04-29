@@ -115,7 +115,7 @@
        FILE SECTION.
 
       *---------------------------------------------------------------*
-      * Arquivo de entrada — layout via CPLCT001                      *
+      * Arquivo de entrada  layout via CPLCT001                      *
       * Lido sequencialmente, um registro por iteracao do loop        *
       *---------------------------------------------------------------*
        FD  ENTRADA-IN
@@ -125,20 +125,18 @@
            COPY CPLCT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de lancamentos validos — mesmo layout de entrada      *
+      * Arquivo de lancamentos validos  mesmo layout de entrada      *
       * Gravado com LCT-STATUS = 'V' apos aprovacao                   *
       * NOTA: por compartilhar o mesmo COPY CPLCT001, todos os        *
       *       campos LCT-* devem ser qualificados com OF ENTRADA-REG  *
       *       ou OF VALIDOS-REG conforme o contexto de uso [C1]       *
       *---------------------------------------------------------------*
-       FD  VALIDOS-OUT
-           RECORD CONTAINS 120 CHARACTERS
-           RECORDING MODE IS F.
+       FD  VALIDOS-OUT.
        01  VALIDOS-REG.
            COPY CPLCT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de rejeitos — layout via CPREJ001                     *
+      * Arquivo de rejeitos  layout via CPREJ001                     *
       * [C4] LRECL corrigido para 150 conforme DCB do CPREJ001:       *
       *   01-120 = REJ-REGISTRO-ORIG (imagem do lancamento original)  *
       *   121-124 = REJ-COD-MOTIVO                                    *
@@ -153,7 +151,7 @@
            COPY CPREJ001.
 
       *---------------------------------------------------------------*
-      * KSDS de contas — layout via CPCNT001                          *
+      * KSDS de contas  layout via CPCNT001                          *
       * Consultado por chave CNT-CHAVE (agencia + numero da conta)    *
       *---------------------------------------------------------------*
        FD  CONTA-KSDS.
@@ -161,11 +159,11 @@
            COPY CPCNT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de auditoria — layout via CPAUD001                    *
+      * Arquivo de auditoria  layout via CPAUD001                    *
       * Recebe um registro para cada lancamento (sucesso ou rejeicao) *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
-           RECORD CONTAINS 120 CHARACTERS
+           RECORD CONTAINS 128 CHARACTERS
            RECORDING MODE IS F.
        01  AUDIT-REG.
            COPY CPAUD001.
