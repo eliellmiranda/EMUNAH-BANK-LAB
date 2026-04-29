@@ -145,7 +145,7 @@
       *   147-150 = REJ-ORIGEM                                        *
       *---------------------------------------------------------------*
        FD  REJEITOS-OUT
-           RECORD CONTAINS 156 CHARACTERS
+           RECORD CONTAINS 120 CHARACTERS
            RECORDING MODE IS F.
        01  REJEITOS-REG.
            COPY CPREJ001.
