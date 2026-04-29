@@ -12,7 +12,7 @@
 //*   - Build rapido sem rodar o pipeline completo (EBDEPLOY)
 //*
 //* COMO TROCAR DE PROGRAMA:
-//*   Substituir EBJEOD01 pelo nome desejado em DOIS lugares:
+//*   Substituir EBSALD01 pelo nome desejado em DOIS lugares:
 //*     1. COBOL.SYSIN  -> membro do fonte a compilar
 //*     2. LKED.SYSLMOD -> membro de saida na LOADLIB
 //*   Os dois nomes DEVEM ser iguais (convencao do projeto).
@@ -38,7 +38,7 @@
 //CL       EXEC IGYWCL
 //*
 //* --- Entradas do compilador ---
-//COBOL.SYSIN    DD DSN=Z77948.EMUNAH.DEV.COBOL(EBJEOD01),DISP=SHR
+//COBOL.SYSIN    DD DSN=Z77948.EMUNAH.DEV.COBOL(EBSALD01),DISP=SHR
 //*               Fonte COBOL a compilar.
 //COBOL.SYSLIB   DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
 //*               Biblioteca de copybooks. Toda instrucao COPY
@@ -47,7 +47,7 @@
 //*               precisam ser sincronizados aqui antes do build.
 //*
 //* --- Saida do link-editor ---
-//LKED.SYSLMOD   DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBJEOD01),DISP=SHR
+//LKED.SYSLMOD   DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBSALD01),DISP=SHR
 //*               Modulo executavel resultante. Membro deve ter
 //*               o mesmo nome do programa (PROGRAM-ID).
 //*
