@@ -6,20 +6,6 @@
 //* FINALIDADE:
 //* Realizar o backup diario dos datasets do Emunah Bank.
 //* Gera novas geracoes (+1) para as GDGs de seguranca.
-//*
-//* POSICAO NA CADEIA DIARIA:
-//* Executado apos o fechamento (EBJEOD) ou antes do inicio.
-//*
-//* COMPONENTES BACKAPEADOS:
-//* 1. Clientes (KSDS)     -> BKP.CLIENTE.GDG
-//* 2. Contas (KSDS)       -> BKP.CONTA.GDG
-//* 3. Auditoria (SEQ)     -> BKP.AUDIT.GDG
-//* 4. Rejeitos (SEQ)      -> BKP.REJEITOS.GDG
-//* 5. Conciliacao (SEQ)   -> BKP.CONCIL.GDG
-//*
-//* CODIGOS DE RETORNO:
-//* RC 0 = Backup concluido com sucesso.
-//* RC 8 = Erro na copia de algum dataset - verificar SYSPRINT.
 //* ============================================================
 //EBJBACKP JOB ,'EMUNAH BKP',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
@@ -29,7 +15,8 @@
 //INFILE   DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
 //OUTFILE  DD DSN=Z77948.EMUNAH.BKP.CLIENTE.GDG(+1),
 //            DISP=(NEW,CATLG,DELETE),
-//            UNIT=SYSDA,SPACE=(TRK,(5,5))
+//            UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
 //SYSIN    DD *
   REPRO INFILE(INFILE) OUTFILE(OUTFILE)
 /*
@@ -40,7 +27,8 @@
 //INFILE   DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
 //OUTFILE  DD DSN=Z77948.EMUNAH.BKP.CONTA.GDG(+1),
 //            DISP=(NEW,CATLG,DELETE),
-//            UNIT=SYSDA,SPACE=(TRK,(5,5))
+//            UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//            DCB=(RECFM=FB,LRECL=100,BLKSIZE=0)
 //SYSIN    DD *
   REPRO INFILE(INFILE) OUTFILE(OUTFILE)
 /*
@@ -51,7 +39,8 @@
 //INFILE   DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=SHR
 //OUTFILE  DD DSN=Z77948.EMUNAH.BKP.AUDIT.GDG(+1),
 //            DISP=(NEW,CATLG,DELETE),
-//            UNIT=SYSDA,SPACE=(TRK,(10,5))
+//            UNIT=SYSDA,SPACE=(TRK,(10,5)),
+//            LIKE=Z77948.EMUNAH.ARQ.AUDIT.SEQ
 //SYSIN    DD *
   REPRO INFILE(INFILE) OUTFILE(OUTFILE)
 /*
@@ -62,13 +51,13 @@
 //INFILE   DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,DISP=SHR
 //OUTFILE  DD DSN=Z77948.EMUNAH.BKP.REJEITOS.GDG(+1),
 //            DISP=(NEW,CATLG,DELETE),
-//            UNIT=SYSDA,SPACE=(TRK,(5,5))
+//            UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//            LIKE=Z77948.EMUNAH.ARQ.REJEITOS.SEQ
 //SYSIN    DD *
   REPRO INFILE(INFILE) OUTFILE(OUTFILE)
 /*
 //*
 //* === STEP BKPCNC: BACKUP DE CONCILIACAO (SEQ -> GDG) ========
-//* Utiliza LIKE para herdar perfeitamente LRECL=132 e BLKSIZE
 //BKPCNC   EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
 //INFILE   DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,DISP=SHR
