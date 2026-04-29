@@ -255,12 +255,17 @@
            END-IF
 
            IF NOT COM-ERRO
-               OPEN EXTEND VALIDOS-OUT
-               IF NOT FS-VALIDOS-OK
-                   DISPLAY '*** EBVALI01 ERRO OPEN VALIDOS - '
-                           WS-FS-VALIDOS
-                   SET COM-ERRO TO TRUE
-               END-IF
+               OPEN EXTEND VALIDOS-OUT                        
+      * Se o VSAM for virgem (FS 35), formata abrindo em OUTPUT
+           IF WS-FS-VALIDOS = '35'
+               DISPLAY '*** AVISO: ESDS VIRGEM. FORCANDO OPEN OUTPUT.'
+               OPEN OUTPUT VALIDOS-OUT
+           END-IF
+
+           IF NOT FS-VALIDOS-OK
+               DISPLAY '*** EBVALI01 ERRO OPEN VALIDOS - '
+                       WS-FS-VALIDOS
+               SET COM-ERRO TO TRUE
            END-IF
 
            IF NOT COM-ERRO
