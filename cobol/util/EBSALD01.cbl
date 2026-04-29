@@ -1,4 +1,4 @@
-IDENTIFICATION DIVISION.
+       IDENTIFICATION DIVISION.
        PROGRAM-ID. EBSALD01.
       *===============================================================*
       * PROGRAMA: EBSALD01                                            *
