@@ -132,7 +132,7 @@
       * Campo de edicao para exibir saldo com separadores             *
       * Exemplo: 1234567.89 -> ' 1.234.567,89'                        *
       *---------------------------------------------------------------*
-       01  WS-SALDO-EDIT              PIC ZZZ.ZZZ.ZZ9,99.
+       01  WS-SALDO-EDIT              PIC ZZZ,ZZZ,ZZ9.99.
 
        PROCEDURE DIVISION.
       *===============================================================*
@@ -195,6 +195,7 @@
                           INTO SALDO-OUT-REG
                    END-STRING
                    WRITE SALDO-OUT-REG
+                   END-WRITE
                NOT INVALID KEY
       *-- Conta encontrada: edita saldo e grava resultado ---------*
                    ADD 1 TO WS-ENCONTRADOS
@@ -210,6 +211,7 @@
                           INTO SALDO-OUT-REG
                    END-STRING
                    WRITE SALDO-OUT-REG
+                   END-WRITE
            END-READ.
 
       *===============================================================*
