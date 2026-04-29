@@ -1,4 +1,4 @@
-IDENTIFICATION DIVISION.
+       IDENTIFICATION DIVISION.
        PROGRAM-ID. EBCOMM01.
       *===============================================================*
       * PROGRAMA : EBCOMM01                                           *
