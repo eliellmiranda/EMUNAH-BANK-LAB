@@ -31,7 +31,7 @@
 //* antes de atualizar para 'EOTI'.
 //* DISP=OLD garante acesso exclusivo ao arquivo de controle.
 //*
-//WRTSTAT  EXEC PGM=EBCTL01,PARM='EOTI'
+//WRTSTAT  EXEC PGM=EBCTL01,PARM='UPD,EOTI'
 //SYSPRINT DD SYSOUT=*
 //SYSOUT   DD SYSOUT=*
 //CTLSTAT  DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
