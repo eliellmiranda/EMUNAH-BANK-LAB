@@ -55,7 +55,7 @@
       * DDNAME: ENTRIN   LRECL: 120   RECFM: FB                       *
       *---------------------------------------------------------------*
            SELECT ENTRIN-IN
-               ASSIGN TO AS-ENTRIN
+               ASSIGN TO ENTRIN
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-ENTRIN.
@@ -123,7 +123,8 @@
       * Arquivo de entrada original — lido como texto puro (contagem) *
       *---------------------------------------------------------------*
        FD  ENTRIN-IN
-           RECORD CONTAINS 120 CHARACTERS.
+           RECORD CONTAINS 120 CHARACTERS
+           RECORDING MODE IS F.
          01  ENTRIN-REG                 PIC X(120).
 
       *---------------------------------------------------------------*
