@@ -131,7 +131,7 @@
        FD  AUDIT-OUT
            RECORD CONTAINS 128 CHARACTERS
            RECORDING MODE IS F.
-       01  AUDIT-REG                 PIC X(120).
+       01  AUDIT-REG                 PIC X(128).
 
       *---------------------------------------------------------------*
       * Snapshot — layout via CPSNP001                                *
