@@ -50,7 +50,7 @@
       * DDNAME: MOVTIN   LRECL: 120   RECFM: FB                       *
       *---------------------------------------------------------------*
            SELECT MOVTO-IN
-               ASSIGN TO MOVTIN
+               ASSIGN TO AS-MOVTIN
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-MOVTIN.
@@ -96,8 +96,7 @@
       * Arquivo de movimentos validados  layout via CPLCT001         *
       *---------------------------------------------------------------*
        FD  MOVTO-IN
-           RECORD CONTAINS 120 CHARACTERS
-           RECORDING MODE IS F.
+           RECORD CONTAINS 120 CHARACTERS.
        01  MOVTO-REG.
            COPY CPLCT001.
 
