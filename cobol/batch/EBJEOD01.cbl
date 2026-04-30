@@ -129,7 +129,7 @@
       * Auditoria — texto livre de 120 bytes                          *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
-           RECORD CONTAINS 120 CHARACTERS
+           RECORD CONTAINS 128 CHARACTERS
            RECORDING MODE IS F.
        01  AUDIT-REG                 PIC X(120).
 
