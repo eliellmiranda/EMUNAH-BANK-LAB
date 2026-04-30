@@ -54,10 +54,7 @@
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
 //* VSAM KSDS de contas. Aberto em I-O pelo programa
 //* para REWRITE dos saldos apos calculo do accrual.
-//ACCROUT  DD DSN=Z77948.EMUNAH.ARQ.ACCR.MOV.SEQ,
-//             DISP=(NEW,CATLG,DELETE),
-//             UNIT=SYSDA,SPACE=(TRK,(10,5)),
-//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//ACCROUT  DD DSN=Z77948.EMUNAH.ARQ.ACCR.MOV.SEQ,DISP=SHR
 //* Arquivo de movimentos de accrual do dia.
 //* Serve como evidencia auditavel dos juros aplicados.
 //* NEW/CATLG = cria nova geracao a cada execucao.
