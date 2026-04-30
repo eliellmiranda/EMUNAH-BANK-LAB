@@ -8,40 +8,6 @@
       * - CHECK 2: calcula liquidez do dia (creditos - debitos)       *
       * - CHECK 3: compara soma snapshot GDG vs soma KSDS de contas   *
       * - Gera arquivo CONCIL.SEQ estruturado via CPCONC001           *
-      *                                                               *
-      * ENTRADAS:                                                     *
-      *   ENTRIN  = Z77948.EMUNAH.ARQ.ENTRADA.SEQ  (entrada original) *
-      *   MOVTIN  = Z77948.EMUNAH.ARQ.LANCTO.ESDS  (validados)        *
-      *   REJEIT  = Z77948.EMUNAH.ARQ.REJEITO.SEQ  (rejeitados)       *
-      *   SALDOIN = Z77948.EMUNAH.ARQ.SALDO.GDG(-1)(snapshot, opcl)   *
-      *   CONTA   = Z77948.EMUNAH.ARQ.CONTA.KSDS   (master contas)    *
-      *                                                               *
-      * SAIDAS:                                                       *
-      *   CONCOUT = Z77948.EMUNAH.ARQ.CONCIL.SEQ   (relat concil)     *
-      *                                                               *
-      * COPYBOOKS UTILIZADOS:                                         *
-      *   CPLCT001  = layout de lancamento (120 bytes)                *
-      *   CPCNT001  = layout de conta      (100 bytes)                *
-      *   CPSNP001  = layout de snapshot   (120 bytes)                *
-      *   CPCONC001 = layout de conciliacao (132 bytes)               *
-      *                                                               *
-      * ESTRUTURA DO ARQUIVO DE SAIDA (CC-TIPO-REG):                  *
-      *   H11      = Cabecalho secao 1 (contagem)                     *
-      *   D11-D14  = Detalhes da secao 1                              *
-      *   R11      = Resultado secao 1 (OK ou DIVERGENTE)             *
-      *   H21      = Cabecalho secao 2 (liquidez)                     *
-      *   D21-D22  = Detalhes da secao 2                              *
-      *   R21      = Resultado secao 2 (sempre informativo)           *
-      *   H31      = Cabecalho secao 3 (snapshot vs KSDS)             *
-      *   D31-D34  = Detalhes da secao 3                              *
-      *   R31      = Resultado secao 3 (OK ou DIVERGENTE)             *
-      *   T98      = Timestamp da conciliacao                         *
-      *   T99      = Status geral do dia                              *
-      *                                                               *
-      * RETURN-CODE:                                                  *
-      *   RC = 0  --> Todos os checks passaram                        *
-      *   RC = 4  --> Check 3 falhou (alerta — snapshot divergente)   *
-      *   RC = 8  --> Check 1 falhou ou erro I/O (bloqueante)         *
       *===============================================================*
        IDENTIFICATION DIVISION.
        PROGRAM-ID. EBCONC01.
@@ -51,8 +17,6 @@
        FILE-CONTROL.
       *---------------------------------------------------------------*
       * ENTRIN-IN: arquivo de entrada original do dia                 *
-      * Lido apenas para contagem — conteudo nao e interpretado       *
-      * DDNAME: ENTRIN   LRECL: 120   RECFM: FB                       *
       *---------------------------------------------------------------*
            SELECT ENTRIN-IN
                ASSIGN TO ENTRIN
@@ -61,9 +25,7 @@
                FILE STATUS IS WS-FS-ENTRIN.
 
       *---------------------------------------------------------------*
-      * MOVTO-IN: lancamentos validados e postados                    *
-      * Lido para contagem e para soma de creditos/debitos            *
-      * DDNAME: MOVTIN   LRECL: 120   RECFM: FB                       *
+      * MOVTO-IN: lancamentos validados e postados (VSAM ESDS)        *
       *---------------------------------------------------------------*
            SELECT MOVTO-IN
                ASSIGN TO AS-MOVTIN
@@ -73,8 +35,6 @@
 
       *---------------------------------------------------------------*
       * REJEIT-IN: lancamentos rejeitados pelo EBVALI01/EBPOST01      *
-      * Lido apenas para contagem                                     *
-      * DDNAME: REJEIT   LRECL: 120   RECFM: FB                       *
       *---------------------------------------------------------------*
            SELECT REJEIT-IN
                ASSIGN TO REJEIT
@@ -84,8 +44,6 @@
 
       *---------------------------------------------------------------*
       * SALDO-IN: snapshot de saldo do dia anterior (GDG(-1))         *
-      * Arquivo OPCIONAL — se ausente, CHECK 3 e considerado OK       *
-      * DDNAME: SALDOIN   LRECL: 120   RECFM: FB                      *
       *---------------------------------------------------------------*
            SELECT SALDO-IN
                ASSIGN TO SALDOIN
@@ -95,8 +53,6 @@
 
       *---------------------------------------------------------------*
       * CONTA-KSDS: percorrido sequencialmente para soma de saldos    *
-      * ACCESS MODE IS SEQUENTIAL para leitura completa via READ NEXT *
-      * DDNAME: CONTA                                                 *
       *---------------------------------------------------------------*
            SELECT CONTA-KSDS
                ASSIGN TO CONTA
@@ -107,8 +63,6 @@
 
       *---------------------------------------------------------------*
       * CONCIL-OUT: arquivo de saida estruturado da conciliacao       *
-      * Aberto em OUTPUT — sobrescrito a cada execucao                *
-      * DDNAME: CONCOUT   LRECL: 132   RECFM: FB                      *
       *---------------------------------------------------------------*
            SELECT CONCIL-OUT
                ASSIGN TO CONCOUT
@@ -120,16 +74,15 @@
        FILE SECTION.
 
       *---------------------------------------------------------------*
-      * Arquivo de entrada original — lido como texto puro (contagem) *
+      * Arquivo de entrada original (TEXTO PS)                        *
       *---------------------------------------------------------------*
        FD  ENTRIN-IN
            RECORD CONTAINS 120 CHARACTERS
            RECORDING MODE IS F.
-         01  ENTRIN-REG                 PIC X(120).
+       01  ENTRIN-REG                 PIC X(120).
 
       *---------------------------------------------------------------*
-      * Arquivo de movimentos — layout via CPLCT001                   *
-      * Usado para contagem e para acumular creditos/debitos          *
+      * Arquivo de movimentos (VSAM ESDS - Sem Recording Mode)        *
       *---------------------------------------------------------------*
        FD  MOVTO-IN
            RECORD CONTAINS 120 CHARACTERS.
@@ -137,7 +90,7 @@
            COPY CPLCT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de rejeitos — lido como texto puro (apenas contagem)  *
+      * Arquivo de rejeitos (TEXTO PS)                                *
       *---------------------------------------------------------------*
        FD  REJEIT-IN
            RECORD CONTAINS 156 CHARACTERS
@@ -145,8 +98,7 @@
        01  REJEIT-REG                 PIC X(120).
 
       *---------------------------------------------------------------*
-      * Arquivo de snapshot — layout via CPSNP001                     *
-      * Usado para somar WS-SOMA-SALDO-GDG (check 3)                  *
+      * Arquivo de snapshot (TEXTO PS)                                *
       *---------------------------------------------------------------*
        FD  SALDO-IN
            RECORD CONTAINS 120 CHARACTERS
@@ -155,14 +107,14 @@
            COPY CPSNP001.
 
       *---------------------------------------------------------------*
-      * KSDS de contas — percorrido via READ NEXT para soma de saldos *
+      * KSDS de contas (VSAM)                                         *
       *---------------------------------------------------------------*
        FD  CONTA-KSDS.
        01  CONTA-REG.
            COPY CPCNT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de saida da conciliacao — layout via CPCONC001        *
+      * Arquivo de saida da conciliacao (TEXTO PS)                    *
       *---------------------------------------------------------------*
        FD  CONCIL-OUT
            RECORD CONTAINS 132 CHARACTERS
@@ -174,7 +126,6 @@
 
       *---------------------------------------------------------------*
       * File Status de todos os arquivos                              *
-      * '00' = OK   '10' = EOF                                        *
       *---------------------------------------------------------------*
        01  WS-FILE-STATUS.
            05 WS-FS-ENTRIN            PIC XX VALUE SPACES.
@@ -197,8 +148,6 @@
 
       *---------------------------------------------------------------*
       * Flags de controle                                             *
-      * WS-SALDO-DISP: indica se SALDOIN foi aberto com sucesso       *
-      * Quando 'N', CHECK 3 e automaticamente considerado OK          *
       *---------------------------------------------------------------*
        01  WS-FLAGS.
            05 WS-EOF-ENTRIN           PIC X VALUE 'N'.
@@ -227,10 +176,6 @@
 
       *---------------------------------------------------------------*
       * Totais financeiros do dia                                     *
-      * WS-SOMA-CREDITOS/DEBITOS: acumulados da leitura do MOVTIN     *
-      * WS-MOV-LIQUIDO: resultado final (creditos - debitos)          *
-      * WS-SOMA-SALDO-GDG: soma dos saldos do snapshot GDG(-1)        *
-      * WS-SOMA-SALDO-CONTA: soma dos saldos atuais do KSDS           *
       *---------------------------------------------------------------*
        01  WS-TOTAIS.
            05 WS-SOMA-CREDITOS        PIC S9(15)V99 VALUE ZERO.
@@ -242,9 +187,6 @@
 
       *---------------------------------------------------------------*
       * Resultados dos checks                                         *
-      * CHECK1: contagem ENTRIN = MOVTIN + REJEIT (bloqueante)        *
-      * CHECK3: soma GDG = soma KSDS (alertante)                      *
-      * CHECK2 nao tem flag — e sempre informativo                    *
       *---------------------------------------------------------------*
        01  WS-CHECKS.
            05 WS-CHECK1-OK            PIC X VALUE 'N'.
@@ -253,18 +195,17 @@
               88 CHECK3-PASSOU        VALUE 'S'.
 
       *---------------------------------------------------------------*
-      * Data e hora e campo editado para valores monetarios na saida  *
+      * Data e hora e campos editados para relatorio de saida         *
       *---------------------------------------------------------------*
        01  WS-DATA-SISTEMA            PIC 9(8).
        01  WS-HORA-SISTEMA            PIC 9(8).
        01  WS-VALOR-EDIT              PIC -Z(10)9,99.
+       01  WS-QTD-EDIT                PIC Z(8)9.
 
        PROCEDURE DIVISION.
 
       *===============================================================*
       * 0000-PRINCIPAL                                                *
-      * Fluxo: abre arquivos, executa as 5 leituras/somas,            *
-      * avalia os checks e gera o arquivo de saida estruturado        *
       *===============================================================*
        0000-PRINCIPAL.
            ACCEPT WS-DATA-SISTEMA FROM DATE YYYYMMDD
@@ -285,8 +226,6 @@
 
       *---------------------------------------------------------------*
       * 1000-ABRIR-ARQUIVOS                                           *
-      * SALDOIN e opcional — aviso se ausente, nao aborta             *
-      * Todos os demais sao obrigatorios                              *
       *---------------------------------------------------------------*
        1000-ABRIR-ARQUIVOS.
            OPEN INPUT ENTRIN-IN
@@ -331,7 +270,6 @@
                END-IF
            END-IF
 
-      *    SALDOIN e opcional — tenta abrir e sinaliza disponibilidade
            IF NOT OCORREU-ERRO-IO
                OPEN INPUT SALDO-IN
                IF FS-SALDO-OK
@@ -343,8 +281,6 @@
 
       *---------------------------------------------------------------*
       * 2000-CONTAR-ENTRIN                                            *
-      * Conta os registros do arquivo de entrada original             *
-      * Resultado usado no CHECK 1                                    *
       *---------------------------------------------------------------*
        2000-CONTAR-ENTRIN.
            PERFORM UNTIL EOF-ENTRIN OR OCORREU-ERRO-IO
@@ -362,8 +298,6 @@
 
       *---------------------------------------------------------------*
       * 2100-LER-MOVTIN                                               *
-      * Conta os movimentos validos e acumula creditos e debitos      *
-      * Calcula o movimento liquido do dia ao final                   *
       *---------------------------------------------------------------*
        2100-LER-MOVTIN.
            PERFORM UNTIL EOF-MOVTIN OR OCORREU-ERRO-IO
@@ -389,8 +323,6 @@
 
       *---------------------------------------------------------------*
       * 2200-CONTAR-REJEIT                                            *
-      * Conta os registros de rejeito                                 *
-      * Resultado usado no CHECK 1                                    *
       *---------------------------------------------------------------*
        2200-CONTAR-REJEIT.
            PERFORM UNTIL EOF-REJEIT OR OCORREU-ERRO-IO
@@ -408,8 +340,6 @@
 
       *---------------------------------------------------------------*
       * 2300-SOMAR-SALDOIN                                            *
-      * Soma os saldos do snapshot GDG(-1) para o CHECK 3            *
-      * Executado apenas se SALDOIN estiver disponivel                *
       *---------------------------------------------------------------*
        2300-SOMAR-SALDOIN.
            IF NOT SALDO-DISPONIVEL
@@ -431,8 +361,6 @@
 
       *---------------------------------------------------------------*
       * 2400-SOMAR-CONTA                                              *
-      * Percorre o KSDS sequencialmente somando CNT-SALDO de todas    *
-      * as contas — resultado comparado com snapshot no CHECK 3       *
       *---------------------------------------------------------------*
        2400-SOMAR-CONTA.
            PERFORM UNTIL EOF-CONTA OR OCORREU-ERRO-IO
@@ -452,9 +380,6 @@
 
       *---------------------------------------------------------------*
       * 3000-EXECUTAR-CHECKS                                          *
-      * CHECK 1: ENTRIN = MOVTIN + REJEIT (bloqueante — RC=8 se falhar)*
-      * CHECK 3: GDG = KSDS (alertante — RC=4 se falhar)             *
-      * Se SALDOIN ausente, CHECK 3 passa automaticamente             *
       *---------------------------------------------------------------*
        3000-EXECUTAR-CHECKS.
            IF WS-CT-ENTRIN = WS-CT-MOVTIN + WS-CT-REJEIT
@@ -471,8 +396,6 @@
 
       *---------------------------------------------------------------*
       * 4000-GERAR-SAIDA                                              *
-      * Gera todas as linhas do arquivo CONCIL.SEQ na ordem correta   *
-      * Cada paragrafo 41xx/42xx/43xx grava um registro via 4900      *
       *---------------------------------------------------------------*
        4000-GERAR-SAIDA.
            PERFORM 4100-LINHA-H11
@@ -506,43 +429,40 @@
            PERFORM 4900-WRITE.
 
        4110-LINHA-D11.
-           MOVE WS-CT-ENTRIN TO WS-VALOR-AUX
-           MOVE WS-VALOR-AUX TO WS-VALOR-EDIT
+           MOVE WS-CT-ENTRIN TO WS-QTD-EDIT
            MOVE SPACES TO CONCIL-REG
            MOVE 'D11' TO CC-TIPO-REG
            MOVE 'TOTAL ENTRADA' TO CC-DESCRICAO
-           MOVE WS-VALOR-EDIT TO CC-VALOR
+           MOVE WS-QTD-EDIT TO CC-VALOR
            MOVE 'ARQ.ENTRADA.SEQ' TO CC-STATUS
            PERFORM 4900-WRITE.
 
        4120-LINHA-D12.
-           MOVE WS-CT-MOVTIN TO WS-VALOR-AUX
-           MOVE WS-VALOR-AUX TO WS-VALOR-EDIT
+           MOVE WS-CT-MOVTIN TO WS-QTD-EDIT
            MOVE SPACES TO CONCIL-REG
            MOVE 'D12' TO CC-TIPO-REG
            MOVE 'TOTAL VALIDOS/POSTADOS' TO CC-DESCRICAO
-           MOVE WS-VALOR-EDIT TO CC-VALOR
+           MOVE WS-QTD-EDIT TO CC-VALOR
            MOVE 'ARQ.LANCTO.ESDS' TO CC-STATUS
            PERFORM 4900-WRITE.
 
        4130-LINHA-D13.
-           MOVE WS-CT-REJEIT TO WS-VALOR-AUX
-           MOVE WS-VALOR-AUX TO WS-VALOR-EDIT
+           MOVE WS-CT-REJEIT TO WS-QTD-EDIT
            MOVE SPACES TO CONCIL-REG
            MOVE 'D13' TO CC-TIPO-REG
            MOVE 'TOTAL REJEITOS' TO CC-DESCRICAO
-           MOVE WS-VALOR-EDIT TO CC-VALOR
+           MOVE WS-QTD-EDIT TO CC-VALOR
            MOVE 'ARQ.REJEITOS.SEQ' TO CC-STATUS
            PERFORM 4900-WRITE.
 
        4140-LINHA-D14.
            MOVE WS-CT-MOVTIN TO WS-VALOR-AUX
            ADD WS-CT-REJEIT TO WS-VALOR-AUX
-           MOVE WS-VALOR-AUX TO WS-VALOR-EDIT
+           MOVE WS-VALOR-AUX TO WS-QTD-EDIT
            MOVE SPACES TO CONCIL-REG
            MOVE 'D14' TO CC-TIPO-REG
            MOVE 'VALIDOS + REJEITOS' TO CC-DESCRICAO
-           MOVE WS-VALOR-EDIT TO CC-VALOR
+           MOVE WS-QTD-EDIT TO CC-VALOR
            MOVE 'BASE DE COMPARACAO' TO CC-STATUS
            PERFORM 4900-WRITE.
 
@@ -559,7 +479,7 @@
            PERFORM 4900-WRITE.
 
       *---------------------------------------------------------------*
-      * Secao 2 — Liquidez: total creditos x total debitos (inform.)  *
+      * Secao 2 — Liquidez: total creditos x total debitos           *
       *---------------------------------------------------------------*
        4200-LINHA-H21.
            MOVE SPACES TO CONCIL-REG
@@ -596,7 +516,7 @@
            PERFORM 4900-WRITE.
 
       *---------------------------------------------------------------*
-      * Secao 3 — Snapshot GDG vs posicao final KSDS                  *
+      * Secao 3 — Snapshot GDG vs posicao final KSDS                 *
       *---------------------------------------------------------------*
        4300-LINHA-H31.
            MOVE SPACES TO CONCIL-REG
@@ -687,8 +607,6 @@
 
       *---------------------------------------------------------------*
       * 4900-WRITE                                                    *
-      * Paragrafo unico de gravacao no CONCIL-OUT                     *
-      * Centraliza o tratamento de erro de WRITE                      *
       *---------------------------------------------------------------*
        4900-WRITE.
            WRITE CONCIL-REG
@@ -700,7 +618,6 @@
 
       *---------------------------------------------------------------*
       * 9000-FECHAR                                                   *
-      * SALDO-IN fechado apenas se foi aberto com sucesso             *
       *---------------------------------------------------------------*
        9000-FECHAR.
            CLOSE ENTRIN-IN
@@ -714,9 +631,6 @@
 
       *---------------------------------------------------------------*
       * 9100-RETORNO                                                  *
-      * RC=0: todos os checks OK                                      *
-      * RC=4: CHECK 3 falhou (alerta de saldo)                        *
-      * RC=8: CHECK 1 falhou ou erro de I/O (bloqueante para EOD)     *
       *---------------------------------------------------------------*
        9100-RETORNO.
            DISPLAY '*** RESUMO EBCONC01 ***'
