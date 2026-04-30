@@ -140,7 +140,7 @@
       * Arquivo de rejeitos — lido como texto puro (apenas contagem)  *
       *---------------------------------------------------------------*
        FD  REJEIT-IN
-           RECORD CONTAINS 120 CHARACTERS
+           RECORD CONTAINS 156 CHARACTERS
            RECORDING MODE IS F.
        01  REJEIT-REG                 PIC X(120).
 
