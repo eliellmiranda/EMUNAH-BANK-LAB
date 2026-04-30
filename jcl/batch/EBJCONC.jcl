@@ -49,7 +49,7 @@
 //CONCIL   EXEC PGM=EBCONC01,COND=(0,NE)
 //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
 //* Biblioteca contendo o modulo executavel EBCONC01.
-//MOVTIN   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//ENTRIN   DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
 //* VSAM ESDS de lancamentos validados e postados.
 //* DDNAME MOVTIN: entrada principal da conciliacao.
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
@@ -60,10 +60,7 @@
 //SNAPIN   DD DSN=Z77948.EMUNAH.ARQ.SALDO.GDG(0),DISP=SHR
 //* GDG de snapshot gerado pelo EBJSNAP no inicio do dia.
 //* Usado no CHECK3 (snapshot vs KSDS atual).
-//CONCOUT  DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,
-//             DISP=(NEW,CATLG,DELETE),
-//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//             DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)
+//CONCOUT  DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,DISP=SHR
 //* Arquivo de saida com o relatorio de conciliacao.
 //* LRECL=132 comporta registros H/D/R/T do CPCONC001.
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
