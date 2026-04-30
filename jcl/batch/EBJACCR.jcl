@@ -47,7 +47,7 @@
 //ACCR     EXEC PGM=EBACCR01,COND=(0,NE)
 //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
 //* Biblioteca contendo o modulo executavel EBACCR01.
-//PARMLIB  DD DSN=Z77948.EMUNAH.PARM.JUROS.CONFIG,DISP=SHR
+//PARMLIB  DD DSN=Z77948.EMUNAH.PARM.JUROS.CONFIG(EBJUROSP),DISP=SHR
 //* Arquivo de parametros de juros e tarifas.
 //* Layout: pos1=tipo (J/T/*), pos2=modalidade (C/P),
 //* pos3-7=taxa PIC 9(3)V99. Uma regra por registro.
