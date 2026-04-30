@@ -37,16 +37,10 @@
 //REJIN    DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,DISP=SHR
 //*           Arquivo de entrada com rejeitos do EBJVALD.
 //*           DDNAME REJIN esperado pelo programa EBREPR01.
-//LCTOUT   DD DSN=Z77948.EMUNAH.ARQ.REPR.LANCTO.SEQ,
-//             DISP=(NEW,CATLG,DELETE),
-//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//LCTOUT   DD DSN=Z77948.EMUNAH.ARQ.REPR.LANCTO.SEQ,DISP=OLD
 //*           Lancamentos recuperados (passaram na revalidacao).
 //*           Layout CPLCT001 - 120 bytes. Alimenta o EBJRPOST.
-//REJOUT   DD DSN=Z77948.EMUNAH.ARQ.REPR.REJPERM.SEQ,
-//             DISP=(NEW,CATLG,DELETE),
-//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//             DCB=(RECFM=FB,LRECL=150,BLKSIZE=0)
+//REJOUT   DD DSN=Z77948.EMUNAH.ARQ.REPR.REJPERM.SEQ,DISP=OLD
 //*           Rejeitos permanentes (falharam na revalidacao).
 //*           150 bytes = 120 do registro + 30 de motivo acumulado
 //*           (separador ' | ' entre falhas, ex: 'TIPO INVALIDO |
