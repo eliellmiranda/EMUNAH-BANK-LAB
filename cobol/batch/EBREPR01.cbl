@@ -79,7 +79,7 @@
       * dos lancamentos, facilitando a revalidacao com o mesmo codigo *
       *---------------------------------------------------------------*
        FD  REJEIT-IN
-           RECORD CONTAINS 120 CHARACTERS
+           RECORD CONTAINS 156 CHARACTERS
            RECORDING MODE IS F.
        01  REJEIT-IN-RAW              PIC X(120).
        01  REJEIT-IN-REG.
