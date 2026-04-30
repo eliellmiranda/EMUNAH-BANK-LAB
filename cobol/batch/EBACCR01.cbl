@@ -98,7 +98,7 @@
       * DDNAME: LANCTO   LRECL: 120                                   *
       *---------------------------------------------------------------*
            SELECT LANCTO-ESDS
-               ASSIGN TO LANCTO
+               ASSIGN TO AS-LANCTO
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-LANCTO.
@@ -160,15 +160,14 @@
       * Permite que o accrual apareca no extrato e na conciliacao     *
       *---------------------------------------------------------------*
        FD  LANCTO-ESDS
-           RECORD CONTAINS 120 CHARACTERS
-           RECORDING MODE IS F.
+           RECORD CONTAINS 120 CHARACTERS.           
        01  LANCTO-REG                 PIC X(120).
 
       *---------------------------------------------------------------*
       * Auditoria (120 bytes) — texto livre via STRING                *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
-           RECORD CONTAINS 120 CHARACTERS
+           RECORD CONTAINS 128 CHARACTERS
            RECORDING MODE IS F.
        01  AUDIT-REG                  PIC X(120).
 
