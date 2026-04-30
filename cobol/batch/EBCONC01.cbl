@@ -55,7 +55,7 @@
       * DDNAME: ENTRIN   LRECL: 120   RECFM: FB                       *
       *---------------------------------------------------------------*
            SELECT ENTRIN-IN
-               ASSIGN TO ENTRIN
+               ASSIGN TO AS-ENTRIN
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-ENTRIN.
@@ -123,17 +123,15 @@
       * Arquivo de entrada original — lido como texto puro (contagem) *
       *---------------------------------------------------------------*
        FD  ENTRIN-IN
-           RECORD CONTAINS 120 CHARACTERS
-           RECORDING MODE IS F.
-       01  ENTRIN-REG                 PIC X(120).
+           RECORD CONTAINS 120 CHARACTERS.
+         01  ENTRIN-REG                 PIC X(120).
 
       *---------------------------------------------------------------*
       * Arquivo de movimentos — layout via CPLCT001                   *
       * Usado para contagem e para acumular creditos/debitos          *
       *---------------------------------------------------------------*
        FD  MOVTO-IN
-           RECORD CONTAINS 120 CHARACTERS
-           RECORDING MODE IS F.
+           RECORD CONTAINS 120 CHARACTERS.
        01  MOVTO-REG.
            COPY CPLCT001.
 
