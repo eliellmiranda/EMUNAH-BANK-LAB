@@ -54,5 +54,7 @@
 //* para READ + REWRITE do saldo apos cada lancamento.
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
 //* Auditoria da postagem. DISP=MOD = append.
+//REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,DISP=MOD
+//* Rejeitos de negocio da postagem. DISP=MOD = append.
 //SYSOUT   DD SYSOUT=*
 //SYSPRINT DD SYSOUT=*
