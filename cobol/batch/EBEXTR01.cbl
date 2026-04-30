@@ -115,7 +115,7 @@
       * Arquivo de auditoria  layout via CPAUD001                    *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
-           RECORD CONTAINS 120 CHARACTERS
+           RECORD CONTAINS 128 CHARACTERS
            RECORDING MODE IS F.
        01  AUDIT-REG.
            COPY CPAUD001.
