@@ -46,7 +46,7 @@
        FILE-CONTROL.
       *---------------------------------------------------------------*
       * MOVTO-IN: lancamentos aprovados pelo EBVALI01                 *
-      * Lido sequencialmente  um registro por iteracao do loop       *
+      * Lido sequencialmente - um registro por iteracao do loop       *
       * DDNAME: MOVTIN   LRECL: 120   RECFM: FB                       *
       *---------------------------------------------------------------*
            SELECT MOVTO-IN
@@ -93,7 +93,7 @@
        FILE SECTION.
 
       *---------------------------------------------------------------*
-      * Arquivo de movimentos validados  layout via CPLCT001         *
+      * Arquivo de movimentos validados - layout via CPLCT001         *
       *---------------------------------------------------------------*
        FD  MOVTO-IN
            RECORD CONTAINS 120 CHARACTERS.
@@ -101,7 +101,7 @@
            COPY CPLCT001.
 
       *---------------------------------------------------------------*
-      * KSDS de contas  layout via CPCNT001                          *
+      * KSDS de contas - layout via CPCNT001                          *
       * Lido por chave e atualizado via REWRITE apos cada postagem    *
       *---------------------------------------------------------------*
        FD  CONTA-KSDS.
@@ -109,7 +109,7 @@
            COPY CPCNT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de rejeitos  layout via CPREJ001                     *
+      * Arquivo de rejeitos - layout via CPREJ001                     *
       *---------------------------------------------------------------*
        FD  REJEITOS-OUT
            RECORD CONTAINS 156 CHARACTERS
@@ -118,7 +118,7 @@
            COPY CPREJ001.
 
       *---------------------------------------------------------------*
-      * Arquivo de auditoria  layout via CPAUD001                    *
+      * Arquivo de auditoria - layout via CPAUD001                    *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
            RECORD CONTAINS 120 CHARACTERS
@@ -233,6 +233,10 @@
 
            IF NOT COM-ERRO
                OPEN EXTEND REJEITOS-OUT
+               IF WS-FS-REJEITOS = '35'
+                   OPEN OUTPUT REJEITOS-OUT
+               END-IF
+               
                IF NOT FS-REJEITOS-OK
                    DISPLAY '*** EBPOST01 ERRO OPEN REJEITOS - '
                            WS-FS-REJEITOS
@@ -242,6 +246,10 @@
 
            IF NOT COM-ERRO
                OPEN EXTEND AUDIT-OUT
+               IF WS-FS-AUDIT = '35'
+                   OPEN OUTPUT AUDIT-OUT
+               END-IF
+
                IF NOT FS-AUDIT-OK
                    DISPLAY '*** EBPOST01 ERRO OPEN AUDIT - ' WS-FS-AUDIT
                    SET COM-ERRO TO TRUE
@@ -349,7 +357,6 @@
       * 4000-GRAVAR-REJEITO                                           *
       * Monta registro de rejeito de negocio e grava em REJEITOS      *
       * Preserva dados originais do lancamento para rastreabilidade   *
-      *---------------------------------------------------------------*
       *---------------------------------------------------------------*
        4000-GRAVAR-REJEITO.
            MOVE SPACES TO REJEITOS-REG
