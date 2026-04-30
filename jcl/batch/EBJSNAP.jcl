@@ -43,11 +43,7 @@
 //SALDOUT  DD DSN=Z77948.EMUNAH.ARQ.SALDO.GDG(+1),
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//             DCB=(MODEL.DSCB,RECFM=FB,LRECL=120,BLKSIZE=0)
-//*           Nova geracao GDG do snapshot diario.
-//*           Layout CPSNP001 (120 bytes): SNP-AGENCIA(4),
-//*           SNP-NUM-CONTA(8), SNP-SALDO S9(11)V99, SNP-DATA(8).
-//*           MODEL.DSCB herda atributos da base GDG.
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
 //*           Auditoria do snapshot. DISP=MOD = append.
 //SYSOUT   DD SYSOUT=*
