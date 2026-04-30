@@ -45,14 +45,14 @@
       * DDNAME: MOVTIN   LRECL: 120   RECFM: FB                       *
       *---------------------------------------------------------------*
            SELECT MOVTO-IN
-               ASSIGN TO MOVTIN
+               ASSIGN TO AS-MOVTIN
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-MOVTIN.
 
       *---------------------------------------------------------------*
       * CONTA-KSDS: consultado para obter saldo atual de cada conta   *
-      * Aberto em INPUT — somente leitura, sem alteracao de saldo     *
+      * Aberto em INPUT  somente leitura, sem alteracao de saldo     *
       * DDNAME: CONTA                                                 *
       *---------------------------------------------------------------*
            SELECT CONTA-KSDS
@@ -64,7 +64,7 @@
 
       *---------------------------------------------------------------*
       * EXTRATO-OUT: arquivo GDG de saida com as linhas de extrato    *
-      * Aberto em OUTPUT — nova geracao a cada execucao do job        *
+      * Aberto em OUTPUT  nova geracao a cada execucao do job        *
       * DDNAME: EXTROUT   LRECL: 132   RECFM: FB                      *
       *---------------------------------------------------------------*
            SELECT EXTRATO-OUT
@@ -74,7 +74,7 @@
                FILE STATUS IS WS-FS-EXTROUT.
 
       *---------------------------------------------------------------*
-      * AUDIT-OUT: trilha de auditoria — registra resumo ao final     *
+      * AUDIT-OUT: trilha de auditoria  registra resumo ao final     *
       * DDNAME: AUDIT   LRECL: 120   RECFM: FB                        *
       *---------------------------------------------------------------*
            SELECT AUDIT-OUT
@@ -87,23 +87,22 @@
        FILE SECTION.
 
       *---------------------------------------------------------------*
-      * Arquivo de movimentos postados — layout via CPLCT001          *
+      * Arquivo de movimentos postados  layout via CPLCT001          *
       *---------------------------------------------------------------*
        FD  MOVTO-IN
-           RECORD CONTAINS 120 CHARACTERS
-           RECORDING MODE IS F.
+           RECORD CONTAINS 120 CHARACTERS.
        01  MOVTO-REG.
            COPY CPLCT001.
 
       *---------------------------------------------------------------*
-      * KSDS de contas — consultado para obter CNT-SALDO atual        *
+      * KSDS de contas  consultado para obter CNT-SALDO atual        *
       *---------------------------------------------------------------*
        FD  CONTA-KSDS.
        01  CONTA-REG.
            COPY CPCNT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de extrato — layout via CPEXT001 (132 bytes)          *
+      * Arquivo de extrato  layout via CPEXT001 (132 bytes)          *
       * Uma linha por movimento processado                            *
       *---------------------------------------------------------------*
        FD  EXTRATO-OUT
@@ -113,7 +112,7 @@
            COPY CPEXT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de auditoria — layout via CPAUD001                    *
+      * Arquivo de auditoria  layout via CPAUD001                    *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
            RECORD CONTAINS 120 CHARACTERS
