@@ -67,7 +67,10 @@
 //* DISP=MOD: acumula rejeitos de multiplas execucoes
 //* do dia sem sobrescrever o conteudo anterior.
 //* CATLG na terminacao normal, DELETE em abend.
-//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
+//             DISP=(MOD,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(10,5)),
+//             DCB=(RECFM=FB,LRECL=128,BLKSIZE=0)
 //* Auditoria. DISP=MOD = append.
 //SYSOUT   DD SYSOUT=*
 //SYSPRINT DD SYSOUT=*
