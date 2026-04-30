@@ -40,12 +40,11 @@
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
 //*           KSDS de contas para lookup do saldo-posicao
 //*           (saldo atual do KSDS, nao historico).
+//* --- ARQUIVOS DE SAIDA (EXTRATO GDG) ---
 //EXTROUT  DD DSN=Z77948.EMUNAH.ARQ.EXTRATO.GDG(+1),
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
-//             DCB=(MODEL.DSCB,RECFM=FB,LRECL=132,BLKSIZE=0)
-//*           Nova geracao do GDG de extratos.
-//*           MODEL.DSCB herda atributos da base GDG.
-//*           LRECL=132 = largura de impressora padrao.
+//             DCB=(Z77948.EMUNAH.ARQ.ENTRADA.SEQ,
+//             RECFM=FB,LRECL=132,BLKSIZE=1320)
 //SYSOUT   DD SYSOUT=*
 //SYSPRINT DD SYSOUT=*
