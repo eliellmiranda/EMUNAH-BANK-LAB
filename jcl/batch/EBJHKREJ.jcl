@@ -1,3 +1,4 @@
+//EBJHKREJ JOB ,'EMUNAH HKREJ',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //* ============================================================
 //* ARQUIVO      : EBJHKREJ.jcl
 //* CAMINHO LOCAL: jcl/batch/EBJHKREJ.jcl
@@ -30,25 +31,18 @@
 //*   RC 8  = falha em ARCHREJ - arquivo nao rotacionado
 //*   RC 12 = falha critica - GDG nao gerado
 //* ============================================================
-//EBJHKREJ JOB ,'EMUNAH HKREJ',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
 //* === STEP ARCHREJ: ARQUIVAR REJEITOS.SEQ EM GDG(+1) ==========
-//*
 //ARCHREJ  EXEC PGM=IEBGENER
 //SYSPRINT DD SYSOUT=*
 //SYSUT1   DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,DISP=SHR
-//*           Arquivo de rejeitos corrente (acumulado via MOD).
 //SYSUT2   DD DSN=Z77948.EMUNAH.ARQ.BKP.REJEITOS.GDG(+1),
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//             DCB=(MODEL.DSCB,RECFM=FB,LRECL=120,BLKSIZE=0)
-//*           Nova geracao GDG de backup de rejeitos.
+//             DCB=*.SYSUT1
 //SYSIN    DD DUMMY
 //*
 //* === STEP DELREJ: DELETAR REJEITOS.SEQ ATUAL =================
-//*   COND=(0,NE): executa somente se ARCHREJ terminou RC=0.
-//*   SET MAXCC=0: idempotente - seguro para rerun.
-//*
 //DELREJ   EXEC PGM=IDCAMS,COND=(0,NE)
 //SYSPRINT DD SYSOUT=*
 //SYSIN    DD *
@@ -57,12 +51,8 @@
 /*
 //*
 //* === STEP ALLOCREJ: RECRIAR REJEITOS.SEQ VAZIO ===============
-//*   IEFBR14 nao executa logica; a alocacao e feita pelo DD.
-//*   Recria o arquivo vazio com o mesmo layout original (FB/120).
-//*
 //ALLOCREJ EXEC PGM=IEFBR14,COND=(0,NE)
 //REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
 //             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
-//*           Arquivo recriado vazio, pronto para o proximo ciclo.
