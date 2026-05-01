@@ -37,11 +37,10 @@
 //SYSPRINT DD SYSOUT=*
 //SYSUT1   DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=SHR
 //*           Arquivo de auditoria corrente (acumulado via MOD).
-//SYSUT2   DD DSN=Z77948.EMUNAH.ARQ.BKP.AUDIT.GDG(+1),
+//SYSUT2   DD DSN=Z77948.EMUNAH.BKP.AUDIT.GDG(+1),
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
-//             DCB=(MODEL.DSCB,RECFM=FB,LRECL=120,BLKSIZE=0)
-//*           Nova geracao GDG de backup. MODEL.DSCB herda DCB.
+//             DCB=(RECFM=FB,LRECL=128,BLKSIZE=0)
 //SYSIN    DD DUMMY
 //*
 //* === STEP DELAUD: DELETAR AUDIT.SEQ ATUAL ====================
@@ -65,6 +64,4 @@
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
-//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
-//*           Arquivo recriado vazio com mesmo layout FB/120.
-//*           Pronto para receber registros do proximo ciclo.
+//             DCB=(RECFM=FB,LRECL=128,BLKSIZE=0)
