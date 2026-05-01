@@ -217,45 +217,53 @@
       * Arquivos de saida abertos em EXTEND                           *
       *---------------------------------------------------------------*
        1000-ABRIR.
-           OPEN INPUT MOVTO-IN
-           IF NOT FS-MOVTIN-OK
-               DISPLAY '*** EBPOST01 ERRO OPEN MOVTIN - ' WS-FS-MOVTIN
-               SET COM-ERRO TO TRUE
-           END-IF
-
-           IF NOT COM-ERRO
-               OPEN I-O CONTA-KSDS
-               IF NOT FS-CONTA-OK
+                  OPEN INPUT MOVTO-IN
+                  EVALUATE WS-FS-MOVTIN
+                      WHEN '00'
+                          CONTINUE
+                      WHEN '37'
+                          DISPLAY '*** EBPOST01 AVISO: MOVTIN VAZIO - '
+                                  'NENHUM REPROCESSADO PENDENTE'
+                          SET EOF-MOVTIN TO TRUE
+                      WHEN OTHER
+                          DISPLAY '*** EBPOST01 ERRO OPEN MOVTIN - '
+                                  WS-FS-MOVTIN
+                          SET COM-ERRO TO TRUE
+                  END-EVALUATE
+                          
+            IF NOT COM-ERRO
+                OPEN I-O CONTA-KSDS
+                IF NOT FS-CONTA-OK
                    DISPLAY '*** EBPOST01 ERRO OPEN CONTA - ' WS-FS-CONTA
-                   SET COM-ERRO TO TRUE
-               END-IF
-           END-IF
-
-           IF NOT COM-ERRO
-               OPEN EXTEND REJEITOS-OUT
-               IF WS-FS-REJEITOS = '35'
-                   OPEN OUTPUT REJEITOS-OUT
-               END-IF
-               
-               IF NOT FS-REJEITOS-OK
-                   DISPLAY '*** EBPOST01 ERRO OPEN REJEITOS - '
-                           WS-FS-REJEITOS
-                   SET COM-ERRO TO TRUE
-               END-IF
-           END-IF
-
-           IF NOT COM-ERRO
-               OPEN EXTEND AUDIT-OUT
-               IF WS-FS-AUDIT = '35'
-                   OPEN OUTPUT AUDIT-OUT
-               END-IF
-
-               IF NOT FS-AUDIT-OK
+                    SET COM-ERRO TO TRUE
+                END-IF
+            END-IF
+ 
+            IF NOT COM-ERRO
+                OPEN EXTEND REJEITOS-OUT
+                IF WS-FS-REJEITOS = '35'
+                    OPEN OUTPUT REJEITOS-OUT
+                END-IF
+ 
+                IF NOT FS-REJEITOS-OK
+                    DISPLAY '*** EBPOST01 ERRO OPEN REJEITOS - '
+                            WS-FS-REJEITOS
+                    SET COM-ERRO TO TRUE
+                END-IF
+            END-IF
+ 
+            IF NOT COM-ERRO
+                OPEN EXTEND AUDIT-OUT
+                IF WS-FS-AUDIT = '35'
+                    OPEN OUTPUT AUDIT-OUT
+                END-IF
+ 
+                IF NOT FS-AUDIT-OK
                    DISPLAY '*** EBPOST01 ERRO OPEN AUDIT - ' WS-FS-AUDIT
-                   SET COM-ERRO TO TRUE
-               END-IF
-           END-IF.
-
+                    SET COM-ERRO TO TRUE
+                END-IF
+            END-IF.
+ 
       *---------------------------------------------------------------*
       * 2000-PROCESSAR                                                *
       * Loop principal: le um movimento por vez e aciona tratamento   *
