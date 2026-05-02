@@ -49,9 +49,10 @@
 //CLIENTE  DD DSN=Z77948.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
 //* VSAM KSDS de clientes. Consultado para validar
 //* se o cliente da conta esta ativo.
-//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=OLD
 //* VSAM KSDS de contas. Aberto em I-O pelo programa
 //* para READ + REWRITE do saldo apos cada lancamento.
+//* DISP=OLD garante acesso exclusivo durante as atualizacoes.
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
 //* Auditoria da postagem. DISP=MOD = append.
 //REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,DISP=MOD
