@@ -13,13 +13,7 @@
 //* O QUE ESTE JOB FAZ:
 //* 0. Valida se o CTL.STATUS = OPEN (janela de entrada aberta)
 //* 1. Le ARQ.ENTRADA.SEQ registro a registro (ENTRADA)
-//* 2. Aplica 6 regras de validacao (V001-V006):
-//* V001 = tipo 'C' ou 'D'
-//* V002 = agencia numerica > 0
-//* V003 = conta numerica > 0
-//* V004 = valor numerico > 0
-//* V005 = data numerica > 0
-//* V006 = conta existe no KSDS
+//* 2. Aplica 6 regras de validacao (V001-V006)
 //* 3. Aprovados -> LANCTO.ESDS (VALIDOS)
 //* 4. Rejeitados -> REJEITOS.SEQ com codigo V00x (REJEITOS)
 //* 5. Registra auditoria de cada decisao (AUDIT)
@@ -50,15 +44,11 @@
 //* Biblioteca contendo o modulo executavel EBVALI01.
 //ENTRADA  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.SEQ,DISP=SHR
 //* Arquivo de entrada com lancamentos do dia.
-//* Carregado pelo EBJLOAD a partir do STAGE.
-//* Layout CPLCT001 (120 bytes, RECFM=FB).
-//VALIDOS  DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
-//* VSAM ESDS de saida para lancamentos aprovados.
-//* Aberto em OUTPUT (EXTEND) pelo programa para
-//* append dos lancamentos validos do dia.
+//VALIDOS  DD DSN=Z77948.EMUNAH.ARQ.LANCTO.ESDS,DISP=OLD
+//* VSAM ESDS para lancamentos aprovados.
+//* DISP=OLD garante lock exclusivo para insercao segura.
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
-//* VSAM KSDS de contas para validacao V006
-//* (existencia da conta no cadastro master).
+//* VSAM KSDS de contas para validacao V006 (somente leitura).
 //REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,
 //             DISP=(MOD,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
@@ -66,7 +56,6 @@
 //* Saida para lancamentos rejeitados.
 //* DISP=MOD: acumula rejeitos de multiplas execucoes
 //* do dia sem sobrescrever o conteudo anterior.
-//* CATLG na terminacao normal, DELETE em abend.
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
 //             DISP=(MOD,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
