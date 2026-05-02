@@ -8,7 +8,8 @@
 //* marcando CTL.STATUS = OPEN via programa EBCTL01.
 //*
 //* POSICAO NA CADEIA DIARIA:
-//* EBJSOD (primeiro job do dia) --> EBJPRECK --> EBJWAIT --> ...
+//* EBJPRECK (valida fechamento anterior) --> EBJSOD --> EBJWAIT
+//* O SOD e o "gatilho" que libera a entrada de arquivos.
 //*
 //* MAQUINA DE ESTADOS CTL.STATUS:
 //* CLOSED (fim do dia anterior)
@@ -17,24 +18,24 @@
 //* --> EOFI    (EBJCUTE - corte contabil)
 //* --> CLOSED  (EBJEOD/CLOSDAY - fechamento do dia)
 //*
-//* PRE-REQUISITO:
-//* ARQ.CTL.STATUS deve ja existir no catalogo.
-//*
 //* CODIGOS DE RETORNO (EBCTL01):
 //* RC 0 = OPEN gravado com sucesso - transicao permitida
-//* RC 8 = Transicao invalida ou erro de I/O
+//* RC 8 = Transicao invalida (nao estava CLOSED) ou erro de I/O
 //* ============================================================
 //EBJSOD   JOB ,'EMUNAH SOD',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
-//* === STEP WRTSTAT: START OF DAY =============================
+//* === STEP WRTSTAT: START OF DAY (EBCTL01) ===================
 //* Chama o EBCTL01 passando o status destino via PARM.
-//* O programa valida se o status atual e 'CLOSED' (ou vazio)
+//* O programa valida se o status atual e 'CLOSED'
 //* antes de atualizar para 'OPEN'.
-//* DISP=OLD garante acesso exclusivo e previne concorrencia.
 //*
 //WRTSTAT  EXEC PGM=EBCTL01,PARM='UPD,OPEN'
 //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//* Biblioteca contendo o executavel EBCTL01.
 //SYSPRINT DD SYSOUT=*
+//* Mensagens tecnicas do sistema.
 //SYSOUT   DD SYSOUT=*
+//* Saida operacional do programa (DISPLAY).
 //CTLSTAT  DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
+//* Arquivo de controle de status. DISP=OLD garante lock exclusivo.
 //*
