@@ -10,7 +10,7 @@
 //* Utiliza o programa EBCTL01 para validar a transicao.
 //*
 //* POSICAO NA CADEIA DIARIA:
-//* EBJACCR (accruals) --> EBJCUTE (EOFI) --> EBJCONC/EBJEXTR
+//* EBJACCR --> EBJCUTE (EOFI) --> EBJSNAP --> EBJCONC
 //*
 //* MAQUINA DE ESTADOS CTL.STATUS:
 //* vazio/CLOSED -> OPEN (EBJSOD)
@@ -28,11 +28,16 @@
 //* Chama o EBCTL01 passando a acao e o status destino via PARM.
 //* O programa valida se o status atual e 'EOTI'
 //* antes de atualizar para 'EOFI'.
-//* DISP=OLD garante acesso exclusivo ao arquivo de controle.
 //*
 //WRTSTAT  EXEC PGM=EBCTL01,PARM='UPD,EOFI'
 //STEPLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//* Biblioteca contendo o executavel EBCTL01.
 //SYSPRINT DD SYSOUT=*
+//* Mensagens tecnicas do sistema.
 //SYSOUT   DD SYSOUT=*
+//* Saida operacional do programa (DISPLAY).
 //CTLSTAT  DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
+//* Arquivo de controle de status do ciclo diario.
+//* DISP=OLD garante acesso exclusivo e previne
+//* corrupcao por concorrencia.
 //*
