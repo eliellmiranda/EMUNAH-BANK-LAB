@@ -1,13 +1,13 @@
 //* ============================================================
-//* ARQUIVO      : EBJBACKP.jcl
-//* CAMINHO LOCAL: jcl/batch/EBJBACKP.jcl
-//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJBACKP)
+//* ARQUIVO      : EBJBCKPD.jcl
+//* CAMINHO LOCAL: jcl/batch/EBJBCKPD.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBJBCKPD)
 //*
 //* FINALIDADE:
 //* Realizar o backup diario dos datasets do Emunah Bank.
 //* Gera novas geracoes (+1) para as GDGs de seguranca.
 //* ============================================================
-//EBJBACKP JOB ,'EMUNAH BKP',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//EBJBCKPD JOB ,'EMUNAH BKP',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
 //* === STEP BKPCLI: BACKUP DE CLIENTES (KSDS -> GDG) ==========
 //BKPCLI   EXEC PGM=IDCAMS
@@ -55,6 +55,8 @@
 //            LIKE=Z77948.EMUNAH.ARQ.REJEITOS.SEQ
 //SYSIN    DD *
   REPRO INFILE(INFILE) OUTFILE(OUTFILE)
+  IF LASTCC = 4 THEN - 
+     SET MAXCC = 0
 /*
 //*
 //* === STEP BKPCNC: BACKUP DE CONCILIACAO (SEQ -> GDG) ========
