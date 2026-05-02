@@ -9,7 +9,7 @@
 //* esta vazio antes de liberar a cadeia diaria (EBJLOAD).
 //*
 //* POSICAO NA CADEIA DIARIA:
-//* EBJSOD --> EBJWAIT --> EBJLOAD --> EBJVALD --> ...
+//* EBJPRECK --> EBJSOD --> EBJWAIT --> EBJLOAD --> EBJVALD
 //*
 //* O QUE ESTE JOB FAZ:
 //* 1. CHKEXST : IDCAMS LISTCAT verifica se STAGE esta catalogado
@@ -56,5 +56,3 @@
 //TOOLIN   DD *
   COUNT FROM(STAGE) EMPTY
 /*
-//* COUNT: conta os registros do arquivo.
-//* EMPTY: gatilho que eleva o RC para 12 se estiver vazio.
