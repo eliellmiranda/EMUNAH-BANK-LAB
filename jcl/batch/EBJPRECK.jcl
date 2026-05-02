@@ -12,12 +12,13 @@
 //* POSICAO NA CADEIA DIARIA:
 //* EBJPRECK (06:00) --> EBJSOD (06:05) --> EBJWAIT --> ...
 //*
-//* VERIFICACOES (5 steps):
+//* VERIFICACOES (6 steps):
 //* 1. CHKLOAD : LOADLIB catalogada e acessivel
 //* 2. CHKCOPY : Biblioteca de copybooks catalogada
 //* 3. CHKCLI  : VSAM de clientes existente
 //* 4. CHKCNT  : VSAM de contas existente
-//* 5. CHKCTL  : CTL.STATUS com valor 'CLOSED' (EBCTL01 modo CHK)
+//* 5. CHKLANC : VSAM ESDS de lancamentos existente
+//* 6. CHKCTL  : CTL.STATUS com valor 'CLOSED' (EBCTL01 modo CHK)
 //*
 //* LOGICA DE ABORT EM CASCATA:
 //* COND=(0,NE) em todos os steps apos o primeiro garante
@@ -38,7 +39,7 @@
 //SYSIN    DD *
   LISTCAT ENT('Z77948.EMUNAH.DEV.LOADLIB') ALL
   IF LASTCC > 0 THEN -
-    SET MAXCC = 12
+     SET MAXCC = 12
 /*
 //* RC 0 = LOADLIB catalogada | RC 12 = LOADLIB ausente
 //*
@@ -49,7 +50,7 @@
 //SYSIN    DD *
   LISTCAT ENT('Z77948.EMUNAH.DEV.COPY') ALL
   IF LASTCC > 0 THEN -
-    SET MAXCC = 12
+     SET MAXCC = 12
 /*
 //* RC 0 = COPY lib catalogada | RC 12 = COPY lib ausente
 //*
@@ -60,7 +61,7 @@
 //SYSIN    DD *
   LISTCAT ENT('Z77948.EMUNAH.ARQ.CLIENTE.KSDS') ALL
   IF LASTCC > 0 THEN -
-    SET MAXCC = 12
+     SET MAXCC = 12
 /*
 //* RC 0 = KSDS de clientes ok | RC 12 = ausente
 //*
@@ -71,9 +72,20 @@
 //SYSIN    DD *
   LISTCAT ENT('Z77948.EMUNAH.ARQ.CONTA.KSDS') ALL
   IF LASTCC > 0 THEN -
-    SET MAXCC = 12
+     SET MAXCC = 12
 /*
 //* RC 0 = KSDS de contas ok | RC 12 = ausente
+//*
+//* === STEP CHKLANC: VERIFICAR VSAM LANCAMENTOS ================
+//*
+//CHKLANC  EXEC PGM=IDCAMS,COND=(0,NE)
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('Z77948.EMUNAH.ARQ.LANCTO.ESDS') ALL
+  IF LASTCC > 0 THEN -
+     SET MAXCC = 12
+/*
+//* RC 0 = ESDS de lancamentos ok | RC 12 = ausente
 //*
 //* === STEP CHKCTL: VERIFICAR STATUS DO DIA ANTERIOR ===========
 //* Usa o EBCTL01 em modo de checagem passiva (CHK).
