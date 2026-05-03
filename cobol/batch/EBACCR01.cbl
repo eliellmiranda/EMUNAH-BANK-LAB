@@ -98,7 +98,7 @@
       * CORRECAO: Removido 'AS-' do ASSIGN para suportar VSAM ESDS    *
       *---------------------------------------------------------------*
            SELECT LANCTO-ESDS
-               ASSIGN TO LANCTO
+               ASSIGN TO AS-LANCTO
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-LANCTO.
