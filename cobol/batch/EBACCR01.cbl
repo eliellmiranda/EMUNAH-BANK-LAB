@@ -29,10 +29,10 @@
       * LAYOUT DO PARM.JUROS.CONFIG (LRECL=80):                       *
       *   POS 1    : tipo  J=juros  T=tarifa  *=comentario (ignorado) *
       *   POS 2    : tipo de conta  C=corrente  P=poupanca            *
-      *   POS 3-7  : valor PIC 9(3)V99  ex: 00050 = 0.50% / R$0,50   *
+      *   POS 3-7  : valor PIC 9(3)V99  ex: 00050 = 0.50% / R$0,50    *
       *   POS 8-80 : FILLER / descricao livre                         *
       *                                                               *
-      * EXEMPLO DE CONFIGURACAO:                                       *
+      * EXEMPLO DE CONFIGURACAO:                                      *
       *   JC00000  JUROS CORRENTE - ISENTO                            *
       *   JP00050  JUROS POUPANCA - 0.50% AO MES                      *
       *   TC01250  TARIFA CORRENTE - R$ 12.50 AO MES                  *
@@ -42,7 +42,7 @@
       *   Juros: aplicados somente se saldo > 0 e taxa > 0            *
       *   Tarifa: aplicada se tarifa > 0 (independe do saldo)         *
       *   Contas INATIVAS e BLOQUEADAS sao ignoradas sem erro         *
-      *   Tipo desconhecido (nao C nem P): ignorado sem erro           *
+      *   Tipo desconhecido (nao C nem P): ignorado sem erro          *
       *                                                               *
       * COPYBOOKS UTILIZADOS:                                         *
       *   CPCNT001 = layout de conta (100 bytes)                      *
@@ -70,7 +70,7 @@
                FILE STATUS IS WS-FS-PARM.
 
       *---------------------------------------------------------------*
-      * CONTA-KSDS: percorrido sequencialmente via READ NEXT           *
+      * CONTA-KSDS: percorrido sequencialmente via READ NEXT          *
       * Aberto em I-O para permitir REWRITE apos calculo              *
       * DDNAME: CONTA                                                 *
       *---------------------------------------------------------------*
@@ -95,17 +95,17 @@
       *---------------------------------------------------------------*
       * LANCTO-ESDS: historico de lancamentos — accrual e apendado    *
       * DISP=MOD no JCL para preservar lancamentos anteriores         *
-      * DDNAME: LANCTO   LRECL: 120                                   *
+      * CORRECAO: Removido 'AS-' do ASSIGN para suportar VSAM ESDS    *
       *---------------------------------------------------------------*
            SELECT LANCTO-ESDS
-               ASSIGN TO AS-LANCTO
+               ASSIGN TO LANCTO
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-LANCTO.
 
       *---------------------------------------------------------------*
       * AUDIT-OUT: trilha de auditoria com resumo do accrual          *
-      * DDNAME: AUDIT   LRECL: 120   RECFM: FB                        *
+      * DDNAME: AUDIT   LRECL: 128   RECFM: FB                        *
       *---------------------------------------------------------------*
            SELECT AUDIT-OUT
                ASSIGN TO AUDIT
@@ -131,7 +131,7 @@
 
       *---------------------------------------------------------------*
       * KSDS de contas — layout via CPCNT001                          *
-      * Percorrido via READ NEXT e atualizado via REWRITE              *
+      * Percorrido via READ NEXT e atualizado via REWRITE             *
       *---------------------------------------------------------------*
        FD  CONTA-KSDS.
        01  CONTA-REG.
@@ -164,12 +164,13 @@
        01  LANCTO-REG                 PIC X(120).
 
       *---------------------------------------------------------------*
-      * Auditoria (120 bytes) — texto livre via STRING                *
+      * Auditoria (128 bytes) — texto livre via STRING                *
+      * CORRECAO: Variavel AUDIT-REG ajustada de 120 para 128 bytes   *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
            RECORD CONTAINS 128 CHARACTERS
            RECORDING MODE IS F.
-       01  AUDIT-REG                  PIC X(120).
+       01  AUDIT-REG                  PIC X(128).
 
        WORKING-STORAGE SECTION.
 
@@ -289,7 +290,7 @@
       *---------------------------------------------------------------*
       * 1000-ABRIR-ARQUIVOS                                           *
       * Cada arquivo e aberto condicionalmente ao sucesso do anterior *
-      * CONTA-KSDS em I-O para REWRITE                               *
+      * CONTA-KSDS em I-O para REWRITE                                *
       * ACCR-OUT em OUTPUT (nova saida diaria)                        *
       * LANCTO-ESDS e AUDIT em EXTEND (acumulam sem sobrescrever)     *
       *---------------------------------------------------------------*
@@ -499,7 +500,7 @@
       * Canal = BATCH-ACCR para identificacao no extrato              *
       *---------------------------------------------------------------*
        3200-GRAVAR-MOVIMENTO-JUROS.
-           MOVE SPACES            TO ACCR-REG
+           MOVE SPACES             TO ACCR-REG
            MOVE CNT-AGENCIA   OF CONTA-REG TO ACR-AGENCIA
            MOVE CNT-NUM-CONTA OF CONTA-REG TO ACR-NUM-CONTA
            MOVE WS-DATA-SISTEMA            TO ACR-DATA
@@ -515,7 +516,7 @@
       * Monta registro de debito de tarifa e aciona gravacao dupla    *
       *---------------------------------------------------------------*
        3300-GRAVAR-MOVIMENTO-TARIFA.
-           MOVE SPACES            TO ACCR-REG
+           MOVE SPACES             TO ACCR-REG
            MOVE CNT-AGENCIA   OF CONTA-REG TO ACR-AGENCIA
            MOVE CNT-NUM-CONTA OF CONTA-REG TO ACR-NUM-CONTA
            MOVE WS-DATA-SISTEMA            TO ACR-DATA
