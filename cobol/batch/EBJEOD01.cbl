@@ -27,7 +27,7 @@
       *   AUDIT    = Z77948.EMUNAH.ARQ.AUDIT.SEQ    (trilha)          *
       *                                                               *
       * COPYBOOKS UTILIZADOS:                                         *
-      *   CPCNC001 = layout de conciliacao (132 bytes)               *
+      *   CPCNC001 = layout de conciliacao (132 bytes)                *
       *   CPCNT001  = layout de conta       (100 bytes)               *
       *   CPSNP001  = layout de snapshot    (120 bytes)               *
       *                                                               *
@@ -77,7 +77,7 @@
 
       *---------------------------------------------------------------*
       * AUDIT-OUT: trilha de auditoria do fechamento                  *
-      * DDNAME: AUDIT   LRECL: 120   RECFM: FB                        *
+      * DDNAME: AUDIT   LRECL: 128   RECFM: FB                        *
       *---------------------------------------------------------------*
            SELECT AUDIT-OUT
                ASSIGN TO AUDIT
@@ -118,7 +118,7 @@
 
       *---------------------------------------------------------------*
       * Arquivo de fechamento — texto livre de 132 bytes              *
-      * Montado via STRING com linhas descritivas do fechamento        *
+      * Montado via STRING com linhas descritivas do fechamento       *
       *---------------------------------------------------------------*
        FD  FECHTO-OUT
            RECORD CONTAINS 132 CHARACTERS
@@ -126,7 +126,7 @@
        01  FECHTO-REG                PIC X(132).
 
       *---------------------------------------------------------------*
-      * Auditoria — texto livre de 120 bytes                          *
+      * Auditoria — texto livre de 128 bytes                          *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
            RECORD CONTAINS 128 CHARACTERS
