@@ -4,125 +4,126 @@
 //* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBDEPLOY)
 //*
 //* FINALIDADE:
-//*   Compilar e link-editar toda a cadeia de programas COBOL
-//*   do laboratorio em um unico job, usando IGYWCL.
+//* Compilar e link-editar toda a cadeia de programas COBOL
+//* do laboratorio de forma ATOMICA usando IGYWCL.
 //*
 //* QUANDO USAR:
-//*   - Apos alteracao em copybooks (todos os programas devem
-//*     ser recompilados para capturar a nova versao do COPY)
-//*   - Deploy inicial do ambiente apos EBALLOC + EBDEFGDG
-//*   - Para recompilar apenas um programa: usar EBBUILD
+//* - Apos alteracao em copybooks (todos os programas devem
+//* ser recompilados para capturar a nova versao)
+//* - Deploy inicial do ambiente apos EBALLOC + EBDEFGDG
 //*
-//* LOGICA DE ABORT EM CASCATA:
-//*   COND=(4,LT) em CL02 a CL13: o step so executa se o RC
-//*   de todos os steps anteriores for <= 4. Se qualquer
-//*   compilacao retornar RC >= 8, os steps seguintes nao
-//*   executam, evitando gravar executaveis com erro na LOADLIB.
-//*
-//* PROGRAMAS COMPILADOS (13 steps CL01-CL13):
-//*   CL01 EBCLLOAD  - carga inicial de clientes/contas
-//*   CL02 EBVALI01  - validacao de lancamentos
-//*   CL03 EBPOST01  - postagem de lancamentos
-//*   CL04 EBACCR01  - calculo de accruals
-//*   CL05 EBSNAP01  - snapshot de saldo
-//*   CL06 EBCONC01  - conciliacao tres-vias
-//*   CL07 EBREPR01  - reprocessamento de rejeitos
-//*   CL08 EBCTL01   - controlador de status CTL
-//*   CL09 EBPCHK01  - precheck do CTL.STATUS
-//*   CL10 EBJEOD01  - fechamento end-of-day
-//*   CL11 EBEXTR01  - geracao de extrato
-//*   CL12 EBCOMM01  - subprograma de rotinas comuns
-//*   CL13 EBSALD01  - consulta de saldos (utilitario)
+//* LOGICA DE DEPLOY ATOMICO E ABORT EM CASCATA:
+//* 1. Os executaveis sao gravados em uma LOADLIB Temporaria
+//* (&&TMPLOAD) durante os steps CL01 a CL13.
+//* 2. Se algum step retornar RC >= 8, a execucao aborta
+//* e a LOADLIB oficial NAO e alterada (Deploy Seguro).
+//* 3. Apenas se todos passarem, o step PROMOTE usa o IEBCOPY
+//* para mover todos os modulos de uma vez para a LOADLIB.
 //* ============================================================
 //EBDEPLOY JOB ,'EMUNAH DEPLOY',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
 //*
 //CL01     EXEC IGYWCL
-//*           CL01: EBCLLOAD - carga inicial
+//* CL01: EBCLLOAD - carga inicial
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCLLOAD),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBCLLOAD),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBCLLOAD),
+//             DISP=(NEW,PASS),
+//             UNIT=SYSDA,SPACE=(CYL,(2,1,15)),
+//             DCB=(RECFM=U,BLKSIZE=32760,DSORG=PO)
 //LKED.SYSPRINT DD SYSOUT=*
 //*
 //CL02     EXEC IGYWCL,COND=(4,LT)
-//*           CL02: EBVALI01 - validacao (aborta se CL01 RC>4)
+//* CL02: EBVALI01 - validacao de lancamentos
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBVALI01),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBVALI01),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBVALI01),DISP=(MOD,PASS)
 //LKED.SYSPRINT DD SYSOUT=*
 //*
 //CL03     EXEC IGYWCL,COND=(4,LT)
-//*           CL03: EBPOST01 - postagem
+//* CL03: EBPOST01 - postagem de lancamentos
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBPOST01),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBPOST01),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBPOST01),DISP=(MOD,PASS)
 //LKED.SYSPRINT DD SYSOUT=*
 //*
 //CL04     EXEC IGYWCL,COND=(4,LT)
-//*           CL04: EBACCR01 - accruals
+//* CL04: EBACCR01 - calculo de accruals
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBACCR01),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBACCR01),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBACCR01),DISP=(MOD,PASS)
 //LKED.SYSPRINT DD SYSOUT=*
 //*
 //CL05     EXEC IGYWCL,COND=(4,LT)
-//*           CL05: EBSNAP01 - snapshot de saldo
+//* CL05: EBSNAP01 - snapshot de saldo
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBSNAP01),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBSNAP01),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBSNAP01),DISP=(MOD,PASS)
 //LKED.SYSPRINT DD SYSOUT=*
 //*
 //CL06     EXEC IGYWCL,COND=(4,LT)
-//*           CL06: EBCONC01 - conciliacao tres-vias
+//* CL06: EBCONC01 - conciliacao tres-vias
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCONC01),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBCONC01),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBCONC01),DISP=(MOD,PASS)
 //LKED.SYSPRINT DD SYSOUT=*
 //*
 //CL07     EXEC IGYWCL,COND=(4,LT)
-//*           CL07: EBREPR01 - reprocessamento de rejeitos
+//* CL07: EBREPR01 - reprocessamento de rejeitos
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBREPR01),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBREPR01),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBREPR01),DISP=(MOD,PASS)
 //LKED.SYSPRINT DD SYSOUT=*
 //*
 //CL08     EXEC IGYWCL,COND=(4,LT)
-//*           CL08: EBCTL01 - controlador de status CTL
+//* CL08: EBCTL01 - controlador de status CTL
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCTL01),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBCTL01),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBCTL01),DISP=(MOD,PASS)
 //LKED.SYSPRINT DD SYSOUT=*
 //*
 //CL09     EXEC IGYWCL,COND=(4,LT)
-//*           CL09: EBPCHK01 - precheck do CTL.STATUS
+//* CL09: EBPCHK01 - precheck do CTL.STATUS
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBPCHK01),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBPCHK01),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBPCHK01),DISP=(MOD,PASS)
 //LKED.SYSPRINT DD SYSOUT=*
 //*
 //CL10     EXEC IGYWCL,COND=(4,LT)
-//*           CL10: EBJEOD01 - fechamento end-of-day
+//* CL10: EBJEOD01 - fechamento end-of-day
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBJEOD01),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBJEOD01),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBJEOD01),DISP=(MOD,PASS)
 //LKED.SYSPRINT DD SYSOUT=*
 //*
 //CL11     EXEC IGYWCL,COND=(4,LT)
-//*           CL11: EBEXTR01 - geracao de extrato
+//* CL11: EBEXTR01 - geracao de extrato
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBEXTR01),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBEXTR01),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBEXTR01),DISP=(MOD,PASS)
 //LKED.SYSPRINT DD SYSOUT=*
 //*
 //CL12     EXEC IGYWCL,COND=(4,LT)
-//*           CL12: EBCOMM01 - subprograma de rotinas comuns
+//* CL12: EBCOMM01 - subprograma de rotinas comuns
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBCOMM01),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBCOMM01),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBCOMM01),DISP=(MOD,PASS)
 //LKED.SYSPRINT DD SYSOUT=*
 //*
 //CL13     EXEC IGYWCL,COND=(4,LT)
-//*           CL13: EBSALD01 - consulta de saldos (utilitario)
+//* CL13: EBSALD01 - consulta de saldos (utilitario)
 //COBOL.SYSIN   DD DSN=Z77948.EMUNAH.DEV.COBOL(EBSALD01),DISP=SHR
 //COBOL.SYSLIB  DD DSN=Z77948.EMUNAH.DEV.COPY,DISP=SHR
-//LKED.SYSLMOD  DD DSN=Z77948.EMUNAH.DEV.LOADLIB(EBSALD01),DISP=SHR
+//LKED.SYSLMOD  DD DSN=&&TMPLOAD(EBSALD01),DISP=(MOD,PASS)
 //LKED.SYSPRINT DD SYSOUT=*
+//*
+//* === STEP PROMOTE: COPIA PARA A LOADLIB OFICIAL =============
+//* Copia os modulos da lib temporaria apenas se TODOS os
+//* steps de compilacao anteriores tiverem retornado RC <= 4.
+//*
+//PROMOTE  EXEC PGM=IEBCOPY,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//SYSUT1   DD DSN=&&TMPLOAD,DISP=(OLD,DELETE)
+//SYSUT2   DD DSN=Z77948.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSIN    DD *
+  COPY INDD=SYSUT1,OUTDD=SYSUT2
+/*
