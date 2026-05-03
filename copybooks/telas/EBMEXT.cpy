@@ -1,4 +1,4 @@
-*===============================================================*
+      *===============================================================*
       * COPYBOOK: EBMEXT                                              *
       * FUNCAO  : MAPA BMS - TELA DE CONSULTA DE EXTRATO             *
       * TRANSACAO CICS: EEXT                                          *
