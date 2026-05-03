@@ -23,7 +23,7 @@
       *   CPLCT001 = layout de lancamento (120 bytes)                 *
       *   CPCNT001 = layout de conta      (100 bytes)                 *
       *   CPREJ001 = layout de rejeito    (150 bytes)                 *
-      *   CPAUD001 = layout de auditoria  (120 bytes)                 *
+      *   CPAUD001 = layout de auditoria  (120 bytes + 8b FILLER)     *
       *                                                               *
       * CODIGOS DE REJEICAO (REJ-COD-MOTIVO 4 bytes):                *
       *   V001 = tipo de lancamento invalido (nao C nem D)            *
@@ -39,15 +39,15 @@
       *   RC = 8  --> Erro critico de I/O                             *
       *                                                               *
       * HISTORICO DE CORRECOES:                                       *
-      *   [C1] Campos LCT-* em 2100 qualificados com OF ENTRADA-REG  *
+      *   [C1] Campos LCT-* em 2100 qualificados com OF ENTRADA-REG   *
       *        para eliminar ambiguidade com VALIDOS-REG              *
       *   [C2] Chave do KSDS montada campo a campo sem LCT-CHAVE-CONTA*
       *   [C3] WRITE AUDIT-REG protegido com FILE STATUS em 5000/5100 *
-      *   [C4] FD REJEITOS-OUT corrigido para LRECL=150 (CPREJ001)   *
+      *   [C4] FD REJEITOS-OUT corrigido para LRECL=150 (CPREJ001)    *
       *   [C5] 4000-GRAVAR-REJEITO reescrito conforme campos reais    *
       *        do CPREJ001: REJ-REGISTRO-ORIG, REJ-COD-MOTIVO,        *
       *        REJ-TXT-MOTIVO, REJ-TIMESTAMP e REJ-ORIGEM             *
-      *   [C6] WS-REJ-DESC reduzido para 14 bytes (= REJ-TXT-MOTIVO) *
+      *   [C6] WS-REJ-DESC reduzido para 14 bytes (= REJ-TXT-MOTIVO)  *
       *        e literais de rejeicao ajustadas para caber em 14 bytes*
       *===============================================================*
        IDENTIFICATION DIVISION.
@@ -103,7 +103,7 @@
       *---------------------------------------------------------------*
       * AUDIT-OUT: trilha de auditoria de todos os eventos            *
       * Aberto em EXTEND para preservar registros anteriores          *
-      * DDNAME: AUDIT   LRECL: 120   RECFM: FB                        *
+      * DDNAME: AUDIT   LRECL: 128   RECFM: FB                        *
       *---------------------------------------------------------------*
            SELECT AUDIT-OUT
                ASSIGN TO AUDIT
@@ -145,7 +145,7 @@
       *   147-150 = REJ-ORIGEM                                        *
       *---------------------------------------------------------------*
        FD  REJEITOS-OUT
-           RECORD CONTAINS 156 CHARACTERS
+           RECORD CONTAINS 150 CHARACTERS
            RECORDING MODE IS F.
        01  REJEITOS-REG.
            COPY CPREJ001.
@@ -165,8 +165,9 @@
        FD  AUDIT-OUT
            RECORD CONTAINS 128 CHARACTERS
            RECORDING MODE IS F.
-       01  AUDIT-REG.
+       01  AUDIT-REG-OUT.
            COPY CPAUD001.
+           05 FILLER                  PIC X(8).
 
        WORKING-STORAGE SECTION.
 
@@ -431,7 +432,7 @@
       * [C3] WRITE AUDIT-REG protegido com FILE STATUS                *
       *---------------------------------------------------------------*
        5000-AUDITAR-SUCESSO.
-           MOVE SPACES TO AUDIT-REG WS-CHAVE-REF
+           MOVE SPACES TO AUDIT-REG-OUT WS-CHAVE-REF
            MOVE LCT-AGENCIA   OF ENTRADA-REG TO WS-CHAVE-REF(1:4)
            MOVE LCT-NUM-CONTA OF ENTRADA-REG TO WS-CHAVE-REF(5:8)
            MOVE 'OK'          TO AU-TIPO-EVENTO
@@ -442,7 +443,7 @@
            MOVE WS-CHAVE-REF  TO AU-CHAVE-REF
            MOVE 'LANCAMENTO VALIDADO' TO AU-MENSAGEM
            MOVE LCT-STATUS OF VALIDOS-REG TO AU-COMPLEMENTO
-           WRITE AUDIT-REG
+           WRITE AUDIT-REG-OUT
            IF NOT FS-AUDIT-OK
                DISPLAY '*** EBVALI01 ERRO WRITE AUDIT SUCESSO - '
                        WS-FS-AUDIT
@@ -454,7 +455,7 @@
       * [C3] WRITE AUDIT-REG protegido com FILE STATUS                *
       *---------------------------------------------------------------*
        5100-AUDITAR-REJEITO.
-           MOVE SPACES TO AUDIT-REG WS-CHAVE-REF
+           MOVE SPACES TO AUDIT-REG-OUT WS-CHAVE-REF
            MOVE LCT-AGENCIA   OF ENTRADA-REG TO WS-CHAVE-REF(1:4)
            MOVE LCT-NUM-CONTA OF ENTRADA-REG TO WS-CHAVE-REF(5:8)
            MOVE 'REJT'        TO AU-TIPO-EVENTO
@@ -465,7 +466,7 @@
            MOVE WS-CHAVE-REF  TO AU-CHAVE-REF
            MOVE WS-REJ-DESC   TO AU-MENSAGEM
            MOVE 'VALIDACAO'   TO AU-COMPLEMENTO
-           WRITE AUDIT-REG
+           WRITE AUDIT-REG-OUT
            IF NOT FS-AUDIT-OK
                DISPLAY '*** EBVALI01 ERRO WRITE AUDIT REJEITO - '
                        WS-FS-AUDIT
