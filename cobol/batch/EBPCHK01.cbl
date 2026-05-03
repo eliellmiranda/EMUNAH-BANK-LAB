@@ -11,17 +11,17 @@
       *                                                               *
       * LOGICA DE VALIDACAO:                                          *
       *   Arquivo vazio (AT END) --> OK: laboratorio nunca iniciado   *
-      *   Status = CLOSED        --> OK: ciclo anterior encerrado      *
-      *   Status = OPEN          --> FALHA: dia ja foi aberto          *
-      *   Status = EOTI          --> FALHA: batch em andamento         *
-      *   Status = EOFI          --> FALHA: aguardando fechamento      *
+      *   Status = CLOSED        --> OK: ciclo anterior encerrado     *
+      *   Status = OPEN          --> FALHA: dia ja foi aberto         *
+      *   Status = EOTI          --> FALHA: batch em andamento        *
+      *   Status = EOFI          --> FALHA: aguardando fechamento     *
       *                                                               *
       * QUANDO USAR:                                                  *
       * - Primeiro step da cadeia batch do dia (EBJLOAD, EBJVALD...)  *
       * - Impede reexecucao acidental da cadeia com ciclo em aberto   *
       * - RC=8 no precheck deve acionar COND no JCL para abortar      *
       *                                                               *
-      * ENTRADA:                                                       *
+      * ENTRADA:                                                      *
       *   CTLSTAT = Z77948.EMUNAH.CTL.STATUS (8 bytes, RECFM=F)       *
       *                                                               *
       * COPYBOOK UTILIZADO:                                           *
