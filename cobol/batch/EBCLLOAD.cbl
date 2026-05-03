@@ -4,10 +4,10 @@
       * MODULO   : CL (Client Load)                                   *
       *                                                               *
       * O QUE ESTE PROGRAMA FAZ:                                      *
-      * - Le arquivo sequencial de clientes (SEED) e grava no KSDS   *
-      * - Le arquivo sequencial de contas (SEED) e grava no KSDS     *
+      * - Le arquivo sequencial de clientes (SEED) e grava no KSDS    *
+      * - Le arquivo sequencial de contas (SEED) e grava no KSDS      *
       * - Valida status basico dos registros antes de gravar          *
-      * - Rejeita duplicidades detectadas pelo INVALID KEY do KSDS   *
+      * - Rejeita duplicidades detectadas pelo INVALID KEY do KSDS    *
       * - Registra rejeicoes e ocorrencias em arquivo de auditoria    *
       * - Exibe resumo final com totais processados                   *
       *                                                               *
@@ -35,7 +35,7 @@
       *   - Chave duplicada no KSDS gera rejeicao na auditoria        *
       *                                                               *
       * RETURN-CODE:                                                  *
-      *   Nao controlado nesta versao - verificar AUDIT para rejeitos *
+      * CORRECAO: Passou a ser controlado - RC 8 se houver rejeitos   *
       *===============================================================*
        IDENTIFICATION DIVISION.
        PROGRAM-ID. EBCLLOAD.
@@ -44,7 +44,7 @@
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
       *---------------------------------------------------------------*
-      * CLIENTES-IN: arquivo sequencial com massa inicial de clientes  *
+      * CLIENTES-IN: arquivo sequencial com massa inicial de clientes *
       * Gerado manualmente ou por REXX antes da carga                 *
       * DDNAME: CLIENTIN   LRECL: 80   RECFM: FB                      *
       *---------------------------------------------------------------*
@@ -55,7 +55,7 @@
                FILE STATUS IS WS-FS-CLIENTIN.
 
       *---------------------------------------------------------------*
-      * CONTAS-IN: arquivo sequencial com massa inicial de contas      *
+      * CONTAS-IN: arquivo sequencial com massa inicial de contas     *
       * Deve referenciar clientes ja presentes no KSDS de clientes    *
       * DDNAME: CONTAIN   LRECL: 100   RECFM: FB                      *
       *---------------------------------------------------------------*
@@ -66,9 +66,9 @@
                FILE STATUS IS WS-FS-CONTAIN.
 
       *---------------------------------------------------------------*
-      * AUDIT-OUT: trilha de auditoria para rejeicoes e duplicidades   *
-      * Aberto em EXTEND para acumular registros sem sobrescrever      *
-      * DDNAME: AUDIT   LRECL: 120   RECFM: FB                        *
+      * AUDIT-OUT: trilha de auditoria para rejeicoes e duplicidades  *
+      * Aberto em EXTEND para acumular registros sem sobrescrever     *
+      * DDNAME: AUDIT   LRECL: 128   RECFM: FB                        *
       *---------------------------------------------------------------*
            SELECT AUDIT-OUT
                ASSIGN TO AUDIT
@@ -78,7 +78,7 @@
 
       *---------------------------------------------------------------*
       * CLIENTE-KSDS: arquivo master indexado de clientes (VSAM KSDS) *
-      * Chave primaria: CLI-ID-CLIENTE (5 bytes numericos)             *
+      * Chave primaria: CLI-ID-CLIENTE (5 bytes numericos)            *
       * Aberto em I-O para permitir WRITE e leitura posterior         *
       * DDNAME: CLIENTE                                               *
       *---------------------------------------------------------------*
@@ -92,7 +92,7 @@
       *---------------------------------------------------------------*
       * CONTA-KSDS: arquivo master indexado de contas (VSAM KSDS)     *
       * Chave primaria: CNT-CHAVE (agencia 4 + num-conta 8 = 12 bytes)*
-      * Aberto em I-O para permitir WRITE e verificacao de duplicidade *
+      * Aberto em I-O para permitir WRITE e verificacao de duplicidade*
       * DDNAME: CONTA                                                 *
       *---------------------------------------------------------------*
            SELECT CONTA-KSDS
@@ -127,13 +127,14 @@
            COPY CPCNT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de auditoria (registro generico de 120 bytes)         *
-      * Gravado como texto livre via STRING para flexibilidade         *
+      * Arquivo de auditoria (registro generico de 128 bytes)         *
+      * Gravado como texto livre via STRING para flexibilidade        *
+      * CORRECAO: LRECL ajustado para 128 bytes.                      *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
-           RECORD CONTAINS 120 CHARACTERS
+           RECORD CONTAINS 128 CHARACTERS
            RECORDING MODE IS F.
-       01  AUDIT-REG                  PIC X(120).
+       01  AUDIT-REG                  PIC X(128).
 
       *---------------------------------------------------------------*
       * KSDS de clientes - mesmo layout do arquivo de entrada         *
@@ -176,9 +177,9 @@
 
       *---------------------------------------------------------------*
       * Contadores para o resumo final exibido no SYSOUT              *
-      * Lidos    = total de registros lidos do arquivo de entrada      *
+      * Lidos      = total de registros lidos do arquivo de entrada   *
       * Gravados = registros aceitos e gravados no KSDS               *
-      * Rejeitados = duplicados ou status invalido                     *
+      * Rejeitados = duplicados ou status invalido                    *
       *---------------------------------------------------------------*
        01  WS-CONTADORES.
            05 WS-CLI-LIDOS            PIC 9(5) VALUE ZERO.
@@ -335,7 +336,8 @@
       *---------------------------------------------------------------*
       * 9000-ENCERRAR                                                 *
       * Exibe resumo final no SYSOUT e fecha todos os arquivos        *
-      * O resumo permite conferencia rapida do resultado da carga      *
+      * O resumo permite conferencia rapida do resultado da carga     *
+      * CORRECAO: Adicionada logica de RETURN-CODE = 8 para rejeitos  *
       *---------------------------------------------------------------*
        9000-ENCERRAR.
            DISPLAY '*** RESUMO CARGA INICIAL ***'
@@ -350,4 +352,10 @@
            CLOSE CONTAS-IN
            CLOSE CLIENTE-KSDS
            CLOSE CONTA-KSDS
-           CLOSE AUDIT-OUT.
+           CLOSE AUDIT-OUT
+
+           IF WS-CLI-REJEITADOS > ZERO OR WS-CNT-REJEITADOS > ZERO
+               MOVE 8 TO RETURN-CODE
+           ELSE
+               MOVE 0 TO RETURN-CODE
+           END-IF.
