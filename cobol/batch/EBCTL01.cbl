@@ -108,12 +108,10 @@
            END-EVALUATE.
 
        2000-ABRIR.
-      * Se for apenas validacao, abre apenas leitura para seguranca
-           IF WS-ACAO = 'CHK'
-               OPEN INPUT CTL-STATUS-FILE
-           ELSE
-               OPEN I-O CTL-STATUS-FILE
-           END-IF
+      * Se for apenas validacao (CHK), abre apenas leitura.
+      * CORRECAO: Se for UPD, tambem abre INPUT apenas para ler
+      * o estado atual. A gravacao sera feita reabrindo em OUTPUT.
+           OPEN INPUT CTL-STATUS-FILE
 
            IF FS-CTL-OK
                SET CTL-ABERTO TO TRUE
@@ -164,22 +162,25 @@
        5000-GRAVAR.
            MOVE WS-STATUS-ALVO TO STS-CODIGO
            
-           IF ARQUIVO-VAZIO
-      * Para arquivo Sequencial, WRITE exige modo OUTPUT
-               CLOSE CTL-STATUS-FILE
-               OPEN OUTPUT CTL-STATUS-FILE
-               WRITE CTL-STATUS-REG
-           ELSE
-      * Se ja tem registro, REWRITE funciona no modo I-O
-               REWRITE CTL-STATUS-REG
-           END-IF
+      * CORRECAO: Arquivo fisico sequencial (PS) nao suporta REWRITE
+      * Fecha a leitura e reabre em OUTPUT para truncar e gravar novo
+           CLOSE CTL-STATUS-FILE
+           OPEN OUTPUT CTL-STATUS-FILE
            
-           IF NOT FS-CTL-OK
-               DISPLAY '*** EBCTL01 ERRO I/O (W/RW) - FS: ' WS-FS-CTL
-               SET OCORREU-ERRO-IO TO TRUE
+           IF FS-CTL-OK
+               WRITE CTL-STATUS-REG
+               IF NOT FS-CTL-OK
+                   DISPLAY '*** EBCTL01 ERRO I/O (WRITE) - FS: ' 
+                            WS-FS-CTL
+                   SET OCORREU-ERRO-IO TO TRUE
+               ELSE
+                   DISPLAY '*** EBCTL01 - ATUALIZADO PARA: [' 
+                            WS-STATUS-ALVO ']'
+               END-IF
            ELSE
-               DISPLAY '*** EBCTL01 - ATUALIZADO PARA: [' 
-                        WS-STATUS-ALVO ']'
+               DISPLAY '*** EBCTL01 ERRO REOPEN OUTPUT - FS: ' 
+                        WS-FS-CTL
+               SET OCORREU-ERRO-IO TO TRUE
            END-IF.
 
        6000-CHECAR-STATUS.
