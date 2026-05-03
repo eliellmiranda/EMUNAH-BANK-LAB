@@ -1,4 +1,4 @@
-IDENTIFICATION DIVISION.
+       IDENTIFICATION DIVISION.
        PROGRAM-ID. EBCSEXT.
       *===============================================================*
       * PROGRAMA : EBCSEXT                                            *
@@ -92,6 +92,12 @@ IDENTIFICATION DIVISION.
       * Mensagem de retorno para o campo MSGO da tela                 *
       *---------------------------------------------------------------*
        01  WS-MSG-RETORNO             PIC X(50).
+
+      *---------------------------------------------------------------*
+      * Mensagem de encerramento da transacao                         *
+      *---------------------------------------------------------------*
+       01  WS-MSG-FIM                 PIC X(24) 
+           VALUE 'TRANSACAO EEXT ENCERRADA'.
 
        PROCEDURE DIVISION.
       *===============================================================*
@@ -272,7 +278,10 @@ IDENTIFICATION DIVISION.
       *===============================================================*
        9000-ENCERRAR.
            EXEC CICS SEND TEXT
-               FROM('TRANSACAO EEXT ENCERRADA')
+               FROM(WS-MSG-FIM)
+               LENGTH(24)
                ERASE
            END-EXEC
-           EXEC CICS RETURN END-EXEC.
+           
+           EXEC CICS RETURN 
+           END-EXEC.
