@@ -27,7 +27,7 @@
       *   CPLCT001 = layout de lancamento (120 bytes)                 *
       *   CPCNT001 = layout de conta      (100 bytes)                 *
       *   CPEXT001 = layout de extrato    (132 bytes)                 *
-      *   CPAUD001 = layout de auditoria  (120 bytes)                 *
+      *   CPAUD001 = layout de auditoria  (120 bytes + FILLER)        *
       *                                                               *
       * RETURN-CODE:                                                  *
       *   RC = 0  --> Extrato gerado com sucesso                      *
@@ -43,16 +43,17 @@
       *---------------------------------------------------------------*
       * MOVTO-IN: lancamentos postados, fonte do extrato              *
       * DDNAME: MOVTIN   LRECL: 120   RECFM: FB                       *
+      * CORRECAO: Removido prefixo AS- pois trata-se de VSAM ESDS     *
       *---------------------------------------------------------------*
            SELECT MOVTO-IN
-               ASSIGN TO AS-MOVTIN
+               ASSIGN TO MOVTIN
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-MOVTIN.
 
       *---------------------------------------------------------------*
       * CONTA-KSDS: consultado para obter saldo atual de cada conta   *
-      * Aberto em INPUT  somente leitura, sem alteracao de saldo     *
+      * Aberto em INPUT — somente leitura, sem alteracao de saldo     *
       * DDNAME: CONTA                                                 *
       *---------------------------------------------------------------*
            SELECT CONTA-KSDS
@@ -64,7 +65,7 @@
 
       *---------------------------------------------------------------*
       * EXTRATO-OUT: arquivo GDG de saida com as linhas de extrato    *
-      * Aberto em OUTPUT  nova geracao a cada execucao do job        *
+      * Aberto em OUTPUT — nova geracao a cada execucao do job        *
       * DDNAME: EXTROUT   LRECL: 132   RECFM: FB                      *
       *---------------------------------------------------------------*
            SELECT EXTRATO-OUT
@@ -74,8 +75,8 @@
                FILE STATUS IS WS-FS-EXTROUT.
 
       *---------------------------------------------------------------*
-      * AUDIT-OUT: trilha de auditoria  registra resumo ao final     *
-      * DDNAME: AUDIT   LRECL: 120   RECFM: FB                        *
+      * AUDIT-OUT: trilha de auditoria — registra resumo ao final     *
+      * DDNAME: AUDIT   LRECL: 128   RECFM: FB                        *
       *---------------------------------------------------------------*
            SELECT AUDIT-OUT
                ASSIGN TO AUDIT
@@ -87,7 +88,7 @@
        FILE SECTION.
 
       *---------------------------------------------------------------*
-      * Arquivo de movimentos postados  layout via CPLCT001          *
+      * Arquivo de movimentos postados — layout via CPLCT001          *
       *---------------------------------------------------------------*
        FD  MOVTO-IN
            RECORD CONTAINS 120 CHARACTERS.
@@ -95,14 +96,14 @@
            COPY CPLCT001.
 
       *---------------------------------------------------------------*
-      * KSDS de contas  consultado para obter CNT-SALDO atual        *
+      * KSDS de contas — consultado para obter CNT-SALDO atual        *
       *---------------------------------------------------------------*
        FD  CONTA-KSDS.
        01  CONTA-REG.
            COPY CPCNT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de extrato  layout via CPEXT001 (132 bytes)          *
+      * Arquivo de extrato — layout via CPEXT001 (132 bytes)          *
       * Uma linha por movimento processado                            *
       *---------------------------------------------------------------*
        FD  EXTRATO-OUT
@@ -112,13 +113,16 @@
            COPY CPEXT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de auditoria  layout via CPAUD001                    *
+      * Arquivo de auditoria — layout via CPAUD001                    *
+      * CORRECAO: Envelopado o CPAUD001 (120b) com FILLER (8b) para   *
+      * garantir os 128 bytes reais exigidos pelo catalogo.           *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
            RECORD CONTAINS 128 CHARACTERS
            RECORDING MODE IS F.
        01  AUDIT-REG.
            COPY CPAUD001.
+           05 FILLER                  PIC X(8).
 
        WORKING-STORAGE SECTION.
 
@@ -242,7 +246,7 @@
       * Consulta o saldo atual da conta no KSDS                       *
       * Se conta nao encontrada, grava saldo zero na linha de extrato *
       * Mapeia campos de CPLCT001 para CPEXT001                       *
-      *   LCT-AGENCIA    --> EXT-AGENCIA                              *
+      *   LCT-AGENCIA  --> EXT-AGENCIA                                *
       *   LCT-NUM-CONTA  --> EXT-NUM-CONTA                            *
       *   LCT-DATA       --> EXT-DATA-MOVTO                           *
       *   LCT-NSEQ       --> EXT-NSEQ                                 *
