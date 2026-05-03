@@ -25,7 +25,7 @@
       *   CPLCT001 = layout de lancamento (120 bytes)                 *
       *   CPCNT001 = layout de conta      (100 bytes)                 *
       *   CPREJ001 = layout de rejeito    (120 bytes)                 *
-      *   CPAUD001 = layout de auditoria  (120 bytes)                 *
+      *   CPAUD001 = layout de auditoria  (120 bytes + 8b FILLER)     *
       *                                                               *
       * CODIGOS DE REJEICAO:                                          *
       *   P001 = conta nao encontrada no KSDS                         *
@@ -48,9 +48,10 @@
       * MOVTO-IN: lancamentos aprovados pelo EBVALI01                 *
       * Lido sequencialmente - um registro por iteracao do loop       *
       * DDNAME: MOVTIN   LRECL: 120   RECFM: FB                       *
+      * CORRECAO: Removido prefixo AS- pois trata-se de VSAM ESDS     *
       *---------------------------------------------------------------*
            SELECT MOVTO-IN
-               ASSIGN TO AS-MOVTIN
+               ASSIGN TO MOVTIN
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-MOVTIN.
@@ -81,7 +82,7 @@
       *---------------------------------------------------------------*
       * AUDIT-OUT: trilha de auditoria de todos os eventos            *
       * Aberto em EXTEND para preservar registros anteriores          *
-      * DDNAME: AUDIT   LRECL: 120   RECFM: FB                        *
+      * DDNAME: AUDIT   LRECL: 128   RECFM: FB                        *
       *---------------------------------------------------------------*
            SELECT AUDIT-OUT
                ASSIGN TO AUDIT
@@ -110,21 +111,25 @@
 
       *---------------------------------------------------------------*
       * Arquivo de rejeitos - layout via CPREJ001                     *
+      * CORRECAO: Ajustado para 120 bytes conforme catalogo z/OS      *
       *---------------------------------------------------------------*
        FD  REJEITOS-OUT
-           RECORD CONTAINS 156 CHARACTERS
+           RECORD CONTAINS 120 CHARACTERS
            RECORDING MODE IS F.
        01  REJEITOS-REG.
            COPY CPREJ001.
 
       *---------------------------------------------------------------*
       * Arquivo de auditoria - layout via CPAUD001                    *
+      * CORRECAO: Envelopado com 8 bytes para atingir 128 no total    *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
            RECORD CONTAINS 128 CHARACTERS
            RECORDING MODE IS F.
-       01  AUDIT-REG.
-           COPY CPAUD001.
+       01  AUDIT-REG-OUT.
+           05 AUDIT-REG.
+              COPY CPAUD001.
+           05 FILLER                  PIC X(8).
 
        WORKING-STORAGE SECTION.
 
@@ -147,7 +152,7 @@
       *---------------------------------------------------------------*
       * Flags de controle do processamento                            *
       * WS-EOF-MOVTIN  : controla o loop principal de leitura         *
-      * WS-ERRO        : sinaliza erro critico que aborta o programa   *
+      * WS-ERRO        : sinaliza erro critico que aborta o programa  *
       * WS-MOV-VALIDO  : indica se o movimento passou nas verificacoes*
       *---------------------------------------------------------------*
        01  WS-FLAGS.
@@ -182,8 +187,8 @@
 
       *---------------------------------------------------------------*
       * Saldo disponivel = CNT-SALDO + CNT-LIMITE                     *
-      * Calculado antes de cada debito para verificar cobertura        *
-      * Declarado com precisao maior que o saldo para evitar overflow  *
+      * Calculado antes de cada debito para verificar cobertura       *
+      * Declarado com precisao maior que o saldo para evitar overflow *
       *---------------------------------------------------------------*
        01  WS-SALDO-DISPONIVEL       PIC S9(15)V99 VALUE ZERO.
 
@@ -238,32 +243,32 @@
                     SET COM-ERRO TO TRUE
                 END-IF
             END-IF
- 
+
             IF NOT COM-ERRO
                 OPEN EXTEND REJEITOS-OUT
                 IF WS-FS-REJEITOS = '35'
                     OPEN OUTPUT REJEITOS-OUT
                 END-IF
- 
+
                 IF NOT FS-REJEITOS-OK
                     DISPLAY '*** EBPOST01 ERRO OPEN REJEITOS - '
                             WS-FS-REJEITOS
                     SET COM-ERRO TO TRUE
                 END-IF
             END-IF
- 
+
             IF NOT COM-ERRO
                 OPEN EXTEND AUDIT-OUT
                 IF WS-FS-AUDIT = '35'
                     OPEN OUTPUT AUDIT-OUT
                 END-IF
- 
+
                 IF NOT FS-AUDIT-OK
                    DISPLAY '*** EBPOST01 ERRO OPEN AUDIT - ' WS-FS-AUDIT
                     SET COM-ERRO TO TRUE
                 END-IF
             END-IF.
- 
+
       *---------------------------------------------------------------*
       * 2000-PROCESSAR                                                *
       * Loop principal: le um movimento por vez e aciona tratamento   *
@@ -291,7 +296,7 @@
       * Aplica as regras de negocio da postagem:                      *
       *   P001: conta deve existir no KSDS                            *
       *   P002: conta deve estar ativa (status A)                     *
-      *   P003: debito exige saldo + limite suficiente                 *
+      *   P003: debito exige saldo + limite suficiente                *
       *   P004: tipo deve ser C ou D (redundante com EBVALI01)        *
       * Se aprovado: atualiza saldo e executa REWRITE                 *
       * Se rejeitado: aciona gravacao do rejeito de negocio           *
@@ -397,7 +402,7 @@
       * Complemento indica o tipo do movimento postado (C ou D)       *
       *---------------------------------------------------------------*
        5000-AUDITAR-SUCESSO.
-           MOVE SPACES TO AUDIT-REG WS-CHAVE-REF
+           MOVE SPACES TO AUDIT-REG-OUT WS-CHAVE-REF
            MOVE LCT-AGENCIA   OF MOVTO-REG TO WS-CHAVE-REF(1:4)
            MOVE LCT-NUM-CONTA OF MOVTO-REG TO WS-CHAVE-REF(5:8)
            MOVE 'OK'       TO AU-TIPO-EVENTO
@@ -408,7 +413,7 @@
            MOVE WS-CHAVE-REF TO AU-CHAVE-REF
            MOVE 'MOVIMENTO POSTADO' TO AU-MENSAGEM
            MOVE LCT-TIPO OF MOVTO-REG TO AU-COMPLEMENTO
-           WRITE AUDIT-REG.
+           WRITE AUDIT-REG-OUT.
 
       *---------------------------------------------------------------*
       * 5100-AUDITAR-REJEITO                                          *
@@ -416,7 +421,7 @@
       * Complemento identifica a etapa responsavel pela rejeicao      *
       *---------------------------------------------------------------*
        5100-AUDITAR-REJEITO.
-           MOVE SPACES TO AUDIT-REG WS-CHAVE-REF
+           MOVE SPACES TO AUDIT-REG-OUT WS-CHAVE-REF
            MOVE LCT-AGENCIA   OF MOVTO-REG TO WS-CHAVE-REF(1:4)
            MOVE LCT-NUM-CONTA OF MOVTO-REG TO WS-CHAVE-REF(5:8)
            MOVE 'REJT'     TO AU-TIPO-EVENTO
@@ -427,7 +432,7 @@
            MOVE WS-CHAVE-REF TO AU-CHAVE-REF
            MOVE WS-REJ-DESC TO AU-MENSAGEM
            MOVE 'POSTAGEM'  TO AU-COMPLEMENTO
-           WRITE AUDIT-REG.
+           WRITE AUDIT-REG-OUT.
 
       *---------------------------------------------------------------*
       * 9000-FECHAR                                                   *
