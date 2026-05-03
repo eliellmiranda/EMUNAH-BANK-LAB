@@ -1,3 +1,5 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. EBSNAP01.
       *===============================================================*
       * PROGRAMA : EBSNAP01                                           *
       * FUNCAO   : GERACAO DO SNAPSHOT DIARIO DE SALDO                *
@@ -25,14 +27,12 @@
       * COPYBOOKS UTILIZADOS:                                         *
       *   CPCNT001 = layout de conta    (100 bytes)                   *
       *   CPSNP001 = layout de snapshot (120 bytes)                   *
-      *   CPAUD001 = layout de auditoria (120 bytes)                  *
+      *   CPAUD001 = layout de auditoria (120 bytes + 8b FILLER)      *
       *                                                               *
       * RETURN-CODE:                                                  *
       *   RC = 0  --> Snapshot gerado com sucesso                     *
       *   RC = 8  --> Erro critico de I/O                             *
       *===============================================================*
-       IDENTIFICATION DIVISION.
-       PROGRAM-ID. EBSNAP01.
 
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
@@ -62,7 +62,7 @@
 
       *---------------------------------------------------------------*
       * AUDIT-OUT: trilha de auditoria com resumo do snapshot         *
-      * DDNAME: AUDIT   LRECL: 120   RECFM: FB                        *
+      * DDNAME: AUDIT   LRECL: 128   RECFM: FB                        *
       *---------------------------------------------------------------*
            SELECT AUDIT-OUT
                ASSIGN TO AUDIT
@@ -92,12 +92,14 @@
 
       *---------------------------------------------------------------*
       * Arquivo de auditoria — layout via CPAUD001                    *
+      * CORRECAO: Envelopado com 8 bytes para atingir 128 no total    *
       *---------------------------------------------------------------*
        FD  AUDIT-OUT
            RECORD CONTAINS 128 CHARACTERS
            RECORDING MODE IS F.
-       01  AUDIT-REG.
+       01  AUDIT-REG-OUT.
            COPY CPAUD001.
+           05 FILLER                  PIC X(8).
 
        WORKING-STORAGE SECTION.
 
@@ -231,7 +233,7 @@
       * Complemento contem o total de registros gerados               *
       *---------------------------------------------------------------*
        3000-AUDITAR.
-           MOVE SPACES TO AUDIT-REG
+           MOVE SPACES TO AUDIT-REG-OUT
            MOVE 'OK'       TO AU-TIPO-EVENTO
            MOVE 'EBSNAP01' TO AU-PROGRAMA
            MOVE WS-DATA-SISTEMA TO AU-DATA-EVENTO
@@ -240,7 +242,7 @@
            MOVE 'SNAPSHOT-DIARIO' TO AU-CHAVE-REF
            MOVE 'SNAPSHOT DE SALDO GERADO' TO AU-MENSAGEM
            MOVE WS-CT-GERADAS TO AU-COMPLEMENTO
-           WRITE AUDIT-REG.
+           WRITE AUDIT-REG-OUT.
 
       *---------------------------------------------------------------*
       * 9000-FECHAR                                                   *
