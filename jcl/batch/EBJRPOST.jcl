@@ -41,9 +41,10 @@
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
 //*           VSAM KSDS de contas. Aberto I-O para REWRITE.
 //REJEITOS DD DSN=Z77948.EMUNAH.ARQ.RPOST.REJEITO.SEQ,
-//            DISP=(MOD,CATLG,DELETE),
-//            UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//            DCB=(RECFM=FB,LRECL=156,BLKSIZE=0)
+//             DISP=(MOD,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=156,BLKSIZE=0)
+//* LRECL alinhado ao catalogo oficial (156 bytes).
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
 //*           Auditoria da postagem de reprocessados. DISP=MOD.
 //SYSOUT   DD SYSOUT=*
