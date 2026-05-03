@@ -29,7 +29,7 @@
       * CORRECAO: Removido prefixo AS- pois trata-se de um VSAM ESDS  *
       *---------------------------------------------------------------*
            SELECT MOVTO-IN
-               ASSIGN TO MOVTIN
+               ASSIGN TO AS-MOVTIN
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-MOVTIN.
