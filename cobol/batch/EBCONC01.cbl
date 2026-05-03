@@ -26,9 +26,10 @@
 
       *---------------------------------------------------------------*
       * MOVTO-IN: lancamentos validados e postados (VSAM ESDS)        *
+      * CORRECAO: Removido prefixo AS- pois trata-se de um VSAM ESDS  *
       *---------------------------------------------------------------*
            SELECT MOVTO-IN
-               ASSIGN TO AS-MOVTIN
+               ASSIGN TO MOVTIN
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-FS-MOVTIN.
@@ -91,9 +92,10 @@
 
       *---------------------------------------------------------------*
       * Arquivo de rejeitos (TEXTO PS)                                *
+      * CORRECAO: LRECL ajustado para 120 bytes conforme o catalogo   *
       *---------------------------------------------------------------*
        FD  REJEIT-IN
-           RECORD CONTAINS 156 CHARACTERS
+           RECORD CONTAINS 120 CHARACTERS
            RECORDING MODE IS F.
        01  REJEIT-REG                 PIC X(120).
 
