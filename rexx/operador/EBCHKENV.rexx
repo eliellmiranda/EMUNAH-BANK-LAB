@@ -1,20 +1,19 @@
 /* REXX ----------------------------------------------------------- */
 /* PROGRAMA : EBCHKENV                                              */
-/* FUNCAO   : DIAGNOSTICO COMPLETO DO AMBIENTE EMUNAH BANK          */
+/* FUNCAO   : CHECKLIST OPERACIONAL - EMUNAH BANK LAB               */
+/* LOCAL    : RECURSO DE OPERADOR                                   */
 /*----------------------------------------------------------------- */
 HLQ     = 'Z77948.EMUNAH'
 ERROS   = 0
 TOTAL   = 0
-WARNING = 0
 
-SAY CENTER(' EMUNAH BANK LAB - ENVIRONMENT DIAGNOSTIC ',60,'*')
-SAY 'DATA DA EXECUCAO:' DATE() ' - ' TIME()
-SAY 'PREFIXO (HLQ):   ' HLQ
-SAY COPIES('-',60)
-SAY LEFT('DATASET NAME',40) LEFT('TYPE',6) LEFT('STATUS',8) 'ATTR'
-SAY COPIES('-',60)
+SAY CENTER(' EMUNAH BANK - STATUS DO AMBIENTE ',65,'-')
+SAY 'DATA: ' DATE() ' HORA: ' TIME() ' USER: ' USERID()
+SAY COPIES('=',65)
+SAY LEFT('DATASET',45) LEFT('ORG',6) LEFT('STATUS',8) 'LRECL'
+SAY COPIES('-',65)
 
-/* Lista de datasets organizada por dominio */
+/* Lista de datasets vitais para a operacao diaria */
 DS.1  = HLQ'.DEV.LOADLIB'
 DS.2  = HLQ'.DEV.COBOL'
 DS.3  = HLQ'.DEV.COPY'
@@ -35,36 +34,25 @@ DO I = 1 TO DS.0
   DSN   = DS.I
   TOTAL = TOTAL + 1
   
-  /* LISTDSI captura metadados do dataset no catalogo */
   X = LISTDSI("'"DSN"'")
   
   IF X = 0 THEN DO
-    /* Identifica se o dataset eh VSAM ou F-Q (Sequencial/PDS) */
-    TYPE = SYSDSORG
-    IF TYPE = 'VS' THEN TYPE = 'VSAM'
-    
-    ATTR = 'LRECL='SYSLRECL' RECFM='SYSRECFM
-    
-    SAY LEFT(DSN,40) LEFT(TYPE,6) LEFT('OK',8) ATTR
+    ORG = SYSDSORG
+    IF ORG = 'VS' THEN ORG = 'VSAM'
+    SAY LEFT(DSN,45) LEFT(ORG,6) LEFT('ONLINE',8) SYSLRECL
   END
   ELSE DO
-    SAY LEFT(DSN,40) LEFT('????',6) LEFT('MISSING',8) 'RC='X
+    SAY LEFT(DSN,45) LEFT('????',6) LEFT('MISSING',8) 'RC='X
     ERROS = ERROS + 1
   END
 END
 
-SAY COPIES('-',60)
-SAY 'RESUMO DO DIAGNOSTICO:'
-SAY '  - TOTAL DE RECURSOS MAPEADOS: ' TOTAL
-SAY '  - RECURSOS EM CONFORMIDADE  : ' (TOTAL - ERROS)
-SAY '  - RECURSOS COM FALHA        : ' ERROS
-SAY COPIES('-',60)
-
+SAY COPIES('=',65)
 IF ERROS = 0 THEN DO
-  SAY '>>> AMBIENTE INTEGRADO E PRONTO PARA O BATCH. <<<'
+  SAY 'OPERACIONAL: AMBIENTE OK PARA PROCESSAMENTO BATCH.'
   EXIT 0
 END
 ELSE DO
-  SAY '>>> ATENCAO: AMBIENTE INCOMPLETO. VERIFIQUE OS RECURSOS. <<<'
+  SAY 'ALERTA: OPERACAO COMPROMETIDA.' ERROS 'ARQUIVO(S) NAO ENCONTRADO(S).'
   EXIT 8
 END
