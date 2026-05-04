@@ -1,27 +1,20 @@
-/* REXX ---------------------------------------------------------------*/
-/* PROGRAMA : EBCHKENV                                                */
-/* FUNCAO   : VERIFICAR AMBIENTE DO LABORATORIO EMUNAH BANK           */
-/*                                                                    */
-/* O QUE ESTE EXEC FAZ:                                               */
-/* - Verifica se os datasets principais do lab existem                */
-/* - Lista o status de cada recurso (OK / AUSENTE)                    */
-/* - Retorna RC=0 se tudo ok, RC=8 se algum recurso falta            */
-/*                                                                    */
-/* PARA QUE ELE SERVE:                                                */
-/* - Checklist rapido antes de executar a cadeia batch                */
-/* - Diagnostico de ambiente para troubleshooting                     */
-/* - Validacao apos deploy ou reset do ambiente                       */
-/*--------------------------------------------------------------------*/
+/* REXX ----------------------------------------------------------- */
+/* PROGRAMA : EBCHKENV                                              */
+/* FUNCAO   : DIAGNOSTICO COMPLETO DO AMBIENTE EMUNAH BANK          */
+/*----------------------------------------------------------------- */
+HLQ     = 'Z77948.EMUNAH'
+ERROS   = 0
+TOTAL   = 0
+WARNING = 0
 
-HLQ = 'Z77948.EMUNAH'
-ERROS = 0
+SAY CENTER(' EMUNAH BANK LAB - ENVIRONMENT DIAGNOSTIC ',60,'*')
+SAY 'DATA DA EXECUCAO:' DATE() ' - ' TIME()
+SAY 'PREFIXO (HLQ):   ' HLQ
+SAY COPIES('-',60)
+SAY LEFT('DATASET NAME',40) LEFT('TYPE',6) LEFT('STATUS',8) 'ATTR'
+SAY COPIES('-',60)
 
-SAY '================================================='
-SAY ' EMUNAH BANK LAB - VERIFICACAO DE AMBIENTE'
-SAY '================================================='
-SAY ''
-
-/* Lista de datasets a verificar */
+/* Lista de datasets organizada por dominio */
 DS.1  = HLQ'.DEV.LOADLIB'
 DS.2  = HLQ'.DEV.COBOL'
 DS.3  = HLQ'.DEV.COPY'
@@ -39,25 +32,39 @@ DS.14 = HLQ'.SEED.CONTAS.SEQ'
 DS.0  = 14
 
 DO I = 1 TO DS.0
-  DSN = DS.I
+  DSN   = DS.I
+  TOTAL = TOTAL + 1
+  
+  /* LISTDSI captura metadados do dataset no catalogo */
   X = LISTDSI("'"DSN"'")
-  IF X = 0 THEN
-    SAY '  OK      - 'DSN
+  
+  IF X = 0 THEN DO
+    /* Identifica se o dataset eh VSAM ou F-Q (Sequencial/PDS) */
+    TYPE = SYSDSORG
+    IF TYPE = 'VS' THEN TYPE = 'VSAM'
+    
+    ATTR = 'LRECL='SYSLRECL' RECFM='SYSRECFM
+    
+    SAY LEFT(DSN,40) LEFT(TYPE,6) LEFT('OK',8) ATTR
+  END
   ELSE DO
-    SAY '  AUSENTE - 'DSN
+    SAY LEFT(DSN,40) LEFT('????',6) LEFT('MISSING',8) 'RC='X
     ERROS = ERROS + 1
   END
 END
 
-SAY ''
-SAY '-------------------------------------------------'
+SAY COPIES('-',60)
+SAY 'RESUMO DO DIAGNOSTICO:'
+SAY '  - TOTAL DE RECURSOS MAPEADOS: ' TOTAL
+SAY '  - RECURSOS EM CONFORMIDADE  : ' (TOTAL - ERROS)
+SAY '  - RECURSOS COM FALHA        : ' ERROS
+SAY COPIES('-',60)
+
 IF ERROS = 0 THEN DO
-  SAY ' RESULTADO: AMBIENTE COMPLETO (0 ERROS)'
-  SAY '-------------------------------------------------'
+  SAY '>>> AMBIENTE INTEGRADO E PRONTO PARA O BATCH. <<<'
   EXIT 0
 END
 ELSE DO
-  SAY ' RESULTADO: 'ERROS' RECURSO(S) AUSENTE(S)'
-  SAY '-------------------------------------------------'
+  SAY '>>> ATENCAO: AMBIENTE INCOMPLETO. VERIFIQUE OS RECURSOS. <<<'
   EXIT 8
 END
