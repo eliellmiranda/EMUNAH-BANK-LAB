@@ -1,72 +1,50 @@
-/* REXX ---------------------------------------------------------------*/
-/* PROGRAMA : EBDSLIST                                                */
-/* FUNCAO   : LISTAR DATASETS DO LABORATORIO COM STATUS              */
-/*                                                                    */
-/* O QUE ESTE EXEC FAZ:                                               */
-/* - Lista todos os datasets alocados para o lab EMUNAH               */
-/* - Exibe tipo de organizacao (SEQ, KSDS, ESDS, PDS)                */
-/* - Exibe espaco utilizado e disponivel                              */
-/* - Classifica por grupo (DEV, ARQ, SEED, BKP)                      */
-/*                                                                    */
-/* PARA QUE ELE SERVE:                                                */
-/* - Inventario rapido dos datasets do ambiente                       */
-/* - Diagnostico de espaco e organizacao                              */
-/* - Apoio a documentacao e troubleshooting                           */
-/*--------------------------------------------------------------------*/
-
+/* REXX ----------------------------------------------------------- */
+/* PROGRAMA : EBDSLIST                                              */
+/* FUNCAO   : INVENTARIO E VOLUMETRIA DE DATASETS - EMUNAH BANK     */
+/* LOCAL    : RECURSO DE UTILITARIO                                 */
+/*----------------------------------------------------------------- */
 HLQ = 'Z77948.EMUNAH'
 
-SAY '================================================='
-SAY ' EMUNAH BANK LAB - INVENTARIO DE DATASETS'
-SAY '================================================='
-SAY ''
-SAY LEFT('DATASET',45) LEFT('TIPO',8) LEFT('STATUS',10)
-SAY COPIES('-',45) COPIES('-',8) COPIES('-',10)
+SAY CENTER(' EMUNAH BANK - INVENTARIO DE DATASETS ',65,'=')
+SAY LEFT('DATASET',44) LEFT('ORG',5) LEFT('STATUS',7) 'USADO/ALOC'
+SAY COPIES('-',65)
 
-/* Datasets de desenvolvimento */
-CALL VERIFICAR HLQ'.DEV.LOADLIB',  'PDS'
-CALL VERIFICAR HLQ'.DEV.COBOL',   'PDS'
-CALL VERIFICAR HLQ'.DEV.COPY',    'PDS'
-CALL VERIFICAR HLQ'.DEV.JCL',     'PDS'
-
+/* Grupo: Desenvolvimento */
+CALL VERIFICAR HLQ'.DEV.LOADLIB'
+CALL VERIFICAR HLQ'.DEV.COBOL'
+CALL VERIFICAR HLQ'.DEV.COPY'
+CALL VERIFICAR HLQ'.DEV.JCL'
 SAY ''
 
-/* Datasets de dados */
-CALL VERIFICAR HLQ'.ARQ.CLIENTE.KSDS', 'KSDS'
-CALL VERIFICAR HLQ'.ARQ.CONTA.KSDS',   'KSDS'
-CALL VERIFICAR HLQ'.ARQ.LANCTO.ESDS',  'ESDS'
-CALL VERIFICAR HLQ'.ARQ.ENTRADA.SEQ',  'SEQ'
-CALL VERIFICAR HLQ'.ARQ.REJEITO.SEQ',  'SEQ'
-CALL VERIFICAR HLQ'.ARQ.AUDIT.SEQ',    'SEQ'
-CALL VERIFICAR HLQ'.ARQ.SALDO.SEQ',    'SEQ'
-CALL VERIFICAR HLQ'.ARQ.SALDO.OUT.SEQ','SEQ'
-CALL VERIFICAR HLQ'.ARQ.CONCIL.SEQ',   'SEQ'
-CALL VERIFICAR HLQ'.ARQ.EXTRATO.SEQ',  'SEQ'
-CALL VERIFICAR HLQ'.ARQ.FECHTO.SEQ',   'SEQ'
-
+/* Grupo: Arquivos de Dados */
+CALL VERIFICAR HLQ'.ARQ.CLIENTE.KSDS'
+CALL VERIFICAR HLQ'.ARQ.CONTA.KSDS'
+CALL VERIFICAR HLQ'.ARQ.LANCTO.ESDS'
+CALL VERIFICAR HLQ'.ARQ.ENTRADA.SEQ'
+CALL VERIFICAR HLQ'.ARQ.REJEITO.SEQ'
 SAY ''
 
-/* Datasets de seed */
-CALL VERIFICAR HLQ'.SEED.CLIENTES.SEQ', 'SEQ'
-CALL VERIFICAR HLQ'.SEED.CONTAS.SEQ',   'SEQ'
+/* Grupo: Seed e Backup */
+CALL VERIFICAR HLQ'.SEED.CONTAS.SEQ'
+CALL VERIFICAR HLQ'.BKP.CONTA.SEQ'
 
-SAY ''
-
-/* Datasets de backup */
-CALL VERIFICAR HLQ'.BKP.CLIENTE.SEQ',  'SEQ'
-CALL VERIFICAR HLQ'.BKP.CONTA.SEQ',    'SEQ'
-CALL VERIFICAR HLQ'.BKP.AUDIT.SEQ',    'SEQ'
-
-SAY ''
-SAY '================================================='
+SAY COPIES('=',65)
 EXIT 0
 
-/* Sub-rotina de verificacao */
+/* Sub-rotina para extrair metadados reais via LISTDSI */
 VERIFICAR:
-  PARSE ARG DSN, TIPO_ESPERADO
+  PARSE ARG DSN
   X = LISTDSI("'"DSN"'")
-  IF X = 0 THEN
-    SAY LEFT(DSN,45) LEFT(TIPO_ESPERADO,8) 'OK'
-  ELSE
-    SAY LEFT(DSN,45) LEFT(TIPO_ESPERADO,8) 'AUSENTE'
-  RETURN
+  
+  IF X = 0 THEN DO
+    ORG = SYSDSORG
+    IF ORG = 'VS' THEN ORG = 'VSAM'
+    
+    /* SYSUSED e SYSALLOC mostram a ocupacao em trilhas/blocos */
+    SPACE = SYSUSED'/'SYSALLOC
+    SAY LEFT(DSN,44) LEFT(ORG,5) LEFT('OK',7) SPACE
+  END
+  ELSE DO
+    SAY LEFT(DSN,44) LEFT('????',5) LEFT('MISSING',7) '-'
+  END
+RETURN
