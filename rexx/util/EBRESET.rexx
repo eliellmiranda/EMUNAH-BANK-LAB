@@ -17,8 +17,7 @@ SAY '*** INICIANDO RESET DO AMBIENTE EMUNAH BANK ***'
 SAY 'RECRIACO CLUSTERS VSAM...'
 "ALLOC F(SYSIN) DUMMY"
 "ALLOC F(SYSPRINT) DA(*)"
-/* Nota: Em um lab real, voce apontaria para um dataset com os comandos IDCAMS */
-
+/* Nota: Em um lab real, voce apontaria para um dataset c/ os comandos IDCAMS */
 /* 3. Popular com dados de SEED (Carga Inicial) */
 SAY 'CARREGANDO DADOS INICIAIS (SEED)...'
 "ALLOC F(IN)  DA('"HLQ".SEED.CONTAS.SEQ') SHR"
