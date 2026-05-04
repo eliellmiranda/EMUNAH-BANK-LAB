@@ -85,6 +85,11 @@
       * Mensagem para o campo MSGO do mapa de saida                   *
       *---------------------------------------------------------------*
        01  WS-MSG-RETORNO             PIC X(60).
+      *---------------------------------------------------------------*
+      * Mensagem de encerramento da transacao                         *
+      *---------------------------------------------------------------*
+       01  WS-MSG-FIM                  PIC X(24) 
+           VALUE 'TRANSACAO ETRF ENCERRADA'.
 
        PROCEDURE DIVISION.
       *===============================================================*
@@ -310,7 +315,10 @@
       *===============================================================*
        9000-ENCERRAR.
            EXEC CICS SEND TEXT
-               FROM('TRANSACAO ETRF ENCERRADA')
+               FROM(WS-MSG-FIM)
+               LENGTH(24)
                ERASE
            END-EXEC
-           EXEC CICS RETURN END-EXEC.
+           
+           EXEC CICS RETURN 
+           END-EXEC.
