@@ -71,6 +71,11 @@
       * Mensagem para o campo MSGO da tela                            *
       *---------------------------------------------------------------*
        01  WS-MSG-RETORNO              PIC X(50).
+      *---------------------------------------------------------------*
+      * Mensagem de encerramento da transacao                         *
+      *---------------------------------------------------------------*
+       01  WS-MSG-FIM                  PIC X(24) 
+           VALUE 'TRANSACAO ESLD ENCERRADA'.
 
        PROCEDURE DIVISION.
       *===============================================================*
@@ -193,9 +198,17 @@
       * Acionado por PF3 ou CLEAR. Exibe texto de encerramento e      *
       * retorna ao CICS sem manter transid.                           *
       *===============================================================*
+      *===============================================================*
+      * 9000-ENCERRAR                                                 *
+      * Acionado por PF3 ou CLEAR. Exibe texto de encerramento e      *
+      * retorna ao CICS sem manter transid.                           *
+      *===============================================================*
        9000-ENCERRAR.
            EXEC CICS SEND TEXT
-               FROM('TRANSACAO ESLD ENCERRADA')
+               FROM(WS-MSG-FIM)
+               LENGTH(24)
                ERASE
            END-EXEC
-           EXEC CICS RETURN END-EXEC.
+           
+           EXEC CICS RETURN 
+           END-EXEC.
