@@ -1,4 +1,4 @@
-*===============================================================*
+      *===============================================================*
       * COPYBOOK: EBMTRF                                              *
       * FUNCAO  : MAPA BMS - TELA DE TRANSFERENCIA ENTRE CONTAS      *
       * TRANSACAO CICS: ETRF                                          *
