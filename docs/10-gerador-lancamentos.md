@@ -1,54 +1,37 @@
-# Gerador de Lancamentos
+# [10] - GERADOR DE LANÇAMENTOS - EMUNAH BANK LAB
 
-O utilitario `automation/geracao/gerar_lancamentos.py` cria arquivos de entrada compativeis com o layout de 120 bytes usado pelo laboratorio.
+## Objetivo
 
-## O que ele gera
+O utilitário `automation/geracao/gerar_lancamentos.py` cria arquivos de entrada (massa de dados) compatíveis com o layout de 120 bytes exigido pela cadeia batch do laboratório.
 
-Cada registro sai neste formato:
+## O que ele gera (Layout CPLCT001)
 
-- `AGENCIA(4)`
-- `CONTA(8)`
-- `DATA(8)`
-- `TIPO(1)`
-- `VALOR(13)` em centavos, sem separador
-- `HISTORICO(30)`
-- `CANAL(10)`
-- `LOTE(6)`
-- `NSEQ(6)`
-- `STATUS(1)`
-- `FILLER(33)`
+Cada registro sai estritamente neste formato posicional, totalizando 120 bytes:
 
-## Fontes usadas
+- `AGENCIA(4)`   - Numérico
+- `CONTA(8)`     - Numérico
+- `DATA(8)`      - Formato AAAAMMDD
+- `TIPO(1)`      - `C` (Crédito) ou `D` (Débito)
+- `VALOR(13)`    - Em centavos, sem separador decimal (ex: 10000 = R$ 100,00)
+- `HISTORICO(30)`- Alfanumérico, alinhado à esquerda
+- `CANAL(10)`    - Alfanumérico (ex: 'ATM', 'APP', 'AGENCIA')
+- `LOTE(6)`      - Numérico
+- `NSEQ(6)`      - Numérico (Número Sequencial)
+- `STATUS(1)`    - Branco (espaço) para novos lançamentos
+- `FILLER(33)`   - Preenchimento com espaços em branco
 
-O gerador le os cadastros existentes em:
+## Fontes usadas (Seed)
+
+O gerador lê os cadastros existentes na camada local:
 
 - `data/seed/clientes.txt`
 - `data/seed/contas.txt`
 
-Assim, quando voce filtra cliente, a saida usa contas reais ja conhecidas pelo lab.
+Assim, quando você filtra por cliente, a saída usa contas reais e válidas já conhecidas pelo lab. Isso é crucial para que os lançamentos gerados passem na regra de negócio **V006 (Existência da Conta no KSDS)** do programa `EBVALI01`.
 
-## Exemplos
+## Exemplos de Uso
 
-Geracao simples:
+Geração simples:
 
 ```bash
 python automation/geracao/gerar_lancamentos.py --quantidade 20 --data 20260423 --output data/entrada/lancamentos_teste.txt
-```
-
-Geracao filtrando clientes e faixa de valor:
-
-```bash
-python automation/geracao/gerar_lancamentos.py --quantidade 15 --clientes 1,5,10 --tipos C,D --valor-min 100.00 --valor-max 900.00 --output data/entrada/lancamentos_filtrados.txt
-```
-
-Geracao via JSON:
-
-```bash
-python automation/geracao/gerar_lancamentos.py --config automation/geracao/exemplo_config.json
-```
-
-## Observacoes
-
-- O filtro `clientes` aceita ID ou trecho do nome.
-- O programa gera somente contas com status `A`.
-- O arquivo de saida fica pronto para ser enviado ao dataset de entrada do laboratorio.
