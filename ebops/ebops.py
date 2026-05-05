@@ -113,8 +113,7 @@ def save_state(proj, state):
         json.dump(state, f, indent=2, ensure_ascii=False)
 
 # ═════════════════════════════════════════════════════════════
-# CATÁLOGO DE TEMPLATES (67) — versão compacta
-# Cada template pode ter campo "inj" apontando para uma injeção
+# CATÁLOGO DE TEMPLATES (67)
 # ═════════════════════════════════════════════════════════════
 TEMPLATES = [
 # ── INCIDENTES ──
@@ -188,7 +187,7 @@ TEMPLATES = [
 # ── INVESTIGAÇÃO ──
 {"id":"INV-001","t":"Comparar VSAM antes/depois do EBJPOST","cat":"investigação","sev":"baixa","dif":"junior","tmp":"25min","fer":"File Manager / REPRO","desc":"Exportar ARQ.SALDO.KSDS antes e depois. Comparar diferenças.","tags":["comparação","VSAM","validação"]},
 {"id":"INV-002","t":"Analisar dump S0C7 com offset no listing","cat":"investigação","sev":"media","dif":"pleno","tmp":"40min","fer":"Abendaid / Listing","desc":"Cruzar offset 0003A2 com listing para achar instrução COBOL.","tags":["dump","offset","S0C7"],"inj":"INJ-021"},
-{"id":"INV-003","t":"Integridade pós-reprocessamento","cat":"investigação","sev":"media","dif":"pleno","tmp":"35min","fer":"File Manager / IDCAMS","desc":"Verificar: sem duplicidade, saldos ok, auditoria, conciliação.","tags":["integridade","reprocessamento"],"inj":"INJ-029"},
+{"id":"INV-003","t":"Integridade pós-reprocessamento","cat":"investigação","sev":"media","dif":"pleno","tmp":"35min","fer":"File Manager / IDCAMS","desc":"Verificar: sem duplicidade, saldos ok, auditoria, conciliação.","tags":["integridade","reprocessamento"],"inj":"INJ-003"},
 {"id":"INV-004","t":"Mapear FILE STATUS dos programas","cat":"investigação","sev":"baixa","dif":"junior","tmp":"35min","fer":"COBOL / grep","desc":"Quais programas tratam quais FILE STATUS? Quais lacunas?","tags":["FILE STATUS","qualidade","análise"],"inj":"INJ-003"},
 {"id":"INV-005","t":"Analisar warnings de compilação COBOL","cat":"investigação","sev":"baixa","dif":"junior","tmp":"40min","fer":"SDSF / Compilador","desc":"Listar IGYW* e classificar: aceitável, atenção, risco.","tags":["compilação","warnings","qualidade"]},
 {"id":"INV-006","t":"Rastrear lançamento end-to-end","cat":"investigação","sev":"media","dif":"pleno","tmp":"50min","fer":"File Manager / VSAM","desc":"Trilha completa: entrada → validação → saldo → extrato → auditoria.","tags":["rastreabilidade","auditoria","BACEN"],"inj":"INJ-014"},
@@ -399,22 +398,42 @@ def rev(name):
         REVERTS[name] = fn; return fn
     return decorator
 
+# ═════════════════════════════════════════════════════════════
+# MUTAÇÕES CORRIGIDAS E APRIMORADAS (REGEX FLEXÍVEL)[cite: 2]
+# ═════════════════════════════════════════════════════════════
+
 @mut("INJ-001")
 def _(d):
-    p=os.path.join(d,"EBVALI01.cbl"); s=_rf(p)
-    s=s.replace("IF EN-TIPO NOT = 'C'\n              AND EN-TIPO NOT = 'D'","IF EN-TIPO NOT = 'D'")
-    s=s.replace("IF EN-TIPO NOT = 'C'\r\n              AND EN-TIPO NOT = 'D'","IF EN-TIPO NOT = 'D'")
-    _wf(p,s)
+    p = os.path.join(d, "EBVALI01.cbl")
+    s = _rf(p)
+    # Procura lógicas positivas (TIPO = C OR TIPO = D) e inverte para aceitar apenas D[cite: 2]
+    s = re.sub(r"(IF\s+[A-Za-z0-9\-]+TIPO\s*=\s*'C'\s+(?:OR|or)\s+(?:[A-Za-z0-9\-]+TIPO\s*=\s*)?'D')", r"IF EN-TIPO = 'D'      ", s, flags=re.IGNORECASE)
+    # Procura lógicas negativas (TIPO NOT = C AND TIPO NOT = D) e inverte para rejeitar apenas se não for D[cite: 2]
+    s = re.sub(r"(IF\s+[A-Za-z0-9\-]+TIPO\s+NOT\s*=\s*'C'\s+(?:AND|and)\s+[A-Za-z0-9\-]+TIPO\s+NOT\s*=\s*'D')", r"IF EN-TIPO NOT = 'D'          ", s, flags=re.IGNORECASE)
+    _wf(p, s)
 
 @mut("INJ-002")
 def _(d):
-    p=os.path.join(d,"EBVALI01.cbl"); s=_rf(p)
-    _wf(p, s.replace("IF WS-VALOR-NUM <= ZERO","IF WS-VALOR-NUM < ZERO"))
+    p = os.path.join(d, "EBVALI01.cbl")
+    s = _rf(p)
+    # Substitui verificações de ZERO: GREATER THAN ZERO passa a incluir EQUAL TO ZERO[cite: 2]
+    s = re.sub(r"([A-Za-z0-9\-]+VALOR[A-Za-z0-9\-]*\s+)GREATER\s+THAN\s+ZERO", r"\1GREATER THAN OR EQUAL TO ZERO", s, flags=re.IGNORECASE)
+    # Substitui > ZERO por >= ZERO[cite: 2]
+    s = re.sub(r"([A-Za-z0-9\-]+VALOR[A-Za-z0-9\-]*\s*)>\s*ZERO", r"\1>= ZERO", s, flags=re.IGNORECASE)
+    # Substitui <= ZERO por < ZERO[cite: 2]
+    s = re.sub(r"([A-Za-z0-9\-]+VALOR[A-Za-z0-9\-]*\s*)<=\s*ZERO", r"\1< ZERO", s, flags=re.IGNORECASE)
+    _wf(p, s)
 
 @mut("INJ-003")
 def _(d):
-    p=os.path.join(d,"EBVALI01.cbl"); s=_rf(p)
-    old="""       1000-ABRIR-ARQUIVOS.
+    p = os.path.join(d, "EBVALI01.cbl")
+    s = _rf(p)
+    # Transforma em comentário qualquer PERFORM que pareça verificar o FILE STATUS[cite: 2]
+    s = re.sub(r"(\n\s+PERFORM\s+[0-9A-Za-z\-]*STATUS[0-9A-Za-z\-]*)", r"\n      *    INJ-003 REMOVIDO: \1", s, flags=re.IGNORECASE)
+    s = re.sub(r"(\n\s+PERFORM\s+[0-9A-Za-z\-]*FS[0-9A-Za-z\-]*)", r"\n      *    INJ-003 REMOVIDO: \1", s, flags=re.IGNORECASE)
+    
+    # Fallback da lógica antiga (caso corresponda exatamente ao bloco original)[cite: 2]
+    old_block="""       1000-ABRIR-ARQUIVOS.
            OPEN INPUT  ENTRADA-IN
                 OUTPUT VALIDOS-OUT
                        REJEIT-OUT
@@ -425,43 +444,30 @@ def _(d):
                DISPLAY '*** ERRO OPEN ENTRADA-IN - STATUS: '
                        WS-FS-ENTRADA
                SET OCORREU-ERRO-IO TO TRUE
-           END-IF
-
-           IF FS-VALIDOS-OK
-               SET VALIDOS-ABERTO TO TRUE
-           ELSE
-               DISPLAY '*** ERRO OPEN VALIDOS-OUT - STATUS: '
-                       WS-FS-VALIDOS
-               SET OCORREU-ERRO-IO TO TRUE
-           END-IF
-
-           IF FS-REJEITOS-OK
-               SET REJEITOS-ABERTO TO TRUE
-           ELSE
-               DISPLAY '*** ERRO OPEN REJEIT-OUT - STATUS: '
-                       WS-FS-REJEITOS
-               SET OCORREU-ERRO-IO TO TRUE
-           END-IF."""
-    new="""       1000-ABRIR-ARQUIVOS.
+           END-IF"""
+    new_block="""       1000-ABRIR-ARQUIVOS.
            OPEN INPUT  ENTRADA-IN
                 OUTPUT VALIDOS-OUT
                        REJEIT-OUT
-           SET ENTRADA-ABERTO  TO TRUE
-           SET VALIDOS-ABERTO  TO TRUE
-           SET REJEITOS-ABERTO TO TRUE."""
-    _wf(p, s.replace(old, new))
+           SET ENTRADA-ABERTO  TO TRUE"""
+    s = s.replace(old_block, new_block)
+    _wf(p, s)
 
 @mut("INJ-004")
 def _(d):
-    p=os.path.join(d,"EBVALI01.cbl"); s=_rf(p)
-    old="               PERFORM 2300-ACUMULAR-MOTIVO\n           END-IF\n\n      *    Regra 2: agencia"
-    new="               PERFORM 2300-ACUMULAR-MOTIVO\n               GO TO 2100-FIM-VALIDACAO\n           END-IF\n\n      *    Regra 2: agencia"
-    s=s.replace(old,new)
-    # Add exit label at end of paragraph
-    target="               PERFORM 2300-ACUMULAR-MOTIVO\n           END-IF.\n"
-    idx=s.rfind(target)
-    if idx>=0: s=s[:idx]+target+"\n       2100-FIM-VALIDACAO.\n           CONTINUE.\n"+s[idx+len(target):]
-    _wf(p,s)
+    p = os.path.join(d, "EBVALI01.cbl")
+    s = _rf(p)
+    # Adiciona um GO TO logo após a rotina que acumula o motivo de rejeição, abortando a validação[cite: 2]
+    s = re.sub(r"(\s+PERFORM\s+[A-Za-z0-9\-]*ACUMULAR[A-Za-z0-9\-]*[^\n]*)", r"\1\n               GO TO 2100-FIM-VALIDACAO", s, flags=re.IGNORECASE)
+    
+    # Injeta a label de FIM no final do parágrafo 2100 se ela não existir[cite: 2]
+    if "2100-FIM-VALIDACAO" not in s:
+        target = "2100-VALIDAR-REGISTRO."
+        end_target = "           END-IF.\n"
+        idx = s.find(end_target, s.find(target))
+        if idx >= 0:
+            s = s[:idx + len(end_target)] + "\n       2100-FIM-VALIDACAO.\n           CONTINUE.\n" + s[idx + len(end_target):]
+    _wf(p, s)
 
 @mut("INJ-005")
 def _(d):
@@ -617,7 +623,7 @@ def _(d):
 @mut("INJ-029")
 def _(d):
     p=os.path.join(d,"EBPOST01.cbl"); s=_rf(p)
-    s=s.replace("           REWRITE CONTA-REG","      *    REWRITE CONTA-REG")
+    s=s.replace("            REWRITE CONTA-REG","      *    REWRITE CONTA-REG")
     _wf(p,s)
 
 @mut("INJ-030")
@@ -638,12 +644,12 @@ def _(d):
 @mut("INJ-032")
 def _(d):
     p=os.path.join(d,"EBVALI01.cbl"); s=_rf(p)
-    old="           IF EN-AGENCIA IS NUMERIC\n               MOVE EN-AGENCIA TO WS-AGENCIA-NUM"
-    new="               MOVE EN-AGENCIA TO WS-AGENCIA-NUM"
+    old="            IF EN-AGENCIA IS NUMERIC\n                MOVE EN-AGENCIA TO WS-AGENCIA-NUM"
+    new="                MOVE EN-AGENCIA TO WS-AGENCIA-NUM"
     s=s.replace(old,new)
     # Also remove the ELSE for non-numeric agencia
-    s=s.replace("           ELSE\n               SET REGISTRO-INVALIDO TO TRUE\n               MOVE 'AGENCIA INVALIDA' TO WS-NOVO-MOTIVO\n               PERFORM 2300-ACUMULAR-MOTIVO\n           END-IF\n\n      *    Regra 3:",
-                "           END-IF\n\n      *    Regra 3:")
+    s=s.replace("            ELSE\n                SET REGISTRO-INVALIDO TO TRUE\n                MOVE 'AGENCIA INVALIDA' TO WS-NOVO-MOTIVO\n                PERFORM 2300-ACUMULAR-MOTIVO\n            END-IF\n\n      *    Regra 3:",
+                "            END-IF\n\n      *    Regra 3:")
     _wf(p,s)
 
 @mut("INJ-033")
