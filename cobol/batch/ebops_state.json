@@ -1,0 +1,91 @@
+{
+  "tickets": [
+    {
+      "ticket_id": "EB-001-01",
+      "template_id": "INC-021",
+      "titulo": "SQLCODE -811 — SELECT INTO múltiplas linhas",
+      "categoria": "incidente",
+      "severidade": "media",
+      "dificuldade": "junior",
+      "tempo": "25min",
+      "ferramenta": "DB2 / SPUFI",
+      "descricao": "SELECT INTO retornou mais de um registro. Duplicidade?",
+      "tags": [
+        "DB2",
+        "-811",
+        "SELECT INTO"
+      ],
+      "inj": "",
+      "status": "backlog",
+      "dia": 1,
+      "notas": "",
+      "criado_em": "2026-05-05T16:14:55.140743"
+    },
+    {
+      "ticket_id": "EB-001-02",
+      "template_id": "INV-004",
+      "titulo": "Mapear FILE STATUS dos programas",
+      "categoria": "investigação",
+      "severidade": "baixa",
+      "dificuldade": "junior",
+      "tempo": "35min",
+      "ferramenta": "COBOL / grep",
+      "descricao": "Quais programas tratam quais FILE STATUS? Quais lacunas?",
+      "tags": [
+        "FILE STATUS",
+        "qualidade",
+        "análise"
+      ],
+      "inj": "INJ-003",
+      "status": "backlog",
+      "dia": 1,
+      "notas": "",
+      "criado_em": "2026-05-05T16:14:55.140784"
+    },
+    {
+      "ticket_id": "EB-001-03",
+      "template_id": "OPS-004",
+      "titulo": "Gerar evidência de teste para HML",
+      "categoria": "operação",
+      "severidade": "baixa",
+      "dificuldade": "junior",
+      "tempo": "40min",
+      "ferramenta": "Zowe CLI / SDSF",
+      "descricao": "Pacote de evidência formal para promoção.",
+      "tags": [
+        "evidência",
+        "homologação"
+      ],
+      "inj": "",
+      "status": "backlog",
+      "dia": 1,
+      "notas": "",
+      "criado_em": "2026-05-05T16:14:55.140804"
+    },
+    {
+      "ticket_id": "EB-001-04",
+      "template_id": "INC-003",
+      "titulo": "Arquivo de entrada ausente — cadeia bloqueada",
+      "categoria": "incidente",
+      "severidade": "critica",
+      "dificuldade": "junior",
+      "tempo": "20min",
+      "ferramenta": "Zowe CLI / TSO",
+      "descricao": "EBJLOAD falhou. ARQ.ENTRADA.SEQ não existe. Cadeia bloqueada.",
+      "tags": [
+        "arquivo",
+        "bloqueio",
+        "cadeia"
+      ],
+      "inj": "INJ-019",
+      "status": "backlog",
+      "dia": 1,
+      "notas": "",
+      "criado_em": "2026-05-05T16:14:55.140819"
+    }
+  ],
+  "custom_templates": [],
+  "day": 2,
+  "injections_active": [],
+  "history": []
+}
