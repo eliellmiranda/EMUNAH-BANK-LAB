@@ -2,215 +2,148 @@
 
 ## Visão Geral
 
-O sistema é dividido em módulos funcionais que refletem as responsabilidades de um ambiente bancário batch. Cada módulo agrupa programas, copybooks e datasets relacionados a uma função específica do negócio ou do controle operacional.
+O sistema é dividido em módulos funcionais que refletem as responsabilidades de um ambiente bancário real. Cada módulo agrupa programas, copybooks e datasets relacionados a uma função específica do negócio ou do controle operacional, garantindo a separação entre o processamento transacional (Online) e o processamento de lote (Batch).
 
 ---
 
-## cliente
-Cadastro e manutenção dos dados de clientes.
+## 🏗️ Módulos de Infraestrutura e Controle
 
-- **Programa principal:** `EBCLLOAD`
-- **Job de carga:** `EBJCLLD`
-- **Dataset master:** `EMUNAH.ARQ.CLIENTE.KSDS`
-- **Entrada de seed:** `EMUNAH.SEED.CLIENTES.SEQ`
-- **Papel na cadeia:** base de referência para validação
+### controle (Máquina de Estados)
+Governa a fase operacional do dia. É a "fonte de verdade" consultada por todos os jobs da cadeia principal para garantir a integridade do ciclo.
 
----
-
-## conta
-Cadastro e manutenção das contas bancárias.
-
-- **Programa principal:** `EBCLLOAD`
-- **Job de carga:** `EBJCLLD`
-- **Dataset master:** `EMUNAH.ARQ.CONTA.KSDS`
-- **Entrada de seed:** `EMUNAH.SEED.CONTAS.SEQ`
-- **Papel na cadeia:** referência obrigatória para validação, aplicação e snapshot de saldo
-
----
-
-## controle (CTL.STATUS / CTL.PROCDATE)
-Governa a fase operacional do dia. Fonte de verdade consultada por todos os jobs da cadeia principal.
-
-- **Programa principal:** `EBCTL01` (utilitário de leitura/gravação)
+- **Programa principal:** `EBCTL01` (utilitário de validação de transição de fase)
 - **Jobs que escrevem o estado:** `EBJSOD` (OPEN), `EBJCUTF` (EOTI), `EBJCUTE` (EOFI), `EBJEOD` (CLOSED)
 - **Jobs que leem o estado:** `EBJPRECK` (validação de entrada da cadeia) e qualquer job que exija uma fase específica
 - **Datasets:** `EMUNAH.ARQ.CTL.STATUS`, `EMUNAH.ARQ.CTL.PROCDATE`
-- **Papel na cadeia:** portão de estado — o dia não anda sem passar pelas transições na ordem certa
+- **Papel na cadeia:** Portão de estado — o dia não anda sem passar pelas transições na ordem estrita.
+
+### CICS Control (Gestão de Janela)
+Responsável pela transição técnica entre o ambiente transacional e o processamento batch pesado.
+
+- **Jobs:** `EBJCLOSE` (Desconecta arquivos do CICS), `EBJOPEN` (Reconecta arquivos ao CICS)
+- **Papel na cadeia:** Garante que o Batch tenha acesso exclusivo (`DISP=OLD`) aos arquivos VSAM, prevenindo erros de contenção (*Enqueue*).
 
 ---
 
-## entrada (staging + file-watcher)
-Recebe o arquivo do dia em staging e só promove para o mundo operacional após checagem de existência e conteúdo.
+## 🏦 Módulos de Negócio (Janela Online - CICS)
 
-- **Jobs:** `EBJWAIT` (file-watcher), `EBJLOAD` (promoção)
-- **Datasets:** `EMUNAH.STAGE.ENTRADA.SEQ` (staging), `EMUNAH.ARQ.ENTRADA.SEQ` (operacional), `EMUNAH.ARQ.ENTRADA.TRAILER.SEQ` (futuro: hash/trailer)
-- **Papel na cadeia:** porta de entrada controlada, com separação clara entre "arquivo recebido" e "arquivo aceito para processar"
+### online (Customer Service)
+Simula a interface de agência e autoatendimento.
+
+- **Transações:** - `ESLD`: Consulta de Saldo (Programa `EBCSSLD`)
+  - `EEXT`: Consulta de Extrato (Programa `EBCSEXT`)
+  - `ETRF`: Transferência (Programa `EBCSTRF`)
+- **Telas (BMS):** `EBMSLD`, `EBMEXT`, `EBMTRF`
+- **Datasets master:** `EMUNAH.ARQ.CONTA.KSDS`, `EMUNAH.ARQ.LANCTO.ESDS`
+- **Papel:** Atendimento transacional em tempo real.
 
 ---
 
-## lançamentos
-Recepção, validação e aplicação dos movimentos financeiros do dia.
+## ⚙️ Módulos de Processamento (Janela Batch)
 
-- **Programas:** `EBVALI01` (validação), `EBPOST01` (aplicação)
+### cliente
+Cadastro e manutenção dos dados de correntistas.
+- **Programa principal:** `EBCLLOAD`
+- **Job de carga:** `EBJCLLD`
+- **Dataset master:** `EMUNAH.ARQ.CLIENTE.KSDS` (VSAM KSDS)
+- **Entrada de seed:** `EMUNAH.SEED.CLIENTES.SEQ`
+- **Papel na cadeia:** Base de referência para validações de identidade.
+
+### conta
+Cadastro e gestão financeira das contas.
+- **Programa principal:** `EBCLLOAD`
+- **Dataset master:** `EMUNAH.ARQ.CONTA.KSDS` (VSAM KSDS)
+- **Entrada de seed:** `EMUNAH.SEED.CONTAS.SEQ`
+- **Papel na cadeia:** Referência obrigatória para validação, postagem e snapshot de saldo.
+
+### entrada (staging + file-watcher)
+Porta de entrada controlada para arquivos de canais externos.
+- **Jobs:** `EBJWAIT` (file-watcher de existência + trailer), `EBJLOAD` (promoção para área operacional)
+- **Datasets:** `EMUNAH.STAGE.ENTRADA.SEQ`, `EMUNAH.ARQ.ENTRADA.SEQ`
+
+### lançamentos (Core Processing)
+O coração financeiro do laboratório.
+- **Programas:** `EBVALI01` (Validação), `EBPOST01` (Postagem/Aplicação)
 - **Jobs:** `EBJVALD`, `EBJPOST`
-- **Datasets:** `EMUNAH.ARQ.ENTRADA.SEQ`, `EMUNAH.ARQ.LANCTO.ESDS` (válidos aprovados), `EMUNAH.ARQ.REJEITOS.SEQ` (rejeitos)
-- **Papel na cadeia:** coração do processamento diário
+- **Datasets:** `EMUNAH.ARQ.LANCTO.ESDS` (Válidos aprovados), `EMUNAH.ARQ.REJEITOS.SEQ`
 
----
-
-## accrual
-Cálculo de juros e tarifas do dia a partir de parâmetros configuráveis.
-
+### accrual (Contabilidade Diária)
+Cálculo de juros e tarifas sobre o saldo do dia.
 - **Programa principal:** `EBACCR01`
-- **Entrada:** `EMUNAH.PARM.JUROS.CONFIG` (PDS com parâmetros)
+- **Entrada:** `EMUNAH.PARM.JUROS.CONFIG` (Membro de PDS com taxas)
 - **Saída:** `EMUNAH.ARQ.ACCR.MOV.SEQ`
-- **Papel na cadeia:** gera movimentos contábeis entre o cutoff financeiro (`EOTI`) e o snapshot de saldo
+- **Papel:** Gera movimentos contábeis entre o cutoff financeiro (`EOTI`) e o snapshot.
+
+### saldo (snapshot)
+Fotografa a posição final consolidada para histórico e fechamento.
+- **Programa:** `EBSNAP01` | **Job:** `EBJSNAP`
+- **Dataset:** `EMUNAH.ARQ.SALDO.GDG(+1)` (Substitui o antigo saldo estático)
+
+### conciliação
+Verificação de integridade "Three-Way".
+- **Programa:** `EBCONC01` | **Job:** `EBJCONC`
+- **Saída:** `EMUNAH.ARQ.CONCIL.SEQ` (Relatório LRECL=132)
+- **Papel:** Bloqueia o fechamento do dia se houver divergência de centavos.
+
+### extrato
+Geração do produto final para o cliente.
+- **Programa:** `EBEXTR01` | **Job:** `EBJEXTR`
+- **Dataset:** `EMUNAH.ARQ.EXTRATO.GDG(+1)`
+
+### fechamento
+Encerramento formal do ciclo batch.
+- **Programa:** `EBJEOD01` | **Job:** `EBJEOD`
+- **Efeitos:** Grava `CTL.STATUS=CLOSED`, finaliza auditoria e libera a janela para o próximo dia operacional.
 
 ---
 
-## saldo (snapshot)
-Fotografa o saldo consolidado de todas as contas em uma nova geração GDG.
+## 🛠️ Manutenção e Recuperação
 
-- **Programa principal:** `EBSNAP01`
-- **Job:** `EBJSNAP`
-- **Dataset:** `EMUNAH.ARQ.SALDO.GDG(+1)` — cada execução cria nova geração
-- **Papel na cadeia:** substitui o antigo `SALDO.KSDS`. Entrada para `EBJCONC` e `EBJEXTR`
+### rejeito e reprocessamento
+- **Reprocessamento:** `EBREPR01` (preparação), `EBJREPR` e `EBJRPOST`.
+- **Dataset:** `EMUNAH.ARQ.REPR.LANCTO.SEQ`
+- **Papel:** Permite recuperar transações corrigidas sem reiniciar a cadeia do zero.
 
----
-
-## conciliação
-Compara três visões independentes (entrada, postagem, saldo) e confirma a integridade do processamento.
-
-- **Programa principal:** `EBCONC01`
-- **Job:** `EBJCONC`
-- **Dataset de saída:** `EMUNAH.ARQ.CONCIL.SEQ` (LRECL=132, três seções)
-- **Papel na cadeia:** portão de controle antes do fechamento — o dia não fecha se a conciliação não fechar
-
----
-
-## extrato
-Gera o extrato diário de cada conta com base em lançamentos postados e saldo consolidado.
-
-- **Programa principal:** `EBEXTR01`
-- **Job:** `EBJEXTR`
-- **Dataset de saída:** `EMUNAH.ARQ.EXTRATO.GDG(+1)`
-- **Papel na cadeia:** produto final visível do processamento do dia
-
----
-
-## fechamento
-Encerra o dia operacional, atualiza controles e registra o fechamento do ciclo batch.
-
-- **Programa principal:** `EBJEOD01`
-- **Job:** `EBJEOD`
-- **Efeitos:** grava `CTL.STATUS=CLOSED`, finaliza trilha de auditoria do dia
-- **Papel na cadeia:** último passo da cadeia principal
-
----
-
-## rejeito
-Registra e disponibiliza lançamentos que não passaram na validação ou na aplicação.
-
-- **Dataset:** `EMUNAH.ARQ.REJEITOS.SEQ`
-- **Gerado por:** `EBVALI01`, `EBPOST01`
-- **Papel na cadeia:** saída de diagnóstico; alimenta o módulo de reprocessamento
-
----
-
-## reprocessamento
-Reaplica registros corrigidos que foram rejeitados em execuções anteriores.
-
-- **Programa principal:** `EBREPR01` (preparação)
-- **Jobs:** `EBJREPR` (preparação), `EBJRPOST` (postagem via `EBPOST01` lendo `REPR.LANCTO.SEQ`)
-- **Datasets:** `EMUNAH.ARQ.REPR.LANCTO.SEQ`
-- **Papel na cadeia:** off-cycle; executado sob demanda após correção da massa ou do programa
-
----
-
-## backup
-Registra o estado dos masters e da auditoria antes da cadeia do dia.
-
+### backup
 - **Job:** `EBJBCKPD`
-- **Datasets de saída:** `EMUNAH.BKP.CLIENTE.GDG(+1)`, `BKP.CONTA.GDG(+1)`, `BKP.AUDIT.GDG(+1)`
-- **Papel na cadeia:** permite recuperação do estado pré-batch em caso de falha na cadeia principal
+- **Datasets:** `EMUNAH.BKP.CLIENTE.GDG`, `BKP.CONTA.GDG`, `BKP.AUDIT.GDG`
+- **Papel:** Ponto de restauração (*Rollback*) em caso de falha catastrófica no batch.
+
+### housekeeping
+- **Jobs:** `EBJHKGDG`, `EBJHKAUD` (Arquiva `AUDIT.SEQ` em GDG), `EBJHKREJ`.
+- **Papel:** Saneamento de ambiente e gestão de retenção de logs.
 
 ---
 
-## housekeeping
-Mantém `AUDIT.SEQ`, `REJEITOS.SEQ` e as bases GDG saudáveis ao longo do tempo.
+## 🔍 Utilitários (Manual/Ad-hoc)
 
-- **Jobs:**
-  - `EBJHKGDG` — monitor passivo (LISTCAT das bases GDG)
-  - `EBJHKAUD` — arquiva `AUDIT.SEQ` em `BKP.AUDIT.GDG(+1)` e recria vazio
-  - `EBJHKREJ` — arquiva `REJEITOS.SEQ` em `BKP.REJEITOS.GDG(+1)` e recria vazio
-- **Papel na cadeia:** off-cycle; evita crescimento descontrolado dos sequenciais operacionais
-
----
-
-## utilitários
-
-Programas de apoio operacional que **não pertencem à cadeia batch automática**. São executados manualmente, sob demanda, para diagnóstico, auditoria e conferência de dados.
-
----
+Programas de apoio que **não pertencem à cadeia automática**. Executados manualmente para diagnóstico e auditoria.
 
 ### EBSALD01 — Consulta Manual de Saldo por Conta
-
-Utilitário batch de consulta pontual ao arquivo master de contas. Permite verificar o saldo de uma ou mais contas específicas sem interferir na cadeia principal de processamento.
+Utilitário batch de consulta pontual ao arquivo master de contas.
 
 **Localização:** `cobol/util/EBSALD01.cbl`
 
 **Quando usar:**
-- conferência de saldo após aplicação de lançamentos
-- diagnóstico de inconsistências relatadas por operação ou suporte
-- validação de registros antes de um reprocessamento
-- auditoria manual de contas específicas durante ou após o batch
+- Conferência de saldo após aplicação de lançamentos.
+- Diagnóstico de inconsistências relatadas pelo Suporte.
+- Validação de registros antes de um reprocessamento.
 
 **Arquivos envolvidos:**
 
 | DD Name   | Dataset / Tipo            | Papel                                       |
 |-----------|---------------------------|---------------------------------------------|
-| `SALDIN`  | Sequencial (entrada)      | Lista de contas a consultar (agência + conta, 80 bytes) |
-| `CONTA`   | `EMUNAH.ARQ.CONTA.KSDS`  | Arquivo master VSAM KSDS — fonte do saldo   |
-| `SALDOUT` | Sequencial (saída)        | Relatório com saldos encontrados e rejeições |
-
-**Layout do registro de entrada (`SALDIN`):**
-
-```
-Posição  01–04  →  Agência   (PIC 9(4))
-Posição  05–12  →  Conta     (PIC 9(8))
-Posição  13–80  →  FILLER    (não utilizado)
-```
-
-**Copybook utilizado:** `CPCNT001` — fornece `CNT-CHAVE` e `CNT-SALDO` a partir do registro do arquivo `CONTA-KSDS`.
+| `SALDIN`  | Sequencial (entrada)      | Lista de contas (Agência 4 + Conta 8)       |
+| `CONTA`   | `EMUNAH.ARQ.CONTA.KSDS`   | Fonte master dos saldos                     |
+| `SALDOUT` | Sequencial (saída)        | Relatório de saldos e rejeições             |
 
 **Fluxo de execução:**
-
-1. Abre `SALDIN`, `CONTA-KSDS` e `SALDOUT`
-2. Lê registros de `SALDIN` sequencialmente
-3. Para cada conta lida, monta a chave composta (agência + número) e executa leitura direta no KSDS
-4. Se encontrada: formata e grava linha com saldo no `SALDOUT`
-5. Se não encontrada: grava linha de rejeição com identificação da conta
-6. Ao fim: exibe resumo no SYSOUT e fecha os arquivos
-
-**Saída de console (DISPLAY):**
-
-```
-*** RESUMO CONSULTA SALDOS ***
-CONTAS LIDAS          : NNNNN
-CONTAS ENCONTRADAS    : NNNNN
-CONTAS NAO ENCONTRADAS: NNNNN
-```
-
-**Contadores internos:**
-
-| Campo                | Descrição                               |
-|----------------------|-----------------------------------------|
-| `WS-LIDOS`           | Total de registros lidos do `SALDIN`    |
-| `WS-ENCONTRADOS`     | Contas localizadas no KSDS              |
-| `WS-NAO-ENCONTRADOS` | Contas não encontradas (rejeições)      |
+1. Abre arquivos e lê `SALDIN` sequencialmente.
+2. Monta a chave composta e executa leitura direta no VSAM.
+3. Grava o saldo encontrado ou o motivo da rejeição no relatório.
+4. Exibe resumo de contadores no `SYSOUT`.
 
 **Observações importantes:**
-- Programa **somente leitura** — não altera nenhum registro no arquivo master de contas
-- Não possui job automático associado; deve ser submetido manualmente com JCL próprio
-- O arquivo `SALDIN` deve ser preparado antes da execução com as contas que se deseja consultar
-- A saída `SALDOUT` substitui qualquer versão anterior a cada execução (OPEN OUTPUT)
+- Programa **Read-Only** (Somente leitura).
+- Exige preparação prévia do arquivo de entrada `SALDIN`.
+- Substitui a saída `SALDOUT` a cada execução.
