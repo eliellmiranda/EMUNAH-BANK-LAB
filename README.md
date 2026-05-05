@@ -2,6 +2,7 @@
 
 ![z/OS](https://img.shields.io/badge/z%2FOS-IBM%20zXplore-blue?style=flat-square&logo=ibm)
 ![COBOL](https://img.shields.io/badge/COBOL-85%2F2002-lightgrey?style=flat-square)
+![CICS](https://img.shields.io/badge/CICS-TS-darkred?style=flat-square)
 ![JCL](https://img.shields.io/badge/JCL-batch-orange?style=flat-square)
 ![Zowe](https://img.shields.io/badge/Zowe-CLI%20%2F%20Explorer-green?style=flat-square)
 ![VSAM](https://img.shields.io/badge/VSAM-KSDS%20%2F%20ESDS-yellow?style=flat-square)
@@ -28,7 +29,7 @@ O nome *Emunah* (אֱמוּנָה) remete ao conceito hebraico de fidelidade e c
 
 ## Arquitetura
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                     CAMADA LOCAL                            │
 │  VS Code + Zowe Explorer + Git                              │
@@ -84,12 +85,22 @@ O nome *Emunah* (אֱמוּנָה) remete ao conceito hebraico de fidelidade e c
 
 ---
 
-## Cadeia Batch
+## Cadeia Batch e Separação de Janelas
 
-A cadeia principal é governada pelo dataset `ARQ.CTL.STATUS`, fonte de verdade do ciclo. As fases seguem o modelo canônico de core-banking inspirado em FLEXCUBE (`OPEN → EOTI → EOFI → CLOSED`), com cutoffs financeiro e contábil, accruals, snapshot de saldo em GDG, conciliação three-way bloqueante e housekeeping de trilhas. Horários são apenas sugestão de janela — a dependência real é o estado em `CTL.STATUS`.
+O processamento do Emunah Bank é estritamente dividido entre a **Janela Online (CICS)** e a **Janela Batch (z/OS)**. Para garantir a integridade dos dados e evitar conflitos de bloqueio (*Enqueue/Lock*), o processamento Batch só pode ser iniciado após a desconexão formal dos arquivos VSAM do ambiente CICS (simulado via job `EBJCLOSE`).
 
-```
+A cadeia principal é governada pelo dataset `ARQ.CTL.STATUS`, que atua como a fonte de verdade (*Source of Truth*) da máquina de estados do dia operacional. As transições são protegidas por código COBOL para evitar corrupção de fases. O ciclo segue o modelo canônico de core-banking (inspirado em FLEXCUBE):
+
+1. **OPEN**: Início do dia, recepção de arquivos de canais externos e abertura de transações.
+2. **EOTI (End of Transaction Input)**: Cutoff financeiro. Encerramento do recebimento de transações interbancárias, atualização de saldos e postagem.
+3. **EOFI (End of Financial Input)**: Cutoff contábil. Aplicação de *accruals* (juros/tarifas) e snapshot das posições em GDG.
+4. **CLOSED**: Conciliação *three-way* bloqueante, geração de extratos e fechamento seguro do dia.
+
+Horários são apenas sugestão de janela — a dependência real é o estado em `CTL.STATUS`.
+
+```text
 FASE 1 · SOD
+  05:55  EBJCLOSE   ── [NOVO] desconecta VSAMs do CICS para liberar Batch
   06:00  EBJPRECK   ── valida ambiente e lê CTL.STATUS (espera CLOSED ou vazio)
   06:05  EBJSOD     ── Start of Day — grava CTL.STATUS=OPEN
   06:15  EBJBCKPD   ── backup CLIENTE/CONTA/AUDIT em GDG (BKP.*.GDG(+1))
@@ -118,6 +129,7 @@ FASE 7 · RECONCILIATION
 FASE 8 · OUTPUT
   09:30  EBJEXTR    ── EBEXTR01 → EXTRATO.GDG(+1)
   10:00  EBJEOD     ── fechamento — grava CTL.STATUS=CLOSED
+  10:05  EBJOPEN    ── [NOVO] reconecta VSAMs ao CICS devolvendo ao online
 
 FASE 9 · HOUSEKEEPING (sob demanda)
   EBJHKGDG  ── monitor/roll de gerações antigas de GDG
@@ -129,13 +141,20 @@ OFF-CYCLE (fora da cadeia oficial)
   EBJRPOST  ── reinjeta recuperados em EBPOST01 (exige STATUS=EOTI)
 ```
 
-Detalhes de dependência, transições de status, critérios de bloqueio e datasets envolvidos estão em [`docs/05-grade-batch.md`](docs/05-grade-batch.md). O racional do redesenho está em [`docs/sob revisao/proposta-cadeia-batch-realista.md`](docs/sob%20revisao/proposta-cadeia-batch-realista.md).
+Detalhes de dependência, transições de status, critérios de bloqueio e datasets envolvidos estão em [`docs/05-grade-batch.md`](docs/05-grade-batch.md).
+
+### Utilitários de Resiliência
+
+O laboratório conta com rotinas e programas de infraestrutura para garantir a tolerância a falhas e a correta governança da operação:
+- **`EBCTL01`**: Módulo COBOL que blinda o arquivo de *Status*, garantindo que as fases sigam a ordem estrita (OPEN → EOTI → EOFI → CLOSED) e abortando a cadeia caso haja violação operacional.
+- **`EBJCLOSE` / `EBJOPEN`**: Scripts que executam a transição entre Online e Batch no CICS, prevenindo locks órfãos e concorrência indevida.
+- **`EBRESET` / `EBRESETF`**: Utilitários para limpeza (*purge*) de arquivos residuais, expurgo do `REJPERM.SEQ` e reinicialização segura do ambiente em caso de falhas severas.
 
 ---
 
 ## Estrutura do Repositório
 
-```
+```text
 emunah-bank-lab/
 │
 ├── cobol/
@@ -199,7 +218,7 @@ emunah-bank-lab/
 │   ├── deploy/             # JCLs de alocação e deploy
 │   │   ├── EBALLOC.jcl     # Aloca PDS, VSAM e sequenciais base
 │   │   ├── EBDEFGDG.jcl    # Define bases GDG (BKP/SALDO/EXTRATO)
-│   │   └── EBDEPLOY.jcl    # Pipeline de deploy
+│   │   └── EBDEPLOY.jcl    # Pipeline de deploy atômico (&&TMPLOAD)
 │   │
 │   ├── compile/            # Pipeline de compilação
 │   │   ├── EBBUILD.jcl
@@ -215,6 +234,8 @@ emunah-bank-lab/
 │   │
 │   └── util/
 │       ├── EBLISTDS.jcl    # Lista datasets do lab
+│       ├── EBJCLOSE.jcl    # Fecha arquivos VSAM no CICS
+│       ├── EBJOPEN.jcl     # Abre arquivos VSAM no CICS
 │       └── EBRESET.jcl     # Reset controlado do ambiente
 │
 ├── rexx/                   # Scripts REXX de automação
@@ -343,9 +364,9 @@ zowe files upload file-to-data-set ./data/normalized/lancamentos_simulados.txt \
 # Dispare a cadeia, do precheck ao fechamento
 zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJPRECK)"
 # depois, na ordem das fases:
-#   EBJSOD  → EBJBCKPD → EBJWAIT → EBJLOAD →
-#   EBJVALD → EBJPOST  → EBJACCR → EBJCUTF →
-#   EBJSNAP → EBJCUTE  → EBJCONC → EBJEXTR → EBJEOD
+#   EBJCLOSE → EBJSOD  → EBJBCKPD → EBJWAIT → EBJLOAD →
+#   EBJVALD  → EBJPOST → EBJACCR  → EBJCUTF →
+#   EBJSNAP  → EBJCUTE → EBJCONC  → EBJEXTR → EBJEOD → EBJOPEN
 #
 # Cada job lê e/ou grava ARQ.CTL.STATUS — execuções fora de ordem
 # abortam por inconsistência de status.
@@ -381,6 +402,7 @@ zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJPRECK)"
 
 | Módulo | Programa(s) | Job(s) |
 |---|---|---|
+| CICS Control | — | `EBJCLOSE`, `EBJOPEN` |
 | Precheck | `EBPCHK01` | `EBJPRECK` |
 | Cliente / Conta (seed) | `EBCLLOAD` | `EBJCLLD` |
 | Controle (CTL.STATUS / CTL.PROCDATE) | `EBCTL01` | `EBJSOD`, `EBJCUTF`, `EBJCUTE`, `EBJEOD` |
@@ -440,12 +462,13 @@ O laboratório inclui massa seed completa carregada via job `EBJCLLD` (executa `
 ## Tecnologias
 
 - **z/OS** — sistema operacional mainframe IBM
-- **COBOL** — linguagem principal dos programas batch
-- **JCL** — controle e encadeamento de jobs
-- **VSAM** — armazenamento dos arquivos master (KSDS, ESDS)
-- **GDG** — histórico versionado (extrato, saldo, backups)
+- **COBOL** — linguagem principal dos programas batch e online
+- **CICS** — processamento de transações online e telas 3270 (BMS)
+- **JCL** — controle, parametrização e encadeamento de jobs
+- **VSAM** — armazenamento de altíssima performance para o *Core Transacional* (KSDS para Contas/Clientes, ESDS para Lançamentos Diários)
+- **DB2** — banco de dados relacional z/OS, utilizado para armazenamento de dados tabulares satélites (como Trilhas de Auditoria)
+- **GDG** — histórico versionado automatizado (retenção de extratos, snapshots de saldo e backups)
 - **IDCAMS / ICETOOL / SORT** — utilitários de administração e manipulação de datasets
-- **DB2** — banco de dados relacional z/OS
 - **REXX** — automação e scripts utilitários
 - **TSO / ISPF** — operação interativa e navegação no ambiente z/OS via 3270
 - **Zowe CLI / Explorer** — ponte entre ambiente local e mainframe
