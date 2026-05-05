@@ -303,53 +303,37 @@ def rev(name):
 
 @mut("INJ-001")
 def _(d):
-    p = os.path.join(d, "EBVALI01.cbl")
+    p = _resolve_file(d, "EBVALI01.cbl") # Garante que acha o arquivo na pasta correta
     s = _rf(p)
-    # Procura lógicas positivas (TIPO = C OR TIPO = D) e inverte para aceitar apenas D
-    s = re.sub(r"(IF\s+[A-Za-z0-9\-]+TIPO\s*=\s*'C'\s+(?:OR|or)\s+(?:[A-Za-z0-9\-]+TIPO\s*=\s*)?'D')", r"IF EN-TIPO = 'D'      ", s, flags=re.IGNORECASE)
-    # Procura lógicas negativas (TIPO NOT = C AND TIPO NOT = D) e inverte para rejeitar apenas se não for D
-    s = re.sub(r"(IF\s+[A-Za-z0-9\-]+TIPO\s+NOT\s*=\s*'C'\s+(?:AND|and)\s+[A-Za-z0-9\-]+TIPO\s+NOT\s*=\s*'D')", r"IF EN-TIPO NOT = 'D'          ", s, flags=re.IGNORECASE)
+    
+    # 1. Copie a linha EXATA do seu COBOL (com todos os espaços) e coloque no primeiro bloco.
+    # 2. Escreva como a linha deve ficar no segundo bloco.
+    texto_antigo = "           IF WS-TIPO-LANCTO = 'C' OR 'D'" 
+    texto_novo   = "           IF WS-TIPO-LANCTO = 'D'       "
+    
+    s = s.replace(texto_antigo, texto_novo)
     _wf(p, s)
 
 @mut("INJ-002")
 def _(d):
-    p = os.path.join(d, "EBVALI01.cbl")
+    p = _resolve_file(d, "EBVALI01.cbl")
     s = _rf(p)
-    # Substitui verificações de ZERO: GREATER THAN ZERO passa a incluir EQUAL TO ZERO
-    s = re.sub(r"([A-Za-z0-9\-]+VALOR[A-Za-z0-9\-]*\s+)GREATER\s+THAN\s+ZERO", r"\1GREATER THAN OR EQUAL TO ZERO", s, flags=re.IGNORECASE)
-    # Substitui > ZERO por >= ZERO
-    s = re.sub(r"([A-Za-z0-9\-]+VALOR[A-Za-z0-9\-]*\s*)>\s*ZERO", r"\1>= ZERO", s, flags=re.IGNORECASE)
-    # Substitui <= ZERO por < ZERO
-    s = re.sub(r"([A-Za-z0-9\-]+VALOR[A-Za-z0-9\-]*\s*)<=\s*ZERO", r"\1< ZERO", s, flags=re.IGNORECASE)
+    
+    texto_antigo = "           IF WS-VALOR GREATER THAN ZERO"
+    texto_novo   = "           IF WS-VALOR >= ZERO          "
+    
+    s = s.replace(texto_antigo, texto_novo)
     _wf(p, s)
 
 @mut("INJ-003")
 def _(d):
-    p = os.path.join(d, "EBVALI01.cbl")
+    p = _resolve_file(d, "EBVALI01.cbl")
     s = _rf(p)
-    # Transforma em comentário qualquer PERFORM que pareça verificar o FILE STATUS
-    s = re.sub(r"(\n\s+PERFORM\s+[0-9A-Za-z\-]*STATUS[0-9A-Za-z\-]*)", r"\n      *    INJ-003 REMOVIDO: \1", s, flags=re.IGNORECASE)
-    s = re.sub(r"(\n\s+PERFORM\s+[0-9A-Za-z\-]*FS[0-9A-Za-z\-]*)", r"\n      *    INJ-003 REMOVIDO: \1", s, flags=re.IGNORECASE)
     
-    # Fallback da lógica antiga
-    old_block="""       1000-ABRIR-ARQUIVOS.
-           OPEN INPUT  ENTRADA-IN
-                OUTPUT VALIDOS-OUT
-                       REJEIT-OUT
-
-           IF FS-ENTRADA-OK
-               SET ENTRADA-ABERTO TO TRUE
-           ELSE
-               DISPLAY '*** ERRO OPEN ENTRADA-IN - STATUS: '
-                       WS-FS-ENTRADA
-               SET OCORREU-ERRO-IO TO TRUE
-           END-IF"""
-    new_block="""       1000-ABRIR-ARQUIVOS.
-           OPEN INPUT  ENTRADA-IN
-                OUTPUT VALIDOS-OUT
-                       REJEIT-OUT
-           SET ENTRADA-ABERTO  TO TRUE"""
-    s = s.replace(old_block, new_block)
+    texto_antigo = "           PERFORM 8000-CHECK-FILE-STATUS"
+    texto_novo   = "      *    PERFORM 8000-CHECK-FILE-STATUS"
+    
+    s = s.replace(texto_antigo, texto_novo)
     _wf(p, s)
 
 @mut("INJ-004")
