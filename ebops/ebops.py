@@ -304,21 +304,24 @@ def rev(name):
 @mut("INJ-001")
 def _(d):
     p = _resolve_file(d, "EBVALI01.cbl")
-    print(f"\n🚨 [DEBUG] O arquivo que o Python acabou de alterar foi: {p}")
-    
     s = _rf(p)
-    # Força a inserção de uma linha no final do arquivo
-    s = s + "\n      * TESTE DE FOGO EBOPS\n"
+    texto_antigo = """           IF LCT-TIPO OF ENTRADA-REG NOT = 'C'
+              AND LCT-TIPO OF ENTRADA-REG NOT = 'D'"""
+              
+    texto_novo   = """           IF LCT-TIPO OF ENTRADA-REG NOT = 'D'
+                                                   """
+    s = s.replace(texto_antigo, texto_novo)
     _wf(p, s)
 
 @mut("INJ-002")
 def _(d):
     p = _resolve_file(d, "EBVALI01.cbl")
     s = _rf(p)
-    
-    texto_antigo = "           IF WS-VALOR GREATER THAN ZERO"
-    texto_novo   = "           IF WS-VALOR >= ZERO          "
-    
+    texto_antigo = """           IF REG-VALIDO AND
+              LCT-VALOR OF ENTRADA-REG <= ZERO"""
+              
+    texto_novo   = """           IF REG-VALIDO AND
+              LCT-VALOR OF ENTRADA-REG < ZERO """
     s = s.replace(texto_antigo, texto_novo)
     _wf(p, s)
 
@@ -326,29 +329,41 @@ def _(d):
 def _(d):
     p = _resolve_file(d, "EBVALI01.cbl")
     s = _rf(p)
-    
-    texto_antigo = "           PERFORM 8000-CHECK-FILE-STATUS"
-    texto_novo   = "      *    PERFORM 8000-CHECK-FILE-STATUS"
-    
+    # Comenta a validação inline de erro do ENTRADA-IN, forçando o programa a continuar cego
+    texto_antigo = """           IF NOT FS-ENTRADA-OK
+               DISPLAY '*** EBVALI01 ERRO OPEN ENTRADA - ' WS-FS-ENTRADA
+               SET COM-ERRO TO TRUE
+           END-IF"""
+           
+    texto_novo   = """      *    IF NOT FS-ENTRADA-OK
+      *        DISPLAY '*** EBVALI01 ERRO OPEN ENTRADA - ' WS-FS-ENTRADA
+      *        SET COM-ERRO TO TRUE
+      *    END-IF"""
     s = s.replace(texto_antigo, texto_novo)
     _wf(p, s)
 
 @mut("INJ-004")
 def _(d):
-    p = os.path.join(d, "EBVALI01.cbl")
+    p = _resolve_file(d, "EBVALI01.cbl")
     s = _rf(p)
-    # Adiciona um GO TO logo após a rotina que acumula o motivo de rejeição, abortando a validação
-    s = re.sub(r"(\s+PERFORM\s+[A-Za-z0-9\-]*ACUMULAR[A-Za-z0-9\-]*[^\n]*)", r"\1\n               GO TO 2100-FIM-VALIDACAO", s, flags=re.IGNORECASE)
-    
-    # Injeta a label de FIM no final do parágrafo 2100 se ela não existir
-    if "2100-FIM-VALIDACAO" not in s:
-        target = "2100-VALIDAR-REGISTRO."
-        end_target = "           END-IF.\n"
-        idx = s.find(end_target, s.find(target))
-        if idx >= 0:
-            s = s[:idx + len(end_target)] + "\n       2100-FIM-VALIDACAO.\n           CONTINUE.\n" + s[idx + len(end_target):]
+    # Adiciona um GO TO no primeiro erro (TIPO) para parar de acumular os outros
+    texto_antigo_1 = """               MOVE 'TIPO INVALIDO ' TO WS-REJ-DESC
+               SET REG-INVALIDO TO TRUE
+           END-IF"""
+    texto_novo_1   = """               MOVE 'TIPO INVALIDO ' TO WS-REJ-DESC
+               SET REG-INVALIDO TO TRUE
+               GO TO 2100-FIM-VALIDACAO
+           END-IF"""
+           
+    # Cria o "alvo" do GO TO no final do parágrafo 2100
+    texto_antigo_2 = """      *--- Encaminha para valido ou rejeito ----------------------------*"""
+    texto_novo_2   = """       2100-FIM-VALIDACAO.
+      *--- Encaminha para valido ou rejeito ----------------------------*"""
+      
+    s = s.replace(texto_antigo_1, texto_novo_1)
+    s = s.replace(texto_antigo_2, texto_novo_2)
     _wf(p, s)
-
+    
 @mut("INJ-005")
 def _(d):
     p=os.path.join(d,"EBPOST01.cbl"); s=_rf(p)
