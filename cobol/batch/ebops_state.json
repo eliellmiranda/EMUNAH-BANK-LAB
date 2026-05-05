@@ -87,5 +87,166 @@
   "custom_templates": [],
   "day": 2,
   "injections_active": [],
-  "history": []
+  "history": [
+    {
+      "id": "INJ-001",
+      "titulo": "EBVALI01 rejeita créditos válidos",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:15:27.979814"
+    },
+    {
+      "id": "INJ-001",
+      "titulo": "EBVALI01 rejeita créditos válidos",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:16:02.517208"
+    },
+    {
+      "id": "INJ-005",
+      "titulo": "EBPOST01 inverte crédito e débito",
+      "arquivos": [
+        "EBPOST01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:16:19.235314"
+    },
+    {
+      "id": "INJ-002",
+      "titulo": "EBVALI01 aceita valor zero",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:16:40.246773"
+    },
+    {
+      "id": "INJ-003",
+      "titulo": "EBVALI01 sem FILE STATUS no OPEN",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:16:47.348744"
+    },
+    {
+      "id": "INJ-004",
+      "titulo": "EBVALI01 para no primeiro erro",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:16:55.202271"
+    },
+    {
+      "id": "INJ-004",
+      "titulo": "EBVALI01 para no primeiro erro",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:17:14.792184"
+    },
+    {
+      "id": "INJ-001",
+      "titulo": "EBVALI01 rejeita créditos válidos",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:17:30.855228"
+    },
+    {
+      "id": "INJ-003",
+      "titulo": "EBVALI01 sem FILE STATUS no OPEN",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:17:21.973662"
+    },
+    {
+      "id": "INJ-002",
+      "titulo": "EBVALI01 aceita valor zero",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:17:27.454543"
+    },
+    {
+      "id": "INJ-RAND-01",
+      "titulo": "Corrupção Aleatória de Variável",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:21:07.159196"
+    },
+    {
+      "id": "INJ-001",
+      "titulo": "EBVALI01 rejeita créditos válidos",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:25:36.128076"
+    },
+    {
+      "id": "INJ-002",
+      "titulo": "EBVALI01 aceita valor zero",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:26:01.511097"
+    },
+    {
+      "id": "INJ-001",
+      "titulo": "EBVALI01 rejeita créditos válidos",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:28:35.520989"
+    },
+    {
+      "id": "INJ-002",
+      "titulo": "EBVALI01 aceita valor zero",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:28:45.575967"
+    },
+    {
+      "id": "INJ-001",
+      "titulo": "EBVALI01 rejeita créditos válidos",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:29:23.505380"
+    },
+    {
+      "id": "INJ-001",
+      "titulo": "EBVALI01 rejeita créditos válidos",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:35:15.237477"
+    },
+    {
+      "id": "INJ-002",
+      "titulo": "EBVALI01 aceita valor zero",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:35:27.945159"
+    },
+    {
+      "id": "INJ-003",
+      "titulo": "EBVALI01 sem FILE STATUS no OPEN",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:35:43.061805"
+    },
+    {
+      "id": "INJ-004",
+      "titulo": "EBVALI01 para no primeiro erro",
+      "arquivos": [
+        "EBVALI01.cbl"
+      ],
+      "timestamp": "2026-05-05T16:35:54.522751"
+    }
+  ]
 }
