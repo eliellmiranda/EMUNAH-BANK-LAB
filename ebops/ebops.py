@@ -303,15 +303,12 @@ def rev(name):
 
 @mut("INJ-001")
 def _(d):
-    p = _resolve_file(d, "EBVALI01.cbl") # Garante que acha o arquivo na pasta correta
+    p = _resolve_file(d, "EBVALI01.cbl")
+    print(f"\n🚨 [DEBUG] O arquivo que o Python acabou de alterar foi: {p}")
+    
     s = _rf(p)
-    
-    # 1. Copie a linha EXATA do seu COBOL (com todos os espaços) e coloque no primeiro bloco.
-    # 2. Escreva como a linha deve ficar no segundo bloco.
-    texto_antigo = "           IF WS-TIPO-LANCTO = 'C' OR 'D'" 
-    texto_novo   = "           IF WS-TIPO-LANCTO = 'D'       "
-    
-    s = s.replace(texto_antigo, texto_novo)
+    # Força a inserção de uma linha no final do arquivo
+    s = s + "\n      * TESTE DE FOGO EBOPS\n"
     _wf(p, s)
 
 @mut("INJ-002")
