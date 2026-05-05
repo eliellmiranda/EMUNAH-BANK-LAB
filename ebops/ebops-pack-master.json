@@ -1,0 +1,126 @@
+[
+  {
+    "id": "INC-011",
+    "titulo": "Abend S0C4 no utilitário EBSALD01 — referência inválida de memória",
+    "ferramenta": "Abendaid / SDSF",
+    "categoria": "incidente",
+    "severidade": "alta",
+    "descricao": "O utilitário de consulta manual EBSALD01 abendou com S0C4. O programa tentou acessar uma área de memória não alocada.",
+    "inj": "INJ-032",
+    "dificuldade": "pleno",
+    "tempo_estimado": "50min"
+  },
+  {
+    "id": "INC-023",
+    "titulo": "EBJPRECK aborta com RC=12 — CTL.STATUS inconsistente",
+    "ferramenta": "SDSF / IDCAMS",
+    "categoria": "incidente",
+    "severidade": "alta",
+    "descricao": "No primeiro job da cadeia, o CHKCTL encerra com RC=12 informando que o ARQ.CTL.STATUS contém um valor fora do esperado (OPEN, EOTI, EOFI, CLOSED).",
+    "dificuldade": "pleno",
+    "tempo_estimado": "30min"
+  },
+  {
+    "id": "INC-024",
+    "titulo": "EBJWAIT estoura em CHKEXST mesmo com arquivo no staging",
+    "ferramenta": "SDSF / IDCAMS LISTCAT",
+    "categoria": "incidente",
+    "severidade": "alta",
+    "descricao": "O arquivo de lançamentos do dia chegou em STAGE.ENTRADA.SEQ, mas o CHKEXST termina com RC=12. O JCL está olhando para o catálogo errado.",
+    "dificuldade": "junior",
+    "tempo_estimado": "15min"
+  },
+  {
+    "id": "INC-025",
+    "titulo": "EBJACCR falha ao abrir PARMLIB — accruals não aplicados",
+    "ferramenta": "SDSF / JCL",
+    "categoria": "incidente",
+    "severidade": "alta",
+    "descricao": "O job EBJACCR termina com FILE STATUS 35 no OPEN do DD PARMLIB. O programa não consegue ler os parâmetros de juros.",
+    "dificuldade": "pleno",
+    "tempo_estimado": "30min"
+  },
+  {
+    "id": "INC-030",
+    "titulo": "Incidente Real: O Arredondamento do 'Ganho' Bancário",
+    "ferramenta": "File Manager / COBOL",
+    "categoria": "incidente",
+    "severidade": "alta",
+    "descricao": "Diferença de R$ 500,00 no fechamento. Suspeita-se de erro na cláusula ROUNDED do COBOL que não segue o Banker's Rounding.",
+    "inj": "INJ-044",
+    "dificuldade": "pleno",
+    "tempo_estimado": "40min"
+  },
+  {
+    "id": "INC-031",
+    "titulo": "S0C7 em Produção - Espaço em Campo Numérico",
+    "ferramenta": "SDSF / Abend-AID",
+    "categoria": "incidente",
+    "severidade": "critica",
+    "descricao": "Arquivo de entrada veio com '123  ' em um campo numérico. O job de posting falhou na primeira soma.",
+    "inj": "INJ-042",
+    "dificuldade": "junior",
+    "tempo_estimado": "20min"
+  },
+  {
+    "id": "OPS-012",
+    "titulo": "Cutoff financeiro gravou fase inconsistente em CTL.STATUS",
+    "ferramenta": "SDSF / IDCAMS PRINT",
+    "categoria": "operação",
+    "severidade": "alta",
+    "descricao": "O EBJCUTF rodou com RC=00 mas o valor gravado não é EOTI. A máquina de estados vai quebrar no próximo passo.",
+    "dificuldade": "pleno",
+    "tempo_estimado": "25min"
+  },
+  {
+    "id": "OPS-013",
+    "titulo": "EBJSNAP falha na alocação — geração absoluta vs relativa",
+    "ferramenta": "SDSF / JCL",
+    "categoria": "operação",
+    "severidade": "alta",
+    "descricao": "O EBJSNAP aborta com IEF212I. O JCL foi mutado para usar uma geração absoluta (G0001V00) em vez da relativa (+1).",
+    "dificuldade": "pleno",
+    "tempo_estimado": "35min"
+  },
+  {
+    "id": "OPS-014",
+    "titulo": "Arquivo de conciliação truncado a cada execução",
+    "ferramenta": "SDSF / JCL",
+    "categoria": "operação",
+    "severidade": "media",
+    "descricao": "O ARQ.CONCIL.SEQ mostra apenas a execução mais recente. O DISP=OLD está sobrescrevendo em vez de fazer append (MOD).",
+    "dificuldade": "junior",
+    "tempo_estimado": "20min"
+  },
+  {
+    "id": "CHG-006",
+    "titulo": "Housekeeping rodou fora da janela e apagou trilha",
+    "ferramenta": "SDSF / JCL / scheduler",
+    "categoria": "change",
+    "severidade": "alta",
+    "descricao": "EBJHKAUD disparou no meio da cadeia, arquivando parcialmente e recriando a auditoria vazia. Os logs do dia foram perdidos.",
+    "dificuldade": "pleno",
+    "tempo_estimado": "45min"
+  },
+  {
+    "id": "DEV-022",
+    "titulo": "Implementar Banker's Rounding no COBOL",
+    "ferramenta": "COBOL",
+    "categoria": "desenvolvimento",
+    "severidade": "media",
+    "descricao": "Substituir a diretiva ROUNDED nativa por uma rotina matemática manual que arredonde 0.5 para o dígito par mais próximo.",
+    "dificuldade": "pleno",
+    "tempo_estimado": "90min"
+  },
+  {
+    "id": "INV-009",
+    "titulo": "Investigar Loop Infinito ou Variável Corrompida",
+    "ferramenta": "SDSF / Listing",
+    "categoria": "investigação",
+    "severidade": "alta",
+    "descricao": "O programa está tendo um comportamento imprevisível de compilação ou loop. Investigar variáveis na Working-Storage.",
+    "inj": "INJ-RAND-01",
+    "dificuldade": "pleno",
+    "tempo_estimado": "60min"
+  }
+]
