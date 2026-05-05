@@ -113,16 +113,16 @@ def save_state(proj, state):
         json.dump(state, f, indent=2, ensure_ascii=False)
 
 # ═════════════════════════════════════════════════════════════
-# CATÁLOGO DE TEMPLATES (67)
+# CATÁLOGO DE TEMPLATES (67 Nativos)
 # ═════════════════════════════════════════════════════════════
 TEMPLATES = [
-# ── INCIDENTES ──
 {"id":"INC-001","t":"Abend S0C7 em EBPOST01","cat":"incidente","sev":"alta","dif":"pleno","tmp":"45min","fer":"Abendaid / SDSF","desc":"Job EBJPOST abendou com S0C7. Spool mostra offset 0003A2 no EBPOST01.","tags":["abend","S0C7","COBOL"],"inj":"INJ-005"},
 {"id":"INC-002","t":"RC=08 em EBJVALD — rejeição acima de 30%","cat":"incidente","sev":"media","dif":"junior","tmp":"30min","fer":"SDSF / File Manager","desc":"EBJVALD terminou RC=08. 47% de rejeição. Taxa normal é abaixo de 5%.","tags":["validação","RC","massa"],"inj":"INJ-001"},
 {"id":"INC-003","t":"Arquivo de entrada ausente — cadeia bloqueada","cat":"incidente","sev":"critica","dif":"junior","tmp":"20min","fer":"Zowe CLI / TSO","desc":"EBJLOAD falhou. ARQ.ENTRADA.SEQ não existe. Cadeia bloqueada.","tags":["arquivo","bloqueio","cadeia"],"inj":"INJ-019"},
 {"id":"INC-004","t":"Conciliação divergente — R$ 150,00","cat":"incidente","sev":"alta","dif":"pleno","tmp":"60min","fer":"SDSF / File Manager","desc":"EBJCONC detectou divergência de R$ 150,00. EBJEOD bloqueado.","tags":["conciliação","saldo","fechamento"],"inj":"INJ-005"},
 {"id":"INC-005","t":"FILE STATUS 35 ao abrir ARQ.CONTA.KSDS","cat":"incidente","sev":"alta","dif":"junior","tmp":"25min","fer":"IDCAMS / Zowe CLI","desc":"EBPOST01 retornou FILE STATUS 35. VSAM não catalogado.","tags":["VSAM","FILE STATUS","IDCAMS"],"inj":"INJ-028"},
-{"id":"INC-006","t":"Job EBJSNAP em HOLD","cat":"incidente","sev":"media","dif":"junior","tmp":"15min","fer":"SDSF / Zowe Explorer","desc":"EBJSNAP em HOLD. Snapshot de saldo não rodou, EBJCUTE/EBJCONC ficaram presos.","tags":["HOLD","scheduler","SDSF"],"inj":"INJ-020"},{"id":"INC-007","t":"Layout divergente — TIPO-LANCTO errado","cat":"incidente","sev":"media","dif":"pleno","tmp":"40min","fer":"File Manager / Notepad++","desc":"Copybook CPLCT001 alterado mas massa não ajustada. Campos deslocados.","tags":["layout","copybook","compilação"],"inj":"INJ-015"},
+{"id":"INC-006","t":"Job EBJSNAP em HOLD","cat":"incidente","sev":"media","dif":"junior","tmp":"15min","fer":"SDSF / Zowe Explorer","desc":"EBJSNAP em HOLD. Snapshot de saldo não rodou, EBJCUTE/EBJCONC ficaram presos.","tags":["HOLD","scheduler","SDSF"],"inj":"INJ-020"},
+{"id":"INC-007","t":"Layout divergente — TIPO-LANCTO errado","cat":"incidente","sev":"media","dif":"pleno","tmp":"40min","fer":"File Manager / Notepad++","desc":"Copybook CPLCT001 alterado mas massa não ajustada. Campos deslocados.","tags":["layout","copybook","compilação"],"inj":"INJ-015"},
 {"id":"INC-008","t":"Abend S806 — módulo não na LOADLIB","cat":"incidente","sev":"alta","dif":"junior","tmp":"20min","fer":"SDSF / JCL","desc":"EBJPOST abendou S806-04. Módulo não encontrado na LOADLIB.","tags":["S806","LOADLIB","link-edit"],"inj":"INJ-007"},
 {"id":"INC-009","t":"Saldo negativo em conta corrente","cat":"incidente","sev":"critica","dif":"pleno","tmp":"50min","fer":"File Manager / COBOL","desc":"Conta com -R$ 2.300,00. Regra não permite saldo negativo em CC.","tags":["saldo","regra de negócio","estorno"],"inj":"INJ-005"},
 {"id":"INC-010","t":"GDG sem nova geração","cat":"incidente","sev":"media","dif":"junior","tmp":"25min","fer":"IDCAMS / JCL","desc":"EBJEXTR RC=00 mas GDG não criou geração. Limite atingido?","tags":["GDG","IDCAMS","extrato"]},
@@ -140,8 +140,6 @@ TEMPLATES = [
  "sintoma":"Job submetido fica em HOLD no SDSF. EBJCUTE e EBJCONC nunca rodam porque SALDO.GDG não ganhou geração nova.",
  "dica":"Verifique o cartão JOB do JCL. Procure por TYPRUN=HOLD."},{"id":"INC-021","t":"SQLCODE -811 — SELECT INTO múltiplas linhas","cat":"incidente","sev":"media","dif":"junior","tmp":"25min","fer":"DB2 / SPUFI","desc":"SELECT INTO retornou mais de um registro. Duplicidade?","tags":["DB2","-811","SELECT INTO"]},
 {"id":"INC-022","t":"Encoding corrompido após upload","cat":"incidente","sev":"media","dif":"junior","tmp":"25min","fer":"Zowe CLI / iconv","desc":"Caracteres acentuados corrompidos. EBCDIC vs UTF-8.","tags":["encoding","EBCDIC","Zowe CLI"],"inj":"INJ-024"},
-
-# ── DESENVOLVIMENTO ──
 {"id":"DEV-001","t":"Incluir CPF no copybook CPCLI001","cat":"desenvolvimento","sev":"media","dif":"pleno","tmp":"90min","fer":"Changeman / VS Code","desc":"Incluir CPF PIC 9(11). Avaliar impacto em todos os programas.","tags":["copybook","análise de impacto"],"inj":"INJ-015"},
 {"id":"DEV-002","t":"Validação de DV módulo 11","cat":"desenvolvimento","sev":"baixa","dif":"junior","tmp":"45min","fer":"COBOL","desc":"Implementar DV no EBVALI01. Contas com DV inválido rejeitadas.","tags":["COBOL","validação","módulo 11"]},
 {"id":"DEV-003","t":"Novo tipo de lançamento: TED","cat":"desenvolvimento","sev":"media","dif":"pleno","tmp":"120min","fer":"COBOL / JCL","desc":"Adicionar tipo 'T' (TED). Valor R$1-R$10M, horário 06-17h.","tags":["TED","regra de negócio"]},
@@ -163,8 +161,6 @@ TEMPLATES = [
 {"id":"DEV-019","t":"GDG para rejeitos com histórico","cat":"desenvolvimento","sev":"baixa","dif":"junior","tmp":"35min","fer":"IDCAMS / JCL","desc":"Trocar SEQ por GDG. Histórico de 7 dias de rejeitos.","tags":["GDG","rejeitos","IDCAMS"]},
 {"id":"DEV-020","t":"Smoke test EBSMKH01","cat":"desenvolvimento","sev":"media","dif":"junior","tmp":"50min","fer":"COBOL / JCL","desc":"Abre VSAM, verifica FILE STATUS, conta registros, retorna RC.","tags":["smoke test","healthcheck"]},
 {"id":"DEV-021","t":"Documentar integração Pix × batch","cat":"desenvolvimento","sev":"media","dif":"pleno","tmp":"75min","fer":"Documentação","desc":"Arquitetura: SPI/BACEN → mainframe → cadeia batch.","tags":["Pix","SPI","arquitetura"]},
-
-# ── OPERAÇÃO ──
 {"id":"OPS-001","t":"Reprocessar rejeitos do dia anterior","cat":"operação","sev":"media","dif":"junior","tmp":"35min","fer":"JCL / Zowe CLI","desc":"12 registros corrigidos. Preparar massa e executar EBJREPR.","tags":["reprocessamento","rejeitos"]},
 {"id":"OPS-002","t":"Verificar spool RC=04 do EBJCONC","cat":"operação","sev":"baixa","dif":"junior","tmp":"20min","fer":"SDSF","desc":"RC=04 — warning aceitável ou requer ação?","tags":["spool","RC","decisão"]},
 {"id":"OPS-003","t":"Backup pré-carga especial com REPRO","cat":"operação","sev":"media","dif":"junior","tmp":"30min","fer":"IDCAMS","desc":"500 novas contas fora da janela. Backup antes de executar.","tags":["backup","REPRO","carga especial"]},
@@ -176,18 +172,14 @@ TEMPLATES = [
 {"id":"OPS-009","t":"Documento de SLA da cadeia batch","cat":"operação","sev":"baixa","dif":"pleno","tmp":"40min","fer":"Documentação","desc":"SLA por job: horário, duração máxima, RC aceitável.","tags":["SLA","ITIL","operação"]},
 {"id":"OPS-010","t":"Contingência para falha total da cadeia","cat":"operação","sev":"media","dif":"pleno","tmp":"50min","fer":"Runbook","desc":"Runbook de contingência: escalação, opções, comunicação.","tags":["contingência","escalação","risco"]},
 {"id":"OPS-011","t":"Configurar Zowe profiles por ambiente","cat":"operação","sev":"baixa","dif":"junior","tmp":"20min","fer":"Zowe CLI","desc":"Profiles separados para DEV, HML, PRD.","tags":["Zowe CLI","profiles","ambientes"]},
-
-# ── CHANGE ──
 {"id":"CHG-001","t":"Promover EBPOST01 DEV → HML","cat":"change","sev":"media","dif":"pleno","tmp":"45min","fer":"Changeman / Git","desc":"Compilar em HML, teste de regressão, aprovação.","tags":["promoção","Changeman","Git"],"inj":"INJ-007"},
 {"id":"CHG-002","t":"Rollback de EBVALI01 — versão com bug","cat":"change","sev":"critica","dif":"pleno","tmp":"40min","fer":"Git / LOADLIB","desc":"Versão em HML rejeita créditos válidos. Rollback urgente.","tags":["rollback","emergência","Git"],"inj":"INJ-001"},
 {"id":"CHG-003","t":"Análise de impacto — CPCNT001","cat":"change","sev":"media","dif":"pleno","tmp":"30min","fer":"VS Code / grep","desc":"Mapear todos os programas e JCLs impactados por alteração.","tags":["análise de impacto","copybook"],"inj":"INJ-015"},
 {"id":"CHG-004","t":"Fluxo de promoção DEV→HML→PRD com Git","cat":"change","sev":"media","dif":"pleno","tmp":"60min","fer":"Git / Zowe CLI","desc":"Documentar e implementar fluxo completo com branches e tags.","tags":["promoção","Git","DEV-HML-PRD"]},
 {"id":"CHG-005","t":"Teste de regressão após alteração","cat":"change","sev":"media","dif":"pleno","tmp":"60min","fer":"JCL / SDSF","desc":"Verificar que alteração não quebrou cenários existentes.","tags":["regressão","teste","baseline"],"inj":"INJ-032"},
-
-# ── INVESTIGAÇÃO ──
 {"id":"INV-001","t":"Comparar VSAM antes/depois do EBJPOST","cat":"investigação","sev":"baixa","dif":"junior","tmp":"25min","fer":"File Manager / REPRO","desc":"Exportar ARQ.SALDO.KSDS antes e depois. Comparar diferenças.","tags":["comparação","VSAM","validação"]},
 {"id":"INV-002","t":"Analisar dump S0C7 com offset no listing","cat":"investigação","sev":"media","dif":"pleno","tmp":"40min","fer":"Abendaid / Listing","desc":"Cruzar offset 0003A2 com listing para achar instrução COBOL.","tags":["dump","offset","S0C7"],"inj":"INJ-021"},
-{"id":"INV-003","t":"Integridade pós-reprocessamento","cat":"investigação","sev":"media","dif":"pleno","tmp":"35min","fer":"File Manager / IDCAMS","desc":"Verificar: sem duplicidade, saldos ok, auditoria, conciliação.","tags":["integridade","reprocessamento"],"inj":"INJ-003"},
+{"id":"INV-003","t":"Integridade pós-reprocessamento","cat":"investigação","sev":"media","dif":"pleno","tmp":"35min","fer":"File Manager / IDCAMS","desc":"Verificar: sem duplicidade, saldos ok, auditoria, conciliação.","tags":["integridade","reprocessamento"],"inj":"INJ-029"},
 {"id":"INV-004","t":"Mapear FILE STATUS dos programas","cat":"investigação","sev":"baixa","dif":"junior","tmp":"35min","fer":"COBOL / grep","desc":"Quais programas tratam quais FILE STATUS? Quais lacunas?","tags":["FILE STATUS","qualidade","análise"],"inj":"INJ-003"},
 {"id":"INV-005","t":"Analisar warnings de compilação COBOL","cat":"investigação","sev":"baixa","dif":"junior","tmp":"40min","fer":"SDSF / Compilador","desc":"Listar IGYW* e classificar: aceitável, atenção, risco.","tags":["compilação","warnings","qualidade"]},
 {"id":"INV-006","t":"Rastrear lançamento end-to-end","cat":"investigação","sev":"media","dif":"pleno","tmp":"50min","fer":"File Manager / VSAM","desc":"Trilha completa: entrada → validação → saldo → extrato → auditoria.","tags":["rastreabilidade","auditoria","BACEN"],"inj":"INJ-014"},
@@ -196,145 +188,52 @@ TEMPLATES = [
 ]
 
 # ═════════════════════════════════════════════════════════════
-# CATÁLOGO DE INJEÇÕES (18)
+# CATÁLOGO DE INJEÇÕES - TODOS OS CASOS (Originais, Reais e Aleatórios)
 # ═════════════════════════════════════════════════════════════
 INJECTIONS = [
-{"id":"INJ-001","t":"EBVALI01 rejeita créditos válidos","cat":"cobol","dif":"junior","tmp":"20min","arqs":["EBVALI01.cbl"],
- "desc":"Validação de tipo alterada: aceita apenas 'D', rejeitando 'C'.",
- "sintoma":"Todos os créditos vão para REJEITO com motivo TIPO INVALIDO.",
- "dica":"Analise o EVALUATE/IF de tipo no parágrafo 2100-VALIDAR-REGISTRO."},
-{"id":"INJ-002","t":"EBVALI01 aceita valor zero","cat":"cobol","dif":"junior","tmp":"15min","arqs":["EBVALI01.cbl"],
- "desc":"Operador de comparação de valor alterado: zero passa como válido.",
- "sintoma":"Registros com valor R$0,00 passam na validação e chegam ao EBJPOST.",
- "dica":"Verifique o operador de comparação (<= vs <) na regra de valor."},
-{"id":"INJ-003","t":"EBVALI01 sem FILE STATUS no OPEN","cat":"cobol","dif":"pleno","tmp":"30min","arqs":["EBVALI01.cbl"],
- "desc":"Verificações de FILE STATUS após OPEN removidas.",
- "sintoma":"Se um dataset estiver ausente, o programa não detecta e pode abender depois.",
- "dica":"Compare o parágrafo 1000-ABRIR-ARQUIVOS com o que deveria ter."},
-{"id":"INJ-004","t":"EBVALI01 para no primeiro erro","cat":"cobol","dif":"pleno","tmp":"25min","arqs":["EBVALI01.cbl"],
- "desc":"GO TO inserido após primeiro erro. Não acumula múltiplos motivos.",
- "sintoma":"Rejeitos mostram apenas um motivo, mesmo com múltiplos erros.",
- "dica":"Procure um GO TO no meio do 2100-VALIDAR-REGISTRO."},
-{"id":"INJ-005","t":"EBPOST01 inverte crédito e débito","cat":"cobol","dif":"pleno","tmp":"35min","arqs":["EBPOST01.cbl"],
- "desc":"Créditos subtraem do saldo e débitos somam. Lógica invertida.",
- "sintoma":"Saldos inconsistentes. Crédito reduz saldo. Conciliação diverge.",
- "dica":"Verifique o IF que testa tipo C/D antes do ADD/SUBTRACT."},
-{"id":"INJ-006","t":"EBPOST01 com DDNAME errado","cat":"cobol","dif":"junior","tmp":"15min","arqs":["EBPOST01.cbl"],
- "desc":"ASSIGN TO do arquivo de auditoria trocado de AUDIT para AUDITLOG.",
- "sintoma":"FILE STATUS 35 ou abend ao abrir auditoria. DDNAME não corresponde ao JCL.",
- "dica":"Compare o ASSIGN TO do SELECT AUDIT-OUT com o DD no EBJPOST.jcl."},
-{"id":"INJ-007","t":"EBJVALD STEPLIB apontando para HML","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJVALD.jcl"],
- "desc":"STEPLIB trocada de DEV.LOADLIB para HML.LOADLIB.",
- "sintoma":"S806-04 se o módulo não existir em HML.",
- "dica":"Verifique o DD STEPLIB — qual ambiente está apontando?"},
-{"id":"INJ-008","t":"EBJPOST DISP=SHR no AUDIT (deveria ser MOD)","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJPOST.jcl"],
- "desc":"DISP do DD AUDIT trocado de MOD para SHR.",
- "sintoma":"Registros de auditoria podem sobrescrever em vez de acrescentar.",
- "dica":"Verifique DISP do DD AUDIT — para append deve ser MOD, não SHR."},
-{"id":"INJ-009","t":"EBJVALD sem DD REJEITOS","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJVALD.jcl"],
- "desc":"DD REJEITOS removido do JCL.",
- "sintoma":"FILE STATUS 35 ao tentar abrir arquivo de rejeitos.",
- "dica":"Compare os DDNAMEs do JCL com os SELECT do EBVALI01 (ENTRADA, VALIDOS, REJEITOS)."},
-{"id":"INJ-010","t":"EBJPOST dataset errado no MOVTIN","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJPOST.jcl"],
- "desc":"Nome do dataset trocado: ARQ.LANCAMENTO.ESDS em vez de ARQ.LANCTO.ESDS.",
- "sintoma":"IEF212I — dataset não encontrado. Job falha na alocação.",
- "dica":"Verifique o nome do dataset no DD MOVTIN e compare com o mapa de datasets."},
-{"id":"INJ-011","t":"Massa com letras no campo valor","cat":"massa","dif":"junior","tmp":"15min","arqs":["lancamentos_d0.txt"],
- "desc":"Registros 2 e 5 com 'ABC' no campo de valor.",
- "sintoma":"IS NUMERIC falha → rejeição com VALOR INVALIDO (ou S0C7 se não tratar).",
- "dica":"Examine as posições 22-34 (campo valor) de cada registro."},
-{"id":"INJ-012","t":"Massa com tipo 'X' inválido","cat":"massa","dif":"junior","tmp":"10min","arqs":["lancamentos_d0.txt"],
- "desc":"Registros 3 e 7 com tipo 'X' em vez de 'C' ou 'D'.",
- "sintoma":"Rejeição com motivo TIPO INVALIDO.",
- "dica":"Verifique a posição 21 (campo tipo) de cada registro."},
-{"id":"INJ-013","t":"Massa com registros truncados","cat":"massa","dif":"pleno","tmp":"20min","arqs":["lancamentos_d0.txt"],
- "desc":"Registros 4 e 8 truncados para 80 bytes (deveriam ser 120).",
- "sintoma":"Campos deslocados ou faltando. Rejeição massiva ou abend.",
- "dica":"Verifique tamanho de cada registro. RECORD CONTAINS 120 CHARACTERS."},
-{"id":"INJ-014","t":"Massa com conta inexistente","cat":"massa","dif":"junior","tmp":"15min","arqs":["lancamentos_d0.txt"],
- "desc":"Registros 1 e 6 com conta 99999999 (não existe no KSDS).",
- "sintoma":"Rejeição no EBPOST01 — FILE STATUS 23 (not found) no READ do VSAM.",
- "dica":"Compare contas da massa com contas carregadas pelo EBCLLOAD."},
-{"id":"INJ-015","t":"Copybook CPLCT001 deslocado","cat":"copybook","dif":"pleno","tmp":"30min","arqs":["CPLCT001.cpy"],
- "desc":"LCT-TIPO mudou de PIC X(01) para PIC X(02) sem ajustar FILLER. Tudo desloca.",
- "sintoma":"Campos interpretados incorretamente. Valor vira histórico, data fica lixo.",
- "dica":"Some os tamanhos dos campos no copybook. Deve dar 120. Está dando 121."},
-{"id":"INJ-016","t":"Copybook CPCNT001 sem sinal no saldo","cat":"copybook","dif":"pleno","tmp":"35min","arqs":["CPCNT001.cpy"],
- "desc":"PIC S9(13)V99 virou PIC 9(13)V99 — sem sinal. Débitos não subtraem.",
- "sintoma":"Saldos incorretos. Conciliação diverge. Valores absurdos após débitos.",
- "dica":"Verifique definição do campo de saldo no CPCNT001. Campos monetários precisam de S."},
-{"id":"INJ-017","t":"COMBO: bug validação + massa corrompida","cat":"combinado","dif":"pleno","tmp":"45min","arqs":["EBVALI01.cbl","lancamentos_d0.txt"],
- "desc":"Dois problemas: EBVALI01 rejeita créditos E massa tem valores com letras.",
- "sintoma":"Rejeição massiva. Parte é bug do programa, parte é massa ruim. Separe as causas.",
- "dica":"Analise os motivos de rejeição: TIPO INVALIDO (bug) vs VALOR INVALIDO (massa)."},
-{"id":"INJ-018","t":"COMBO: JCL errado + copybook deslocado","cat":"combinado","dif":"pleno","tmp":"50min","arqs":["EBJVALD.jcl","CPLCT001.cpy"],
- "desc":"STEPLIB errada E campo deslocado no copybook. Dois problemas em camadas.",
- "sintoma":"Primeiro: S806. Após corrigir: campos errados. Precisa resolver em duas etapas.",
- "dica":"Resolva na ordem: primeiro JCL (STEPLIB), depois copybook (soma dos campos)."},
-{"id":"INJ-019","t":"Arquivo de entrada renomeado — ausente","cat":"massa","dif":"junior","tmp":"10min","arqs":["lancamentos_d0.txt"],
- "desc":"Arquivo lancamentos_d0.txt renomeado para lancamentos_d0.bak. Upload não encontra o original.",
- "sintoma":"Arquivo de entrada não existe para upload. EBJLOAD/EBJVALD falha.",
- "dica":"Liste os arquivos do diretório. O arquivo foi renomeado, não deletado."},
-{"id":"INJ-020","t":"EBJSALD com TYPRUN=HOLD","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJSALD.jcl"],
- "desc":"TYPRUN=HOLD adicionado ao cartão JOB do EBJSALD. Job não executa automaticamente.",
- "sintoma":"Job é submetido mas fica em HOLD. Não aparece como executado no SDSF.",
- "dica":"Verifique o cartão JOB no JCL. Procure por TYPRUN=HOLD."},
-{"id":"INJ-021","t":"EBPOST01 sem IS NUMERIC antes de comparação","cat":"cobol","dif":"pleno","tmp":"30min","arqs":["EBPOST01.cbl"],
- "desc":"Checagem IS NUMERIC removida antes da comparação de valor no EBPOST01. Dado sujo causa S0C7.",
- "sintoma":"Se a massa tiver valor não-numérico, o programa abenda com S0C7 no MOVE ou COMPUTE.",
- "dica":"Procure onde MV-VALOR é comparado ou movido. A checagem IS NUMERIC deveria existir antes."},
-{"id":"INJ-022","t":"EBJPOST com REGION=1K — insuficiente","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJPOST.jcl"],
- "desc":"REGION=1K adicionado ao JCL do EBJPOST. Memória insuficiente para o programa.",
- "sintoma":"Abend S878 — REGION insuficiente.",
- "dica":"Verifique o cartão JOB ou EXEC no JCL. REGION muito baixo."},
-{"id":"INJ-023","t":"EBPOST01 — ACCEPT com PIC errado","cat":"cobol","dif":"junior","tmp":"20min","arqs":["EBPOST01.cbl"],
- "desc":"Campo de data para auditoria trocado de PIC 9(8) para PIC X(8). ACCEPT FROM DATE grava lixo.",
- "sintoma":"Registros de auditoria com data/hora ilegíveis ou zeradas.",
- "dica":"Verifique a definição dos campos WS-DATA e WS-HORA na WORKING-STORAGE."},
-{"id":"INJ-024","t":"Massa com caracteres UTF-8 no histórico","cat":"massa","dif":"junior","tmp":"15min","arqs":["lancamentos_d0.txt"],
- "desc":"Campo de histórico de alguns registros contém acentos UTF-8 (ã, é, ç). Em EBCDIC, isso corrompe.",
- "sintoma":"Campos desalinhados ou lixo no histórico após upload para z/OS.",
- "dica":"Examine o campo de histórico (posições 34-63) nos registros alterados."},
-{"id":"INJ-025","t":"EBJCONC com dataset errado no MOVTIN","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJCONC.jcl"],
- "desc":"DD MOVTIN no EBJCONC aponta para ARQ.ENTRADA.SEQ em vez de ARQ.LANCTO.ESDS.",
- "sintoma":"EBJCONC lê arquivo errado. Conciliação diverge completamente.",
- "dica":"Compare o DD MOVTIN com o mapa de datasets. EBJCONC lê lançamentos aprovados, não entrada bruta."},
-{"id":"INJ-026","t":"EBJSNAP sem DD SNAPOUT","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJSNAP.jcl"],
- "desc":"DD SNAPOUT removido do EBJSNAP. Programa EBSNAP01 não tem onde gravar a geração nova do SALDO.GDG.",
- "sintoma":"FILE STATUS 35 ao abrir saída. Snapshot não é criado. EBJCONC vai divergir na seção S3 por falta de SALDO.GDG(+1).",
- "dica":"Compare os DDNAMEs do JCL com os SELECT do EBSNAP01 (CONTA, SNAPOUT)."},
-{"id":"INJ-027","t":"Seed de contas com saldo inicial corrompido","cat":"massa","dif":"pleno","tmp":"25min","arqs":["contas.txt"],
- "desc":"Campo de saldo inicial em contas.txt alterado com letras. Carga inicial grava lixo no VSAM.",
- "sintoma":"EBCLLOAD carrega, mas saldos ficam inconsistentes. EBPOST01 e EBCONC01 divergem.",
- "dica":"Examine o campo de saldo no contas.txt e compare com o layout do CPCNT001."},
-{"id":"INJ-028","t":"EBJPOST sem DD CLIENTE","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJPOST.jcl"],
- "desc":"DD CLIENTE removido do EBJPOST. Programa não consegue acessar cadastro de clientes.",
- "sintoma":"FILE STATUS 35 ao abrir ARQ.CLIENTE.KSDS. Programa abenda ou rejeita tudo.",
- "dica":"Compare os DDNAMEs do JCL com os SELECT do EBPOST01."},
-{"id":"INJ-029","t":"EBPOST01 sem REWRITE — saldo nunca persiste","cat":"cobol","dif":"pleno","tmp":"35min","arqs":["EBPOST01.cbl"],
- "desc":"REWRITE CONTA-REG removido do EBPOST01. O programa calcula o novo saldo mas não grava de volta.",
- "sintoma":"EBJPOST executa RC=00, mas saldos no VSAM permanecem inalterados. Conciliação diverge.",
- "dica":"Procure o parágrafo 2200-ATUALIZAR-SALDO. O REWRITE deveria estar logo após o EVALUATE."},
-{"id":"INJ-030","t":"EBJCLLD com DDNAMEs trocados (cliente↔conta)","cat":"jcl","dif":"pleno","tmp":"25min","arqs":["EBJCLLD.jcl"],
- "desc":"DDs CLIENTIN e CONTAIN trocados. Programa lê contas como clientes e vice-versa.",
- "sintoma":"Carga aparentemente ok (RC=00) mas dados cruzados. Clientes no KSDS de contas.",
- "dica":"Compare CLIENTIN e CONTAIN no JCL com o que o EBCLLOAD espera de cada DD."},
-{"id":"INJ-031","t":"Massa toda de crédito — sem débitos","cat":"massa","dif":"junior","tmp":"15min","arqs":["lancamentos_d0.txt"],
- "desc":"Todos os registros do lancamentos_d0.txt foram alterados para tipo 'C'. Nenhum débito no dia.",
- "sintoma":"Saldos só crescem, nunca diminuem. Pode ser legítimo ou indicar falha no gerador de massa.",
- "dica":"Examine o campo de tipo (posição 21) de todos os registros. Todos são 'C'."},
-{"id":"INJ-032","t":"EBVALI01 sem IS NUMERIC na agência","cat":"cobol","dif":"pleno","tmp":"25min","arqs":["EBVALI01.cbl"],
- "desc":"Checagem IS NUMERIC removida da validação de agência. MOVE direto para campo numérico.",
- "sintoma":"Se massa tiver agência com letras, MOVE para WS-AGENCIA-NUM causa S0C7.",
- "dica":"Procure a Regra 2 (agência) no 2100-VALIDAR-REGISTRO. O IF IS NUMERIC deveria estar lá."},
-{"id":"INJ-033","t":"COMBO: arquivo ausente + JCL com HOLD","cat":"combinado","dif":"pleno","tmp":"35min","arqs":["lancamentos_d0.txt","EBJSNAP.jcl"],
- "desc":"Massa renomeada (não encontra para upload) E EBJSNAP com TYPRUN=HOLD. Dois bloqueios em pontos diferentes da cadeia.",
- "sintoma":"Primeiro: EBJWAIT não acha STAGE.ENTRADA.SEQ. Segundo: mesmo após resolver e a cadeia andar até EBJCUTF, EBJSNAP trava em HOLD e nunca gera SALDO.GDG(+1).",
- "dica":"Resolva na ordem: primeiro o arquivo (renomear de volta), depois o JCL (remover TYPRUN=HOLD)."},
-{"id":"INJ-034","t":"COMBO: sem REWRITE + seed corrompida","cat":"combinado","dif":"pleno","tmp":"50min","arqs":["EBPOST01.cbl","contas.txt"],
- "desc":"EBPOST01 sem REWRITE (saldo não persiste) E contas.txt com saldo corrompido.",
- "sintoma":"Mesmo corrigindo o REWRITE, a base já tem dados ruins. Precisa corrigir programa E seed.",
- "dica":"Resolva o REWRITE primeiro, depois investigue por que os saldos base estão errados."},
+{"id":"INJ-001","t":"EBVALI01 rejeita créditos válidos","cat":"cobol","dif":"junior","tmp":"20min","arqs":["EBVALI01.cbl"],"desc":"Validação de tipo alterada: aceita apenas 'D', rejeitando 'C'.","sintoma":"Todos os créditos vão para REJEITO com motivo TIPO INVALIDO.","dica":"Analise o EVALUATE/IF de tipo no parágrafo 2100-VALIDAR-REGISTRO."},
+{"id":"INJ-002","t":"EBVALI01 aceita valor zero","cat":"cobol","dif":"junior","tmp":"15min","arqs":["EBVALI01.cbl"],"desc":"Operador de comparação de valor alterado: zero passa como válido.","sintoma":"Registros com valor R$0,00 passam na validação e chegam ao EBJPOST.","dica":"Verifique o operador de comparação (<= vs <) na regra de valor."},
+{"id":"INJ-003","t":"EBVALI01 sem FILE STATUS no OPEN","cat":"cobol","dif":"pleno","tmp":"30min","arqs":["EBVALI01.cbl"],"desc":"Verificações de FILE STATUS após OPEN removidas.","sintoma":"Se um dataset estiver ausente, o programa não detecta e pode abender depois.","dica":"Compare o parágrafo 1000-ABRIR-ARQUIVOS com o que deveria ter."},
+{"id":"INJ-004","t":"EBVALI01 para no primeiro erro","cat":"cobol","dif":"pleno","tmp":"25min","arqs":["EBVALI01.cbl"],"desc":"GO TO inserido após primeiro erro. Não acumula múltiplos motivos.","sintoma":"Rejeitos mostram apenas um motivo, mesmo com múltiplos erros.","dica":"Procure um GO TO no meio do 2100-VALIDAR-REGISTRO."},
+{"id":"INJ-005","t":"EBPOST01 inverte crédito e débito","cat":"cobol","dif":"pleno","tmp":"35min","arqs":["EBPOST01.cbl"],"desc":"Créditos subtraem do saldo e débitos somam. Lógica invertida.","sintoma":"Saldos inconsistentes. Crédito reduz saldo. Conciliação diverge.","dica":"Verifique o IF que testa tipo C/D antes do ADD/SUBTRACT."},
+{"id":"INJ-006","t":"EBPOST01 com DDNAME errado","cat":"cobol","dif":"junior","tmp":"15min","arqs":["EBPOST01.cbl"],"desc":"ASSIGN TO do arquivo de auditoria trocado de AUDIT para AUDITLOG.","sintoma":"FILE STATUS 35 ou abend ao abrir auditoria. DDNAME não corresponde ao JCL.","dica":"Compare o ASSIGN TO do SELECT AUDIT-OUT com o DD no EBJPOST.jcl."},
+{"id":"INJ-007","t":"EBJVALD STEPLIB apontando para HML","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJVALD.jcl"],"desc":"STEPLIB trocada de DEV.LOADLIB para HML.LOADLIB.","sintoma":"S806-04 se o módulo não existir em HML.","dica":"Verifique o DD STEPLIB — qual ambiente está apontando?"},
+{"id":"INJ-008","t":"EBJPOST DISP=SHR no AUDIT (deveria ser MOD)","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJPOST.jcl"],"desc":"DISP do DD AUDIT trocado de MOD para SHR.","sintoma":"Registros de auditoria podem sobrescrever em vez de acrescentar.","dica":"Verifique DISP do DD AUDIT — para append deve ser MOD, não SHR."},
+{"id":"INJ-009","t":"EBJVALD sem DD REJEITOS","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJVALD.jcl"],"desc":"DD REJEITOS removido do JCL.","sintoma":"FILE STATUS 35 ao tentar abrir arquivo de rejeitos.","dica":"Compare os DDNAMEs do JCL com os SELECT do EBVALI01."},
+{"id":"INJ-010","t":"EBJPOST dataset errado no MOVTIN","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJPOST.jcl"],"desc":"Nome do dataset trocado: ARQ.LANCAMENTO.ESDS em vez de ARQ.LANCTO.ESDS.","sintoma":"IEF212I — dataset não encontrado. Job falha na alocação.","dica":"Verifique o nome do dataset no DD MOVTIN e compare com o mapa de datasets."},
+{"id":"INJ-011","t":"Massa com letras no campo valor","cat":"massa","dif":"junior","tmp":"15min","arqs":["lancamentos_d0.txt"],"desc":"Registros 2 e 5 com 'ABC' no campo de valor.","sintoma":"IS NUMERIC falha → rejeição com VALOR INVALIDO (ou S0C7 se não tratar).","dica":"Examine as posições 22-34 (campo valor) de cada registro."},
+{"id":"INJ-012","t":"Massa com tipo 'X' inválido","cat":"massa","dif":"junior","tmp":"10min","arqs":["lancamentos_d0.txt"],"desc":"Registros 3 e 7 com tipo 'X' em vez de 'C' ou 'D'.","sintoma":"Rejeição com motivo TIPO INVALIDO.","dica":"Verifique a posição 21 (campo tipo) de cada registro."},
+{"id":"INJ-013","t":"Massa com registros truncados","cat":"massa","dif":"pleno","tmp":"20min","arqs":["lancamentos_d0.txt"],"desc":"Registros 4 e 8 truncados para 80 bytes (deveriam ser 120).","sintoma":"Campos deslocados ou faltando. Rejeição massiva ou abend.","dica":"Verifique tamanho de cada registro. RECORD CONTAINS 120 CHARACTERS."},
+{"id":"INJ-014","t":"Massa com conta inexistente","cat":"massa","dif":"junior","tmp":"15min","arqs":["lancamentos_d0.txt"],"desc":"Registros 1 e 6 com conta 99999999 (não existe no KSDS).","sintoma":"Rejeição no EBPOST01 — FILE STATUS 23 (not found) no READ do VSAM.","dica":"Compare contas da massa com contas carregadas pelo EBCLLOAD."},
+{"id":"INJ-015","t":"Copybook CPLCT001 deslocado","cat":"copybook","dif":"pleno","tmp":"30min","arqs":["CPLCT001.cpy"],"desc":"LCT-TIPO mudou de PIC X(01) para PIC X(02) sem ajustar FILLER. Tudo desloca.","sintoma":"Campos interpretados incorretamente. Valor vira histórico, data fica lixo.","dica":"Some os tamanhos dos campos no copybook. Deve dar 120. Está dando 121."},
+{"id":"INJ-016","t":"Copybook CPCNT001 sem sinal no saldo","cat":"copybook","dif":"pleno","tmp":"35min","arqs":["CPCNT001.cpy"],"desc":"PIC S9(13)V99 virou PIC 9(13)V99 — sem sinal. Débitos não subtraem.","sintoma":"Saldos incorretos. Conciliação diverge. Valores absurdos após débitos.","dica":"Verifique definição do campo de saldo no CPCNT001. Campos monetários precisam de S."},
+{"id":"INJ-017","t":"COMBO: bug validação + massa corrompida","cat":"combinado","dif":"pleno","tmp":"45min","arqs":["EBVALI01.cbl","lancamentos_d0.txt"],"desc":"Dois problemas: EBVALI01 rejeita créditos E massa tem valores com letras.","sintoma":"Rejeição massiva. Parte é bug do programa, parte é massa ruim. Separe as causas.","dica":"Analise os motivos de rejeição: TIPO INVALIDO (bug) vs VALOR INVALIDO (massa)."},
+{"id":"INJ-018","t":"COMBO: JCL errado + copybook deslocado","cat":"combinado","dif":"pleno","tmp":"50min","arqs":["EBJVALD.jcl","CPLCT001.cpy"],"desc":"STEPLIB errada E campo deslocado no copybook. Dois problemas em camadas.","sintoma":"Primeiro: S806. Após corrigir: campos errados. Precisa resolver em duas etapas.","dica":"Resolva na ordem: primeiro JCL (STEPLIB), depois copybook (soma dos campos)."},
+{"id":"INJ-019","t":"Arquivo de entrada renomeado — ausente","cat":"massa","dif":"junior","tmp":"10min","arqs":["lancamentos_d0.txt"],"desc":"Arquivo lancamentos_d0.txt renomeado para lancamentos_d0.bak. Upload não encontra o original.","sintoma":"Arquivo de entrada não existe para upload. EBJLOAD/EBJVALD falha.","dica":"Liste os arquivos do diretório. O arquivo foi renomeado, não deletado."},
+{"id":"INJ-020","t":"EBJSALD com TYPRUN=HOLD","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJSALD.jcl"],"desc":"TYPRUN=HOLD adicionado ao cartão JOB do EBJSALD. Job não executa automaticamente.","sintoma":"Job é submetido mas fica em HOLD. Não aparece como executado no SDSF.","dica":"Verifique o cartão JOB no JCL. Procure por TYPRUN=HOLD."},
+{"id":"INJ-021","t":"EBPOST01 sem IS NUMERIC antes de comparação","cat":"cobol","dif":"pleno","tmp":"30min","arqs":["EBPOST01.cbl"],"desc":"Checagem IS NUMERIC removida antes da comparação de valor no EBPOST01. Dado sujo causa S0C7.","sintoma":"Se a massa tiver valor não-numérico, o programa abenda com S0C7 no MOVE ou COMPUTE.","dica":"Procure onde MV-VALOR é comparado ou movido. A checagem IS NUMERIC deveria existir antes."},
+{"id":"INJ-022","t":"EBJPOST com REGION=1K — insuficiente","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJPOST.jcl"],"desc":"REGION=1K adicionado ao JCL do EBJPOST. Memória insuficiente para o programa.","sintoma":"Abend S878 — REGION insuficiente.","dica":"Verifique o cartão JOB ou EXEC no JCL. REGION muito baixo."},
+{"id":"INJ-023","t":"EBPOST01 — ACCEPT com PIC errado","cat":"cobol","dif":"junior","tmp":"20min","arqs":["EBPOST01.cbl"],"desc":"Campo de data para auditoria trocado de PIC 9(8) para PIC X(8). ACCEPT FROM DATE grava lixo.","sintoma":"Registros de auditoria com data/hora ilegíveis ou zeradas.","dica":"Verifique a definição dos campos WS-DATA e WS-HORA na WORKING-STORAGE."},
+{"id":"INJ-024","t":"Massa com caracteres UTF-8 no histórico","cat":"massa","dif":"junior","tmp":"15min","arqs":["lancamentos_d0.txt"],"desc":"Campo de histórico de alguns registros contém acentos UTF-8 (ã, é, ç). Em EBCDIC, isso corrompe.","sintoma":"Campos desalinhados ou lixo no histórico após upload para z/OS.","dica":"Examine o campo de histórico (posições 34-63) nos registros alterados."},
+{"id":"INJ-025","t":"EBJCONC com dataset errado no MOVTIN","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJCONC.jcl"],"desc":"DD MOVTIN no EBJCONC aponta para ARQ.ENTRADA.SEQ em vez de ARQ.LANCTO.ESDS.","sintoma":"EBJCONC lê arquivo errado. Conciliação diverge completamente.","dica":"Compare o DD MOVTIN com o mapa de datasets. EBJCONC lê lançamentos aprovados, não entrada bruta."},
+{"id":"INJ-026","t":"EBJSNAP sem DD SNAPOUT","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJSNAP.jcl"],"desc":"DD SNAPOUT removido do EBJSNAP. Programa EBSNAP01 não tem onde gravar a geração nova do SALDO.GDG.","sintoma":"FILE STATUS 35 ao abrir saída. Snapshot não é criado. EBJCONC vai divergir na seção S3 por falta de SALDO.GDG(+1).","dica":"Compare os DDNAMEs do JCL com os SELECT do EBSNAP01 (CONTA, SNAPOUT)."},
+{"id":"INJ-027","t":"Seed de contas com saldo inicial corrompido","cat":"massa","dif":"pleno","tmp":"25min","arqs":["contas.txt"],"desc":"Campo de saldo inicial em contas.txt alterado com letras. Carga inicial grava lixo no VSAM.","sintoma":"EBCLLOAD carrega, mas saldos ficam inconsistentes. EBPOST01 e EBCONC01 divergem.","dica":"Examine o campo de saldo no contas.txt e compare com o layout do CPCNT001."},
+{"id":"INJ-028","t":"EBJPOST sem DD CLIENTE","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJPOST.jcl"],"desc":"DD CLIENTE removido do EBJPOST. Programa não consegue acessar cadastro de clientes.","sintoma":"FILE STATUS 35 ao abrir ARQ.CLIENTE.KSDS. Programa abenda ou rejeita tudo.","dica":"Compare os DDNAMEs do JCL com os SELECT do EBPOST01."},
+{"id":"INJ-029","t":"EBPOST01 sem REWRITE — saldo nunca persiste","cat":"cobol","dif":"pleno","tmp":"35min","arqs":["EBPOST01.cbl"],"desc":"REWRITE CONTA-REG removido do EBPOST01. O programa calcula o novo saldo mas não grava de volta.","sintoma":"EBJPOST executa RC=00, mas saldos no VSAM permanecem inalterados. Conciliação diverge.","dica":"Procure o parágrafo 2200-ATUALIZAR-SALDO. O REWRITE deveria estar logo após o EVALUATE."},
+{"id":"INJ-030","t":"EBJCLLD com DDNAMEs trocados (cliente↔conta)","cat":"jcl","dif":"pleno","tmp":"25min","arqs":["EBJCLLD.jcl"],"desc":"DDs CLIENTIN e CONTAIN trocados. Programa lê contas como clientes e vice-versa.","sintoma":"Carga aparentemente ok (RC=00) mas dados cruzados. Clientes no KSDS de contas.","dica":"Compare CLIENTIN e CONTAIN no JCL com o que o EBCLLOAD espera de cada DD."},
+{"id":"INJ-031","t":"Massa toda de crédito — sem débitos","cat":"massa","dif":"junior","tmp":"15min","arqs":["lancamentos_d0.txt"],"desc":"Todos os registros do lancamentos_d0.txt foram alterados para tipo 'C'. Nenhum débito no dia.","sintoma":"Saldos só crescem, nunca diminuem. Pode ser legítimo ou indicar falha no gerador de massa.","dica":"Examine o campo de tipo (posição 21) de todos os registros. Todos são 'C'."},
+{"id":"INJ-032","t":"EBVALI01 sem IS NUMERIC na agência","cat":"cobol","dif":"pleno","tmp":"25min","arqs":["EBVALI01.cbl"],"desc":"Checagem IS NUMERIC removida da validação de agência. MOVE direto para campo numérico.","sintoma":"Se massa tiver agência com letras, MOVE para WS-AGENCIA-NUM causa S0C7.","dica":"Procure a Regra 2 (agência) no 2100-VALIDAR-REGISTRO. O IF IS NUMERIC deveria estar lá."},
+{"id":"INJ-033","t":"COMBO: arquivo ausente + JCL com HOLD","cat":"combinado","dif":"pleno","tmp":"35min","arqs":["lancamentos_d0.txt","EBJSNAP.jcl"],"desc":"Massa renomeada (não encontra para upload) E EBJSNAP com TYPRUN=HOLD. Dois bloqueios em pontos diferentes da cadeia.","sintoma":"Primeiro: EBJWAIT não acha STAGE.ENTRADA.SEQ. Segundo: mesmo após resolver e a cadeia andar até EBJCUTF, EBJSNAP trava em HOLD e nunca gera SALDO.GDG(+1).","dica":"Resolva na ordem: primeiro o arquivo (renomear de volta), depois o JCL (remover TYPRUN=HOLD)."},
+{"id":"INJ-034","t":"COMBO: sem REWRITE + seed corrompida","cat":"combinado","dif":"pleno","tmp":"50min","arqs":["EBPOST01.cbl","contas.txt"],"desc":"EBPOST01 sem REWRITE (saldo não persiste) E contas.txt com saldo corrompido.","sintoma":"Mesmo corrigindo o REWRITE, a base já tem dados ruins. Precisa corrigir programa E seed.","dica":"Resolva o REWRITE primeiro, depois investigue por que os saldos base estão errados."},
+{"id":"INJ-042","t":"S0C7: Falha de Input Sanitization","cat":"cobol","dif":"pleno","tmp":"30min","arqs":["EBVALI01.cbl"],"desc":"Remove o guard IS NUMERIC antes de operações aritméticas. Dados externos com espaços causarão abend.","sintoma":"Job EBJVALD estoura com S0C7 (Data Exception) ao processar campos de valor com espaços.","dica":"Procure onde campos de arquivo externo são movidos para campos de cálculo sem validação prévia."},
+{"id":"INJ-043","t":"Saldo Zerado: CALL sem ON EXCEPTION","cat":"cobol","dif":"pleno","tmp":"45min","arqs":["EBPOST01.cbl"],"desc":"Remove o tratamento de erro em chamadas de subprogramas. Se o módulo falhar, o erro é ignorado.","sintoma":"Saldos aparecem zerados no extrato ou auditoria porque o subprograma de cálculo falhou e o chamador não percebeu.","dica":"Verifique a instrução CALL e a ausência da cláusula ON EXCEPTION."},
+{"id":"INJ-044","t":"Arredondamento Bancário Incorreto","cat":"cobol","dif":"pleno","tmp":"40min","arqs":["EBPOST01.cbl"],"desc":"Substitui o arredondamento manual pela cláusula ROUNDED padrão do COBOL (Half-up).","sintoma":"Divergência de centavos na conciliação no final do lote devido ao erro de acumulação de arredondamento.","dica":"O banco exige Banker's Rounding (arredondar para o par mais próximo), não o ROUNDED comum."},
+{"id":"INJ-045","t":"Inconsistência: INITIALIZE esquecido no Loop","cat":"cobol","dif":"junior","tmp":"25min","arqs":["EBVALI01.cbl"],"desc":"Comenta o INITIALIZE de acumuladores dentro do loop de leitura.","sintoma":"Registros processados com sucesso começam a somar valores do registro anterior. Erro intermitente.","dica":"Verifique se as variáveis de trabalho são limpas a cada iteração do READ."},
+{"id":"INJ-046","t":"File Status 35 Ignorado","cat":"cobol","dif":"pleno","tmp":"30min","arqs":["EBVALI01.cbl"],"desc":"O programa abre um arquivo, o status é 35 (não encontrado), mas o programa continua lendo 'nada'.","sintoma":"Job termina RC=00 mas não processa nenhum registro, pois o OPEN falhou silenciosamente.","dica":"Compare o parágrafo de OPEN com a tabela de códigos de erro de File Status."},
+{"id":"INJ-047","t":"S0C4: Subscript fora do OCCURS","cat":"cobol","dif":"pleno","tmp":"50min","arqs":["EBPOST01.cbl"],"desc":"Reduz o tamanho de uma tabela (OCCURS) interna para simular estouro de memória em produção.","sintoma":"Abend S0C4 (Protection Exception) ao tentar acessar um índice de conta inexistente na tabela.","dica":"Verifique se o contador do loop ultrapassa o limite definido na Working-Storage."},
+{"id":"INJ-051","t":"Mismatch de Atributos (Status 39)","cat":"jcl","dif":"pleno","tmp":"20min","arqs":["EBJPOST.jcl"],"desc":"Altera o LRECL no JCL para um valor diferente do definido na FD do COBOL.","sintoma":"O programa recusa a abertura do arquivo com FILE STATUS 39 logo no início.","dica":"Verifique se os atributos físicos definidos no IDCAMS/JCL batem com a SELECT/ASSIGN."},
+{"id":"INJ-053","t":"Falha Crítica de Fluxo JCL (COND)","cat":"jcl","dif":"junior","tmp":"15min","arqs":["EBJPOST.jcl"],"desc":"Remove o parâmetro COND do step de posting, permitindo que rode mesmo se a validação falhar.","sintoma":"Dados inválidos são postados no banco de dados porque o job de atualização ignorou o erro do job anterior.","dica":"Examine os códigos de retorno (RC) no SDSF e veja se o JCL respeitou a hierarquia."},
+{"id":"INJ-RAND-01","t":"Corrupção Aleatória de Variável","cat":"aleatorio","dif":"pleno","tmp":"?","arqs":["EBVALI01.cbl"],"desc":"Remove uma letra de uma variável de trabalho no meio da Procedure Division.","sintoma":"Erro de compilação estranho ou comportamento imprevisível em tempo de execução.","dica":"O compilador avisará que a variável não está definida, ou você verá um campo deslocado."}
 ]
 
 # Mapa de ID para injeção
@@ -399,16 +298,16 @@ def rev(name):
     return decorator
 
 # ═════════════════════════════════════════════════════════════
-# MUTAÇÕES CORRIGIDAS E APRIMORADAS (REGEX FLEXÍVEL)[cite: 2]
+# MUTAÇÕES CORRIGIDAS E APRIMORADAS (REGEX FLEXÍVEL)
 # ═════════════════════════════════════════════════════════════
 
 @mut("INJ-001")
 def _(d):
     p = os.path.join(d, "EBVALI01.cbl")
     s = _rf(p)
-    # Procura lógicas positivas (TIPO = C OR TIPO = D) e inverte para aceitar apenas D[cite: 2]
+    # Procura lógicas positivas (TIPO = C OR TIPO = D) e inverte para aceitar apenas D
     s = re.sub(r"(IF\s+[A-Za-z0-9\-]+TIPO\s*=\s*'C'\s+(?:OR|or)\s+(?:[A-Za-z0-9\-]+TIPO\s*=\s*)?'D')", r"IF EN-TIPO = 'D'      ", s, flags=re.IGNORECASE)
-    # Procura lógicas negativas (TIPO NOT = C AND TIPO NOT = D) e inverte para rejeitar apenas se não for D[cite: 2]
+    # Procura lógicas negativas (TIPO NOT = C AND TIPO NOT = D) e inverte para rejeitar apenas se não for D
     s = re.sub(r"(IF\s+[A-Za-z0-9\-]+TIPO\s+NOT\s*=\s*'C'\s+(?:AND|and)\s+[A-Za-z0-9\-]+TIPO\s+NOT\s*=\s*'D')", r"IF EN-TIPO NOT = 'D'          ", s, flags=re.IGNORECASE)
     _wf(p, s)
 
@@ -416,11 +315,11 @@ def _(d):
 def _(d):
     p = os.path.join(d, "EBVALI01.cbl")
     s = _rf(p)
-    # Substitui verificações de ZERO: GREATER THAN ZERO passa a incluir EQUAL TO ZERO[cite: 2]
+    # Substitui verificações de ZERO: GREATER THAN ZERO passa a incluir EQUAL TO ZERO
     s = re.sub(r"([A-Za-z0-9\-]+VALOR[A-Za-z0-9\-]*\s+)GREATER\s+THAN\s+ZERO", r"\1GREATER THAN OR EQUAL TO ZERO", s, flags=re.IGNORECASE)
-    # Substitui > ZERO por >= ZERO[cite: 2]
+    # Substitui > ZERO por >= ZERO
     s = re.sub(r"([A-Za-z0-9\-]+VALOR[A-Za-z0-9\-]*\s*)>\s*ZERO", r"\1>= ZERO", s, flags=re.IGNORECASE)
-    # Substitui <= ZERO por < ZERO[cite: 2]
+    # Substitui <= ZERO por < ZERO
     s = re.sub(r"([A-Za-z0-9\-]+VALOR[A-Za-z0-9\-]*\s*)<=\s*ZERO", r"\1< ZERO", s, flags=re.IGNORECASE)
     _wf(p, s)
 
@@ -428,11 +327,11 @@ def _(d):
 def _(d):
     p = os.path.join(d, "EBVALI01.cbl")
     s = _rf(p)
-    # Transforma em comentário qualquer PERFORM que pareça verificar o FILE STATUS[cite: 2]
+    # Transforma em comentário qualquer PERFORM que pareça verificar o FILE STATUS
     s = re.sub(r"(\n\s+PERFORM\s+[0-9A-Za-z\-]*STATUS[0-9A-Za-z\-]*)", r"\n      *    INJ-003 REMOVIDO: \1", s, flags=re.IGNORECASE)
     s = re.sub(r"(\n\s+PERFORM\s+[0-9A-Za-z\-]*FS[0-9A-Za-z\-]*)", r"\n      *    INJ-003 REMOVIDO: \1", s, flags=re.IGNORECASE)
     
-    # Fallback da lógica antiga (caso corresponda exatamente ao bloco original)[cite: 2]
+    # Fallback da lógica antiga
     old_block="""       1000-ABRIR-ARQUIVOS.
            OPEN INPUT  ENTRADA-IN
                 OUTPUT VALIDOS-OUT
@@ -457,10 +356,10 @@ def _(d):
 def _(d):
     p = os.path.join(d, "EBVALI01.cbl")
     s = _rf(p)
-    # Adiciona um GO TO logo após a rotina que acumula o motivo de rejeição, abortando a validação[cite: 2]
+    # Adiciona um GO TO logo após a rotina que acumula o motivo de rejeição, abortando a validação
     s = re.sub(r"(\s+PERFORM\s+[A-Za-z0-9\-]*ACUMULAR[A-Za-z0-9\-]*[^\n]*)", r"\1\n               GO TO 2100-FIM-VALIDACAO", s, flags=re.IGNORECASE)
     
-    # Injeta a label de FIM no final do parágrafo 2100 se ela não existir[cite: 2]
+    # Injeta a label de FIM no final do parágrafo 2100 se ela não existir
     if "2100-FIM-VALIDACAO" not in s:
         target = "2100-VALIDAR-REGISTRO."
         end_target = "           END-IF.\n"
@@ -657,6 +556,66 @@ def _(d): MUTATIONS["INJ-019"](d); MUTATIONS["INJ-020"](d)
 
 @mut("INJ-034")
 def _(d): MUTATIONS["INJ-029"](d); MUTATIONS["INJ-027"](d)
+
+# ── Novas Mutações de Cenários Reais e Aleatórios ──
+@mut("INJ-042") # S0C7 Guard Removal
+def _(d):
+    p = os.path.join(d, "EBVALI01.cbl"); s = _rf(p)
+    s = re.sub(r"IF\s+[A-Za-z0-9\-]+\s+IS\s+NUMERIC", "IF 1 = 1", s, flags=re.IGNORECASE)
+    _wf(p, s)
+
+@mut("INJ-043") # Missing ON EXCEPTION
+def _(d):
+    p = os.path.join(d, "EBPOST01.cbl"); s = _rf(p)
+    s = re.sub(r"ON\s+EXCEPTION.*?END-CALL", "END-CALL", s, flags=re.DOTALL | re.IGNORECASE)
+    _wf(p, s)
+
+@mut("INJ-044") # Banker's Rounding failure
+def _(d):
+    p = os.path.join(d, "EBPOST01.cbl"); s = _rf(p)
+    s = re.sub(r"(COMPUTE\s+[A-Za-z0-9\-]+)\s*=", r"\1 ROUNDED =", s, flags=re.IGNORECASE)
+    _wf(p, s)
+
+@mut("INJ-045") # Missing INITIALIZE in Loop
+def _(d):
+    p = os.path.join(d, "EBVALI01.cbl"); s = _rf(p)
+    s = re.sub(r"(\s+INITIALIZE\s+WS-[A-Za-z0-9\-]+)", r"      * \1", s, flags=re.IGNORECASE)
+    _wf(p, s)
+
+@mut("INJ-046") # Ignore File Status 35
+def _(d):
+    p = os.path.join(d, "EBVALI01.cbl"); s = _rf(p)
+    s = re.sub(r"IF\s+FS-[A-Za-z0-9\-]+\s+NOT\s*=\s*'00'.*?END-IF\.", "           CONTINUE.", s, flags=re.DOTALL | re.IGNORECASE)
+    _wf(p, s)
+
+@mut("INJ-047") # S0C4 array out of bounds
+def _(d):
+    p = os.path.join(d, "EBPOST01.cbl"); s = _rf(p)
+    s = re.sub(r"OCCURS\s+([0-9]+)", "OCCURS 2", s, flags=re.IGNORECASE)
+    _wf(p, s)
+
+@mut("INJ-051") # LRECL mismatch
+def _(d):
+    p = os.path.join(_jcl(d), "EBJPOST.jcl"); s = _rf(p)
+    s = re.sub(r"LRECL=([0-9]+)", "LRECL=99", s, flags=re.IGNORECASE)
+    _wf(p, s)
+
+@mut("INJ-053") # JCL COND Failure
+def _(d):
+    p = os.path.join(_jcl(d), "EBJPOST.jcl"); s = _rf(p)
+    s = re.sub(r",COND=\([0-9]+,[A-Z]+\)", "", s, flags=re.IGNORECASE)
+    _wf(p, s)
+
+@mut("INJ-RAND-01") # Random Corruption
+def _(d):
+    p = os.path.join(d, "EBVALI01.cbl"); s = _rf(p)
+    vars = re.findall(r"WS-[A-Za-z0-9\-]+", s)
+    if vars:
+        target = random.choice(vars)
+        corrupted = target[:-1]
+        s = s.replace(target, corrupted, 1)
+    _wf(p, s)
+
 
 # ═════════════════════════════════════════════════════════════
 # GRADE BATCH
