@@ -2,117 +2,108 @@
 
 ## Objetivo
 
-Este documento explica como o laboratório utiliza **Zowe CLI** e **Zowe Explorer** para conectar o projeto local ao ambiente mainframe remoto.
-
-O uso de Zowe é central no Emunah Bank Lab porque ele viabiliza um fluxo moderno de trabalho sem abandonar a dinâmica operacional do z/OS.
+Este documento explica como o laboratório utiliza **Zowe CLI** e **Zowe Explorer** para conectar o projeto local ao ambiente mainframe remoto. O uso de Zowe é central no Emunah Bank Lab porque ele viabiliza um fluxo moderno de trabalho (Mainframe-as-Code) sem abandonar a dinâmica operacional e a robustez do z/OS.
 
 ---
 
 ## Princípio geral
 
-O laboratório é dividido em três camadas:
+O laboratório é organizado em uma arquitetura de três camadas interdependentes. O sucesso da operação depende do respeito ao papel de cada uma:
 
-- **camada local** — fontes, documentação, scripts e automações
-- **camada remota** — datasets, jobs, spool e arquivos de negócio
-- **camada 3270** — operação clássica e troubleshooting aprofundado
 
-O **Zowe** atua como a ponte entre o ambiente local e o ambiente remoto.
+
+- **Camada Local** — Onde o código "nasce". Fontes, JCLs, Copybooks e documentação residem aqui e são versionados via Git.
+- **Camada Remota** — Onde o código "trabalha". Datasets, Jobs, Spool e arquivos de negócio (VSAM/GDG) residem no z/OS.
+- **Camada 3270** — Onde o código é "investigado". Terminal para troubleshooting profundo, uso de SDSF e ISPF quando a interface gráfica não for suficiente.
+
+O **Zowe** atua como a ponte de integração, permitindo que o desenvolvedor opere o mainframe sem sair do VS Code.
 
 ---
 
 ## Papel de cada camada no fluxo
 
-### Ambiente local
-Usado para editar COBOL, JCL e copybooks, manter documentação, versionar o projeto com Git e preparar automações e massa de teste.
+### Ambiente Local (Workstation)
+- **Ferramentas:** VS Code, Zowe CLI, Git.
+- **Ações:** Edição de programas COBOL, construção de JCLs, manutenção de layouts de Copybooks e scripts de automação REXX.
+- **Source of Truth:** Todo arquivo nesta camada é a versão oficial e final.
 
-### Ambiente remoto
-Usado para armazenar datasets e membros, compilar fontes, executar jobs, gerar spool e manter os arquivos do laboratório.
+### Ambiente Remoto (Mainframe zXplore)
+- **Componentes:** JES2 (Jobs), PDS/PDSE (Bibliotecas), VSAM (KSDS/ESDS), GDG (Histórico).
+- **Ações:** Compilação (Build), Execução Batch, Gerenciamento de Arquivos de Dados e geração de Spool.
 
-### Ambiente 3270
-Usado para ISPF, SDSF, TSO, troubleshooting e investigação quando a visão do Explorer não for suficiente.
-
-### Zowe
-Usado para publicar arquivos locais, abrir membros remotos no VS Code, submeter jobs, consultar outputs e automatizar tarefas por linha de comando.
-
----
-
-## Fluxo de trabalho padrão
-
-O fluxo padrão do laboratório segue esta sequência:
-
-1. editar os arquivos localmente no VS Code
-2. salvar na estrutura local do projeto
-3. publicar no ambiente remoto por Zowe CLI ou Zowe Explorer
-4. conferir a presença dos membros e datasets remotos
-5. submeter o JCL correspondente
-6. acompanhar status, RC e spool
-7. aprofundar a investigação no 3270 quando necessário
-8. corrigir localmente, republicar e repetir o ciclo
+### Ambiente 3270 (Terminal Emulation)
+- **Ferramentas:** TN3270 (ISPF/SDSF).
+- **Ações:** Diagnóstico de ABENDs complexos, consulta detalhada de catálogos e operação de console quando necessário.
 
 ---
 
-## Fluxo de publicação
+## Fluxo de Trabalho Padrão (O Ciclo de Vida)
 
-### Publicação de copybooks
-`copybooks/layouts/` → `<HLQ>.EMUNAH.DEV.COPY`
+O desenvolvedor deve seguir rigorosamente esta sequência para garantir a integridade do ambiente:
 
-### Publicação de fontes COBOL batch
-`cobol/batch/` → `<HLQ>.EMUNAH.DEV.COBOL`
-
-### Publicação de JCLs
-`jcl/compile/` e `jcl/batch/` → `<HLQ>.EMUNAH.DEV.JCL`
-
-### Publicação de arquivo de entrada
-`data/normalized/lancamentos_simulados.txt` → `<HLQ>.EMUNAH.STAGE.ENTRADA.SEQ`
-
-> O upload sempre alimenta o **STAGE**. O `EBJWAIT` valida e o `EBJLOAD` promove para `ARQ.ENTRADA.SEQ`.
+1. **Editar** os arquivos localmente no VS Code.
+2. **Salvar** na estrutura de pastas local do projeto (respeitando a organização por tipo).
+3. **Publicar** no ambiente remoto via Zowe Explorer (drag-and-drop) ou CLI (upload).
+4. **Conferir** se o membro foi gravado corretamente no PDS remoto.
+5. **Submeter** o JCL de Build (`EBCOMP`) para gerar o módulo de carga (`LOADLIB`).
+6. **Submeter** o JCL da cadeia batch ou utilitário.
+7. **Acompanhar** o status e o Return Code (RC) no Zowe Explorer.
+8. **Investigar** erros (RC > 4) através do Spool ou via SDSF no 3270.
+9. **Corrigir** obrigatoriamente no local, republicar e repetir o ciclo.
 
 ---
 
-## Fluxo de execução
+## Fluxo de Publicação (Mapeamento)
 
-O ciclo operacional mais comum do laboratório envolve:
+Para que o sistema funcione, os arquivos devem ser publicados nos destinos corretos:
 
-- envio de programas e copybooks
-- submissão dos jobs de build (`EBCOMP`, `EBLINK`, `EBBUILD`)
-- envio do arquivo de entrada
-- submissão da cadeia batch
-- acompanhamento de RC e spool
-- investigação complementar em TN3270 / SDSF
+| Pasta Local | Dataset Remoto (PDS/SEQ) | Tipo de Artefato |
+| :--- | :--- | :--- |
+| `copybooks/layouts/` | `<HLQ>.EMUNAH.DEV.COPY` | Layouts de Registro |
+| `cobol/batch/` | `<HLQ>.EMUNAH.DEV.COBOL` | Código-fonte COBOL |
+| `jcl/batch/` | `<HLQ>.EMUNAH.DEV.JCL` | Jobs da Grade Operacional |
+| `jcl/compile/` | `<HLQ>.EMUNAH.DEV.JCL` | Jobs de Compilação/Build |
+| `data/normalized/` | `<HLQ>.EMUNAH.STAGE.ENTRADA.SEQ` | Massa de Dados (Upload) |
 
----
-
-## Regras do laboratório
-
-- o projeto local é a fonte principal do código e da documentação
-- o ambiente remoto é a área de build e execução
-- o 3270 é a ferramenta principal de operação e diagnóstico
-- alterações permanentes devem ser feitas preferencialmente no ambiente local
-- edição remota deve ser usada de forma excepcional e com finalidade operacional
+> **Nota Técnica:** O upload de dados nunca deve ser feito diretamente no arquivo de produção (`ARQ.ENTRADA.SEQ`). O arquivo deve subir para o **STAGE**, onde o job `EBJWAIT` fará a validação de integridade antes da promoção.
 
 ---
 
-## Critério de uso correto do Zowe
+## Fluxo de Execução e Build
 
-O fluxo com Zowe está adequado quando:
-
-- os arquivos locais são publicados no remoto de forma controlada
-- os membros aparecem corretamente no Explorer
-- os jobs podem ser submetidos sem depender de edição manual no 3270
-- os resultados podem ser consultados tanto no Explorer quanto no SDSF
-- a correção definitiva volta para o repositório local
+O ciclo operacional mais comum envolve:
+- **Build:** Submissão de `EBCOMP` (Compilação), `EBLINK` (Link-edição) e `EBBUILD` (Automação de Build).
+- **Dados:** Envio da massa via Zowe CLI `files upload`.
+- **Batch:** Submissão da cadeia governada pelo `ARQ.CTL.STATUS`.
+- **Diagnóstico:** Download do Spool via Zowe para análise de logs de erro localmente.
 
 ---
 
-## Exemplo de ciclo completo
+## Regras de Ouro do Laboratório
 
-Um exemplo representativo do laboratório:
+1. **Local é Lei:** Nunca altere um código no mainframe (via ISPF 2) e esqueça de atualizar o local. O repositório Git deve refletir exatamente o que está no host.
+2. **RC é Vida:** Um Job com RC 0008 ou 0012 não é um "job que rodou". É uma falha que exige investigação imediata.
+3. **Edição Remota é Exceção:** Use a edição direta no Zowe Explorer apenas para testes rápidos e descartáveis. Alterações permanentes exigem o fluxo local.
+4. **Respeite o Layout:** Arquivos sequenciais enviados via Zowe devem respeitar o LRECL (ex: 120 bytes para lançamentos). Use o modo binário ou ASCII conforme a necessidade do processamento COBOL.
 
-1. o desenvolvedor edita `EBPOST01.cbl` localmente
-2. publica o membro em `<HLQ>.EMUNAH.DEV.COBOL(EBPOST01)`
-3. publica o copybook relacionado
-4. submete o job de build
-5. submete o job batch
-6. verifica RC e output
-7. investiga erros no Explorer e, se necessário, no SDSF
-8. corrige localmente antes de republicar e reexecutar
+---
+
+## Critério de Uso Correto do Zowe
+
+O fluxo está adequado quando o desenvolvedor consegue:
+- Reinstalar todo o ambiente em um novo HLQ apenas publicando a estrutura local.
+- Submeter jobs sem precisar "limpar" datasets manualmente no 3270 (automação via IDCAMS).
+- Corrigir bugs de lógica em segundos, republicando apenas o membro afetado.
+- Manter o histórico de alterações via commits no Git.
+
+---
+
+## Exemplo de Ciclo Completo
+
+1. Alteração no cálculo de juros em `EBACCR01.cbl` (Local).
+2. Upload para `<HLQ>.EMUNAH.DEV.COBOL(EBACCR01)`.
+3. Submissão do JCL de compilação.
+4. Verificação do Spool: `IGYCC` retornou RC 0000.
+5. Submissão do Job `EBJACCR`.
+6. Verificação do resultado no dataset de saída `ARQ.ACCR.MOV.SEQ`.
+7. Commit das alterações no repositório local.
