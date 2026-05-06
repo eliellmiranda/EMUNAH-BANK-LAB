@@ -22,6 +22,7 @@
 //* Os modulos agora sao gravados direto em EMUNAH.DEV.LOADLIB.
 //* ============================================================
 //EBDEPLOY JOB ,'EMUNAH DEPLOY',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+/*JOBPARM LINES=9999
 //*
 //CL01     EXEC IGYWCL
 //* CL01: EBCLLOAD - carga inicial
