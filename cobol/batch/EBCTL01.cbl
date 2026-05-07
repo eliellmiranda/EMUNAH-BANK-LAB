@@ -8,7 +8,7 @@
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
-           SELECT CTL-STATUS-FILE
+           SELECT OPTIONAL CTL-STATUS-FILE
                ASSIGN TO CTLSTAT
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
@@ -108,9 +108,8 @@
            END-EVALUATE.
 
        2000-ABRIR.
-      * Se for apenas validacao (CHK), abre apenas leitura.
-      * CORRECAO: Se for UPD, tambem abre INPUT apenas para ler
-      * o estado atual. A gravacao sera feita reabrindo em OUTPUT.
+      * Abre INPUT apenas para ler o estado atual.
+      * A gravacao sera feita reabrindo em OUTPUT.
            OPEN INPUT CTL-STATUS-FILE
 
            IF FS-CTL-OK
@@ -127,7 +126,13 @@
                    MOVE SPACES TO WS-STATUS-ATUAL
                NOT AT END
                    IF FS-CTL-OK
-                       MOVE STS-CODIGO TO WS-STATUS-ATUAL
+      * ------ Trata linha em branco ou nula como VAZIO ------ *
+                       IF STS-CODIGO = SPACES OR LOW-VALUES
+                           SET ARQUIVO-VAZIO TO TRUE
+                           MOVE SPACES TO WS-STATUS-ATUAL
+                       ELSE
+                           MOVE STS-CODIGO TO WS-STATUS-ATUAL
+                       END-IF
                    ELSE
                        DISPLAY '*** EBCTL01 ERRO READ - FS: ' WS-FS-CTL
                        SET OCORREU-ERRO-IO TO TRUE
@@ -135,7 +140,7 @@
            END-READ.
 
        4000-VALIDAR-TRANSICAO.
-      * Mantida a logica original da maquina de estados para UPD
+      * Maquina de estados para UPD
            EVALUATE TRUE
                WHEN WS-STATUS-ATUAL = SPACES AND
                     WS-STATUS-ALVO = 'OPEN    '
@@ -154,31 +159,34 @@
                    CONTINUE
                WHEN OTHER
                    DISPLAY '*** EBCTL01 ERRO - TRANSICAO INVALIDA'
-                   DISPLAY '    ATUAL : [' WS-STATUS-ATUAL ']'
+                   DISPLAY '    ATUAL   : [' WS-STATUS-ATUAL ']'
                    DISPLAY '    DESTINO : [' WS-STATUS-ALVO ']'
                    SET OCORREU-ERRO-IO TO TRUE
            END-EVALUATE.
 
        5000-GRAVAR.
            MOVE WS-STATUS-ALVO TO STS-CODIGO
-           
-      * CORRECAO: Arquivo fisico sequencial (PS) nao suporta REWRITE
+
+      * Arquivo fisico sequencial (PS) nao suporta REWRITE
       * Fecha a leitura e reabre em OUTPUT para truncar e gravar novo
            CLOSE CTL-STATUS-FILE
+           MOVE 'N' TO WS-CTL-ABERTO  *> Reseta a flag de seguranca
+
            OPEN OUTPUT CTL-STATUS-FILE
-           
+
            IF FS-CTL-OK
+               SET CTL-ABERTO TO TRUE *> Marca como aberto novamente
                WRITE CTL-STATUS-REG
                IF NOT FS-CTL-OK
-                   DISPLAY '*** EBCTL01 ERRO I/O (WRITE) - FS: ' 
+                   DISPLAY '*** EBCTL01 ERRO I/O (WRITE) - FS: '
                             WS-FS-CTL
                    SET OCORREU-ERRO-IO TO TRUE
                ELSE
-                   DISPLAY '*** EBCTL01 - ATUALIZADO PARA: [' 
+                   DISPLAY '*** EBCTL01 - ATUALIZADO PARA: ['
                             WS-STATUS-ALVO ']'
                END-IF
            ELSE
-               DISPLAY '*** EBCTL01 ERRO REOPEN OUTPUT - FS: ' 
+               DISPLAY '*** EBCTL01 ERRO REOPEN OUTPUT - FS: '
                         WS-FS-CTL
                SET OCORREU-ERRO-IO TO TRUE
            END-IF.
@@ -194,7 +202,7 @@
                         WS-STATUS-ATUAL ']'
            ELSE
                DISPLAY '*** EBCTL01 ERRO - CHECAGEM FALHOU'
-               DISPLAY '    STATUS ESPERADO: [' WS-STATUS-ALVO ']'
+               DISPLAY '    STATUS ESPERADO  : [' WS-STATUS-ALVO ']'
                DISPLAY '    STATUS ENCONTRADO: [' WS-STATUS-ATUAL ']'
                SET OCORREU-ERRO-IO TO TRUE
            END-IF.
