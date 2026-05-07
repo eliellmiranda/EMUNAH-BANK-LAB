@@ -428,7 +428,6 @@ a { color: var(--blue); text-decoration: none; }
 </head>
 <body>
 
-<!-- ═══════ HEADER ═══════ -->
 <div class="header">
   <h1>EBOPS <span>— Emunah Bank Operations Simulator</span></h1>
   <div class="header-actions">
@@ -442,7 +441,6 @@ a { color: var(--blue); text-decoration: none; }
   </div>
 </div>
 
-<!-- ═══════ TABS ═══════ -->
 <div class="tabs">
   <button class="tab active" data-tab="dashboard">Dashboard</button>
   <button class="tab" data-tab="tickets">Tickets</button>
@@ -450,13 +448,10 @@ a { color: var(--blue); text-decoration: none; }
   <button class="tab" data-tab="historico">Histórico</button>
 </div>
 
-<!-- ═══════ MAIN ═══════ -->
 <div class="main">
 
-  <!-- ─── Dashboard ─── -->
   <div id="sec-dashboard" class="section active">
 
-    <!-- Topo: botões de dia + stats -->
     <div class="dashboard-top">
       <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
         <button class="btn-gerar-dia" onclick="gerarDia()">
@@ -503,7 +498,6 @@ a { color: var(--blue); text-decoration: none; }
     </div>
   </div>
 
-  <!-- ─── Tickets ─── -->
   <div id="sec-tickets" class="section">
     <div class="filter-bar">
       <input type="text" id="filtro-tickets" placeholder="Filtrar por categoria, severidade, status, título..." oninput="loadTickets()">
@@ -512,7 +506,6 @@ a { color: var(--blue); text-decoration: none; }
     <div class="kanban" id="kanban-board"></div>
   </div>
 
-  <!-- ─── Injeções ─── -->
   <div id="sec-injecoes" class="section">
     <div class="card">
       <h3>Injeções Ativas</h3>
@@ -524,7 +517,6 @@ a { color: var(--blue); text-decoration: none; }
     </div>
   </div>
 
-  <!-- ─── Histórico ─── -->
   <div id="sec-historico" class="section">
     <div class="card">
       <h3>Injeções Revertidas</h3>
@@ -532,14 +524,10 @@ a { color: var(--blue); text-decoration: none; }
     </div>
   </div>
 
-</div><!-- /main -->
-
-<!-- ═══════ FOOTER ═══════ -->
-<footer class="footer">
+</div><footer class="footer">
   "[...] mas o justo viverá pela sua fé." — Habacuque 2:4
 </footer>
 
-<!-- ═══════ MODAL: Ticket Detail ═══════ -->
 <div class="modal-overlay" id="modal-ticket">
   <div class="modal">
     <h2 id="modal-ticket-title"></h2>
@@ -571,7 +559,6 @@ a { color: var(--blue); text-decoration: none; }
   </div>
 </div>
 
-<!-- ═══════ MODAL: Injection Result ═══════ -->
 <div class="modal-overlay" id="modal-inject-result">
   <div class="modal">
     <h2>⚡ Injeção Aplicada</h2>
@@ -588,7 +575,6 @@ a { color: var(--blue); text-decoration: none; }
   </div>
 </div>
 
-<!-- ═══════ MODAL: Novo Dia Result ═══════ -->
 <div class="modal-overlay" id="modal-dia">
   <div class="modal">
     <h2 id="modal-dia-title">Novo Dia Gerado</h2>
@@ -599,7 +585,6 @@ a { color: var(--blue); text-decoration: none; }
   </div>
 </div>
 
-<!-- ═══════ MODAL: Import Tickets ═══════ -->
 <div class="modal-overlay" id="modal-import-tickets">
   <div class="modal">
     <h2>📥 Importar Tickets</h2>
@@ -632,7 +617,6 @@ a { color: var(--blue); text-decoration: none; }
   </div>
 </div>
 
-<!-- ═══════ MODAL: Import Injeções ═══════ -->
 <div class="modal-overlay" id="modal-import-injecoes">
   <div class="modal">
     <h2>📥 Importar Injeções</h2>
@@ -657,7 +641,6 @@ a { color: var(--blue); text-decoration: none; }
   </div>
 </div>
 
-<!-- ═══════ TOAST ═══════ -->
 <div class="toast-container" id="toast-container"></div>
 
 <script>
@@ -739,7 +722,7 @@ document.querySelectorAll('.modal-overlay').forEach(m => {
 });
 
 // ═══════════════════════════════════════════════════════
-// DICA OCULTA (modal de resultado de injeção)
+// DICA OCULTA E SINTOMAS OCULTOS
 // ═══════════════════════════════════════════════════════
 function toggleDica(btn) {
   const content = document.getElementById('mir-dica');
@@ -748,9 +731,6 @@ function toggleDica(btn) {
   btn.textContent = visible ? '👁 Revelar dica' : '🙈 Ocultar dica';
 }
 
-// ═══════════════════════════════════════════════════════
-// SINTOMA OCULTO (catálogo de injeções)
-// ═══════════════════════════════════════════════════════
 function toggleSintoma(btn) {
   const el = btn.nextElementSibling;
   const visible = el.style.display === 'block';
@@ -763,6 +743,13 @@ function toggleDicaCatalog(btn) {
   const visible = el.style.display === 'block';
   el.style.display = visible ? 'none' : 'block';
   btn.textContent = visible ? '👁 Revelar dica' : '🙈 Ocultar dica';
+}
+
+function toggleAutoInj(btn) {
+  const list = btn.closest('.auto-inj-banner').querySelector('.auto-inj-list');
+  const visible = list.style.display === 'block';
+  list.style.display = visible ? 'none' : 'block';
+  btn.textContent = visible ? '👁 Revelar Spoilers' : '🙈 Ocultar Spoilers';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1001,7 +988,7 @@ async function loadHistory() {
 }
 
 // ═══════════════════════════════════════════════════════
-// GERAR DIA (com auto-injeção mediante confirmação)
+// GERAR DIA (COM AUTO-INJEÇÃO OCULTA)
 // ═══════════════════════════════════════════════════════
 async function gerarDia() {
   try {
@@ -1030,7 +1017,7 @@ async function gerarDia() {
         ${batchFailed ? '⚠ Falha no batch — verifique a grade' : '✓ Batch concluído com sucesso'}
       </div></div>`;
 
-    // Injeções disponíveis — banner de confirmação automática
+    // Injeções disponíveis — banner de confirmação automática OCULTA
     if (res.injectable && res.injectable.length > 0) {
       const injList = res.injectable.map(i =>
         `<div style="font-size:calc(13px + var(--font-bump));margin-bottom:2px;">
@@ -1039,11 +1026,16 @@ async function gerarDia() {
       ).join('');
 
       html += `<div class="auto-inj-banner">
-        <p>⚡ Este dia tem injeções vinculadas a tickets:</p>
-        ${injList}
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+          <p style="margin:0; font-weight:bold;">⚡ Este dia tem injeções automáticas disponíveis.</p>
+          <button class="sintoma-reveal-btn" style="margin:0;" onclick="toggleAutoInj(this)">👁 Revelar Spoilers</button>
+        </div>
+        <div class="auto-inj-list" style="display:none; margin-bottom: 10px; border-left: 2px solid var(--orange); padding-left: 8px;">
+          ${injList}
+        </div>
         <div style="margin-top:10px;display:flex;gap:8px;">
           <button class="btn btn-sm btn-yellow" onclick="confirmarAutoInjecao(${JSON.stringify(res.injectable).replace(/"/g,'&quot;')})">
-            Confirmar e Aplicar Injeções
+            ⚡ Aplicar Injeções às Cegas
           </button>
           <button class="btn btn-sm" onclick="this.closest('.auto-inj-banner').remove()">Pular</button>
         </div>
@@ -1057,9 +1049,6 @@ async function gerarDia() {
 }
 
 async function confirmarAutoInjecao(injecoes) {
-  const lista = injecoes.map(i => `• ${i.inj_id} — ${i.ticket}`).join('\n');
-  if (!confirm(`Aplicar as seguintes injeções automaticamente?\n\n${lista}`)) return;
-
   for (const inj of injecoes) {
     try {
       await api('/api/inject', {
@@ -1067,7 +1056,7 @@ async function confirmarAutoInjecao(injecoes) {
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({inj_id: inj.inj_id})
       });
-      toast(`${inj.inj_id} injetada`, 'info');
+      toast(`Defeitos injetados no sistema. Boa caçada!`, 'info');
     } catch(e) {}
   }
   loadActiveInjections();
