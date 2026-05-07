@@ -14,12 +14,12 @@ from datetime import datetime
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
-# Importa dados e funções do ebops original
+# Importa dados e funções do ebops original (Incluindo sync_zowe)
 sys.path.insert(0, os.path.dirname(__file__))
 from ebops import (
     TEMPLATES, INJECTIONS, INJ_MAP, MUTATIONS, REVERTS, GRADE,
     STATUS_LABELS, find_project, load_state, save_state,
-    _resolve_file, _expected_path, _root
+    _resolve_file, _expected_path, _root, sync_zowe
 )
 
 app = Flask(__name__, static_folder='web', static_url_path='')
@@ -234,6 +234,17 @@ def api_inject():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+    # Oculta spoiler no VS Code e faz upload pro Zowe
+    repo_root = _root(proj)
+    for f in inj["arqs"]:
+        try:
+            local_path = _expected_path(proj, f)
+            rel_path = os.path.relpath(local_path, repo_root)
+            subprocess.run(["git", "update-index", "--assume-unchanged", rel_path], cwd=repo_root, capture_output=True)
+            sync_zowe(local_path)
+        except Exception as e:
+            pass # Continua mesmo se falhar (ex: zowe não instalado)
+
     state.setdefault("injections_active", []).append({
         "id": inj_id,
         "titulo": inj["t"],
@@ -287,11 +298,19 @@ def api_revert():
 
     repo_root = _root(proj)
     results = []
+    
+    # Restaura arquivos, remove a invisibilidade do git e faz upload limpo pro Zowe
     for f in sorted(files):
         try:
-            rel = os.path.relpath(_expected_path(proj, f), repo_root)
-            res = subprocess.run(["git", "checkout", "--", rel], cwd=repo_root,
-                                 capture_output=True, text=True)
+            local_path = _expected_path(proj, f)
+            rel = os.path.relpath(local_path, repo_root)
+            
+            subprocess.run(["git", "update-index", "--no-assume-unchanged", rel], cwd=repo_root, capture_output=True)
+            res = subprocess.run(["git", "checkout", "--", rel], cwd=repo_root, capture_output=True, text=True)
+            
+            if res.returncode == 0:
+                sync_zowe(local_path)
+                
             results.append({"file": f, "ok": res.returncode == 0,
                             "msg": res.stderr.strip() if res.returncode != 0 else ""})
         except Exception as e:
@@ -316,17 +335,22 @@ def api_reset():
     proj = get_proj()
     state = get_state()
 
-    # Reverte injeções ativas
+    # Reverte injeções ativas, incluindo Zowe e Git
     active = state.get("injections_active", [])
     files = set()
     for a in active:
         for f in a.get("arquivos", []):
             files.add(f)
+            
     repo_root = _root(proj)
     for f in files:
         try:
-            rel = os.path.relpath(_expected_path(proj, f), repo_root)
-            subprocess.run(["git", "checkout", "--", rel], cwd=repo_root, capture_output=True)
+            local_path = _expected_path(proj, f)
+            rel = os.path.relpath(local_path, repo_root)
+            subprocess.run(["git", "update-index", "--no-assume-unchanged", rel], cwd=repo_root, capture_output=True)
+            res = subprocess.run(["git", "checkout", "--", rel], cwd=repo_root, capture_output=True)
+            if res.returncode == 0:
+                sync_zowe(local_path)
         except:
             pass
 
