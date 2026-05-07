@@ -86,7 +86,16 @@
   ],
   "custom_templates": [],
   "day": 2,
-  "injections_active": [],
+  "injections_active": [
+    {
+      "id": "INJ-005",
+      "titulo": "EBPOST01 inverte crédito e débito",
+      "arquivos": [
+        "EBPOST01.cbl"
+      ],
+      "timestamp": "2026-05-07T17:50:25.368845"
+    }
+  ],
   "history": [
     {
       "id": "INJ-001",

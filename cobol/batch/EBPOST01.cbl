@@ -248,7 +248,7 @@
            IF MOV-VALIDO
                COMPUTE WS-SALDO-DISPONIVEL =
                    CNT-SALDO OF CONTA-REG + CNT-LIMITE OF CONTA-REG
-               IF LCT-TIPO OF MOVTO-REG = 'D'
+               IF LCT-TIPO OF MOVTO-REG = 'C'
                   AND LCT-VALOR OF MOVTO-REG > WS-SALDO-DISPONIVEL
                    MOVE 'P003' TO WS-REJ-COD
                    MOVE 'SALDO/LIMITE INSUFICIENTE' TO WS-REJ-DESC
