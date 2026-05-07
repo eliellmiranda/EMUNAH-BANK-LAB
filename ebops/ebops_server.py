@@ -413,6 +413,37 @@ def api_import_injections():
     put_state(state)
     return jsonify({"ok": True, "imported": len(added), "ids": added})
 
+# ─── API: Espiar Injeção (Git Diff) ──────────────────────────
+@app.route('/api/spy', methods=['POST'])
+def api_spy():
+    data = request.json
+    inj_id = data.get("inj_id")
+    proj = get_proj()
+    state = get_state()
+    active = state.get("injections_active", [])
+    
+    target = next((a for a in active if a["id"] == inj_id), None)
+    if not target:
+        return jsonify({"error": "Injeção não está ativa"}), 404
+        
+    repo_root = _root(proj)
+    diffs = {}
+    
+    for f in target.get("arquivos", []):
+        local_path = _expected_path(proj, f)
+        rel = os.path.relpath(local_path, repo_root)
+        
+        # O 'git diff HEAD' força o git a comparar o arquivo físico com o repositório,
+        # ignorando a regra de invisibilidade (assume-unchanged)
+        res = subprocess.run(["git", "diff", "HEAD", "--", rel], cwd=repo_root, capture_output=True, text=True)
+        
+        if res.stdout:
+            diffs[f] = res.stdout
+        else:
+            diffs[f] = "Sem alterações visíveis no Git ou erro ao gerar diff."
+            
+    return jsonify({"ok": True, "diffs": diffs})
+
 # ─── Inicialização ───────────────────────────────────────────
 if __name__ == '__main__':
     print("\n  EBOPS Web Server")
