@@ -298,7 +298,7 @@ a { color: var(--blue); text-decoration: none; }
 .inj-card .inj-title { font-size: calc(14px + var(--font-bump)); margin: 4px 0; }
 .inj-card .inj-detail { font-size: calc(13px + var(--font-bump)); color: var(--text2); margin: 2px 0; }
 
-/* ── Sintoma oculto ── */
+/* ── Sintomas e Dicas ocultas ── */
 .sintoma-reveal-btn {
   background: none; border: 1px solid var(--border); border-radius: 4px;
   color: var(--text2); font-family: inherit;
@@ -317,7 +317,7 @@ a { color: var(--blue); text-decoration: none; }
 }
 .active-inj .inj-info { flex: 1; }
 
-/* ── Modal ── */
+/* ── Modais ── */
 .modal-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,.6); z-index: 200;
@@ -395,22 +395,6 @@ a { color: var(--blue); text-decoration: none; }
   font-style: italic; letter-spacing: .3px;
 }
 
-/* ── Loading ── */
-.loading { text-align: center; padding: 40px; color: var(--text2); }
-.spinner {
-  display: inline-block; width: 20px; height: 20px;
-  border: 2px solid var(--border); border-top-color: var(--green);
-  border-radius: 50%; animation: spin .6s linear infinite;
-  margin-right: 8px; vertical-align: middle;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--border); }
-
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .kanban { grid-template-columns: 1fr 1fr; }
@@ -451,7 +435,6 @@ a { color: var(--blue); text-decoration: none; }
 <div class="main">
 
   <div id="sec-dashboard" class="section active">
-
     <div class="dashboard-top">
       <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
         <button class="btn-gerar-dia" onclick="gerarDia()">
@@ -571,6 +554,19 @@ a { color: var(--blue); text-decoration: none; }
     <div class="dica-content" id="mir-dica"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('modal-inject-result')">✕ OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-spy">
+  <div class="modal" style="width: 800px; max-width: 95vw;">
+    <h2>🕵️ Raio-X da Injeção: <span id="spy-id" style="color:var(--orange);"></span></h2>
+    <p style="font-size:calc(12px + var(--font-bump)); color:var(--text2); margin-bottom:12px;">
+      Mostrando a diferença exata (diff) entre o código original e o código mutado no seu HD.
+    </p>
+    <div id="spy-content" style="background:var(--bg); padding:12px; border:1px solid var(--border); border-radius:6px; font-family:monospace; font-size:calc(13px + var(--font-bump)); color:var(--text); white-space:pre-wrap; max-height: 50vh; overflow-y:auto; overflow-x:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-blue" onclick="closeModal('modal-spy')">✕ Fechar Raio-X</button>
     </div>
   </div>
 </div>
@@ -922,7 +918,10 @@ async function loadActiveInjections() {
           <strong style="color:var(--orange);">${a.id}</strong> — ${a.titulo}
           <div style="font-size:calc(11px + var(--font-bump));color:var(--text2);">Arquivos: ${(a.arquivos||[]).join(', ')}</div>
         </div>
-        <button class="btn btn-sm btn-red" onclick="revertInjection('${a.id}')">↩ Reverter</button>
+        <div style="display:flex; gap:6px;">
+          <button class="btn btn-sm btn-blue" onclick="spyInjection('${a.id}')">🕵️ Espiar</button>
+          <button class="btn btn-sm btn-red" onclick="revertInjection('${a.id}')">↩ Reverter</button>
+        </div>
       </div>
     `).join('') + `
       <div style="margin-top:8px;">
@@ -961,6 +960,43 @@ async function revertInjection(injId) {
     });
     toast(injId ? injId + ' revertida' : 'Todas revertidas');
     loadActiveInjections(); loadInfo();
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════
+// ESPIAR INJEÇÃO (RAIO-X)
+// ═══════════════════════════════════════════════════════
+async function spyInjection(injId) {
+  try {
+    const res = await api('/api/spy', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({inj_id: injId})
+    });
+    
+    document.getElementById('spy-id').textContent = injId;
+    let html = '';
+    
+    for (const [file, diff] of Object.entries(res.diffs)) {
+      html += `<div style="color:var(--cyan); font-weight:bold; margin-bottom:8px; border-bottom: 1px solid var(--border); padding-bottom: 4px;">📄 ${file}</div>`;
+      
+      // Colore o Diff estilo GitHub
+      const coloredDiff = diff.split('\n').map(line => {
+        const safeLine = line.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        if (line.startsWith('+') && !line.startsWith('+++')) 
+          return `<div style="background: rgba(63, 185, 80, 0.15); color: var(--green); padding-left: 4px;">${safeLine}</div>`;
+        if (line.startsWith('-') && !line.startsWith('---')) 
+          return `<div style="background: rgba(248, 81, 73, 0.15); color: var(--red); padding-left: 4px;">${safeLine}</div>`;
+        if (line.startsWith('@@')) 
+          return `<div style="color: var(--blue); margin-top: 8px;">${safeLine}</div>`;
+        return `<div style="padding-left: 4px; color: var(--text2);">${safeLine}</div>`;
+      }).join('');
+      
+      html += `<div style="margin-bottom: 20px;">${coloredDiff}</div>`;
+    }
+    
+    document.getElementById('spy-content').innerHTML = html;
+    openModal('modal-spy');
   } catch(e) {}
 }
 
