@@ -231,7 +231,7 @@ INJECTIONS = [
 {"id":"INJ-045","t":"Inconsistência: INITIALIZE esquecido no Loop","cat":"cobol","dif":"junior","tmp":"25min","arqs":["EBVALI01.cbl"],"desc":"Comenta o INITIALIZE de acumuladores dentro do loop de leitura.","sintoma":"Registros processados com sucesso começam a somar valores do registro anterior. Erro intermitente.","dica":"Verifique se as variáveis de trabalho são limpas a cada iteração do READ."},
 {"id":"INJ-046","t":"File Status 35 Ignorado","cat":"cobol","dif":"pleno","tmp":"30min","arqs":["EBVALI01.cbl"],"desc":"O programa abre um arquivo, o status é 35 (não encontrado), mas o programa continua lendo 'nada'.","sintoma":"Job termina RC=00 mas não processa nenhum registro, pois o OPEN falhou silenciosamente.","dica":"Compare o parágrafo de OPEN com a tabela de códigos de erro de File Status."},
 {"id":"INJ-047","t":"S0C4: Subscript fora do OCCURS","cat":"cobol","dif":"pleno","tmp":"50min","arqs":["EBPOST01.cbl"],"desc":"Reduz o tamanho de uma tabela (OCCURS) interna para simular estouro de memória em produção.","sintoma":"Abend S0C4 (Protection Exception) ao tentar acessar um índice de conta inexistente na tabela.","dica":"Verifique se o contador do loop ultrapassa o limite definido na Working-Storage."},
-{"id":"INJ-051","t":"Mismatch de Atributos (Status 39)","cat":"jcl","dif":"pleno","tmp":"20min","arqs":["EBJPOST.jcl"],"desc":"Altera o LRECL no JCL para um valor diferente do definido na FD do COBOL.","sintoma":"O programa recusa a abertura do arquivo com FILE STATUS 39 logo no início.","dica":"Verifique se os atributos físicos definidos no IDCAMS/JCL batem com a SELECT/ASSIGN."},
+{"id":"INJ-051","t":"Mismatch de Atributos (Status 39)","cat":"jcl","dif":"pleno","tmp":"20min","arqs":["EBJPOST.jcl"],"desc":"Altera o LRECL no JCL para um valor diferente do definido na FD do COBOL.","sintoma":"O programa recusa a abertura do arquivo com FILE STATUS 39 logo no início.","dica":"Verifique se as atributos físicos definidos no IDCAMS/JCL batem com a SELECT/ASSIGN."},
 {"id":"INJ-053","t":"Falha Crítica de Fluxo JCL (COND)","cat":"jcl","dif":"junior","tmp":"15min","arqs":["EBJPOST.jcl"],"desc":"Remove o parâmetro COND do step de posting, permitindo que rode mesmo se a validação falhar.","sintoma":"Dados inválidos são postados no banco de dados porque o job de atualização ignorou o erro do job anterior.","dica":"Examine os códigos de retorno (RC) no SDSF e veja se o JCL respeitou a hierarquia."},
 {"id":"INJ-RAND-01","t":"Corrupção Aleatória de Variável","cat":"aleatorio","dif":"pleno","tmp":"?","arqs":["EBVALI01.cbl"],"desc":"Remove uma letra de uma variável de trabalho no meio da Procedure Division.","sintoma":"Erro de compilação estranho ou comportamento imprevisível em tempo de execução.","dica":"O compilador avisará que a variável não está definida, ou você verá um campo deslocado."}
 ]
@@ -240,8 +240,29 @@ INJECTIONS = [
 INJ_MAP = {i["id"]: i for i in INJECTIONS}
 
 # ═════════════════════════════════════════════════════════════
-# FUNÇÕES DE MUTAÇÃO (reuso do ebops_inject.py)
+# FUNÇÕES DE SINCRONIZAÇÃO E MUTAÇÃO
 # ═════════════════════════════════════════════════════════════
+def sync_zowe(filepath):
+    """Faz o upload transparente de arquivos para o Mainframe via Zowe CLI."""
+    if not filepath or not os.path.exists(filepath): return
+    
+    filename = os.path.basename(filepath)
+    ext = filename.split('.')[-1].lower()
+    
+    # Mapeamento para o ambiente (Ajuste o HLQ Z77948 se necessário)
+    pds_map = {
+        'cbl': 'Z77948.EMUNAH.SOURCE.COBOL',
+        'jcl': 'Z77948.EMUNAH.JCL.BATCH',
+        'cpy': 'Z77948.EMUNAH.COPYBOOKS.LAYOUTS'
+    }
+    
+    if ext in pds_map:
+        target_pds = pds_map[ext]
+        member = filename.split('.')[0].upper()
+        # cprint comentado para não poluir o backend, mas executado silenciosamente
+        cmd = ["zowe", "zos-files", "upload", "file-to-data-set", filepath, f"{target_pds}({member})"]
+        subprocess.run(cmd, capture_output=True)
+
 def _rf(p):
     with open(p,'r',encoding='utf-8',errors='replace') as f: return f.read()
 def _wf(p,c):
@@ -275,7 +296,7 @@ def _resolve_file(proj, filename):
     return None
 
 def _expected_path(proj, filename):
-    """Retorna o caminho esperado mesmo que o arquivo não exista (ex: renomeado pelo INJ-019)."""
+    """Retorna o caminho esperado mesmo que o arquivo não exista."""
     existing = _resolve_file(proj, filename)
     if existing: return existing
     ext = os.path.splitext(filename)[1].lower()
@@ -329,16 +350,15 @@ def _(d):
 def _(d):
     p = _resolve_file(d, "EBVALI01.cbl")
     s = _rf(p)
-    # Comenta a validação inline de erro do ENTRADA-IN, forçando o programa a continuar cego
     texto_antigo = """           IF NOT FS-ENTRADA-OK
                DISPLAY '*** EBVALI01 ERRO OPEN ENTRADA - ' WS-FS-ENTRADA
                SET COM-ERRO TO TRUE
            END-IF"""
            
-    texto_novo   = """      *    IF NOT FS-ENTRADA-OK
-      *        DISPLAY '*** EBVALI01 ERRO OPEN ENTRADA - ' WS-FS-ENTRADA
-      *        SET COM-ERRO TO TRUE
-      *    END-IF"""
+    texto_novo   = """      * IF NOT FS-ENTRADA-OK
+      * DISPLAY '*** EBVALI01 ERRO OPEN ENTRADA - ' WS-FS-ENTRADA
+      * SET COM-ERRO TO TRUE
+      * END-IF"""
     s = s.replace(texto_antigo, texto_novo)
     _wf(p, s)
 
@@ -346,7 +366,6 @@ def _(d):
 def _(d):
     p = _resolve_file(d, "EBVALI01.cbl")
     s = _rf(p)
-    # Adiciona um GO TO no primeiro erro (TIPO) para parar de acumular os outros
     texto_antigo_1 = """               MOVE 'TIPO INVALIDO ' TO WS-REJ-DESC
                SET REG-INVALIDO TO TRUE
            END-IF"""
@@ -354,12 +373,9 @@ def _(d):
                SET REG-INVALIDO TO TRUE
                GO TO 2100-FIM-VALIDACAO
            END-IF"""
-           
-    # Cria o "alvo" do GO TO no final do parágrafo 2100
     texto_antigo_2 = """      *--- Encaminha para valido ou rejeito ----------------------------*"""
     texto_novo_2   = """       2100-FIM-VALIDACAO.
       *--- Encaminha para valido ou rejeito ----------------------------*"""
-      
     s = s.replace(texto_antigo_1, texto_novo_1)
     s = s.replace(texto_antigo_2, texto_novo_2)
     _wf(p, s)
@@ -461,7 +477,6 @@ def _(d):
 @mut("INJ-021")
 def _(d):
     p=os.path.join(d,"EBPOST01.cbl"); s=_rf(p)
-    # Remove the IS NUMERIC check on MV-VALOR (if it exists) — keeps the comparison but without protection
     s=s.replace("IF MV-VALOR <= ZERO","IF MV-VALOR NOT NUMERIC\n               CONTINUE\n           ELSE\n           IF MV-VALOR <= ZERO")
     _wf(p,s)
 
@@ -483,7 +498,6 @@ def _(d):
     for i in [0,3,6]:
         if i<len(lines) and len(lines[i])>=63:
             l=list(lines[i])
-            # Insert accented chars in historico field (pos 34-63)
             l[34]='D'; l[35]='E'; l[36]='P'; l[37]='Ó'; l[38]='S'
             l[39]='I'; l[40]='T'; l[41]='O'; l[42]=' '; l[43]='I'
             l[44]='N'; l[45]='I'; l[46]='C'; l[47]='I'; l[48]='A'; l[49]='L'
@@ -518,7 +532,7 @@ def _(d):
 @mut("INJ-029")
 def _(d):
     p=os.path.join(d,"EBPOST01.cbl"); s=_rf(p)
-    s=s.replace("            REWRITE CONTA-REG","      *    REWRITE CONTA-REG")
+    s=s.replace("            REWRITE CONTA-REG","      * REWRITE CONTA-REG")
     _wf(p,s)
 
 @mut("INJ-030")
@@ -542,9 +556,8 @@ def _(d):
     old="            IF EN-AGENCIA IS NUMERIC\n                MOVE EN-AGENCIA TO WS-AGENCIA-NUM"
     new="                MOVE EN-AGENCIA TO WS-AGENCIA-NUM"
     s=s.replace(old,new)
-    # Also remove the ELSE for non-numeric agencia
-    s=s.replace("            ELSE\n                SET REGISTRO-INVALIDO TO TRUE\n                MOVE 'AGENCIA INVALIDA' TO WS-NOVO-MOTIVO\n                PERFORM 2300-ACUMULAR-MOTIVO\n            END-IF\n\n      *    Regra 3:",
-                "            END-IF\n\n      *    Regra 3:")
+    s=s.replace("            ELSE\n                SET REGISTRO-INVALIDO TO TRUE\n                MOVE 'AGENCIA INVALIDA' TO WS-NOVO-MOTIVO\n                PERFORM 2300-ACUMULAR-MOTIVO\n            END-IF\n\n      * Regra 3:",
+                "            END-IF\n\n      * Regra 3:")
     _wf(p,s)
 
 @mut("INJ-033")
@@ -553,7 +566,6 @@ def _(d): MUTATIONS["INJ-019"](d); MUTATIONS["INJ-020"](d)
 @mut("INJ-034")
 def _(d): MUTATIONS["INJ-029"](d); MUTATIONS["INJ-027"](d)
 
-# ── Novas Mutações de Cenários Reais e Aleatórios ──
 @mut("INJ-042") # S0C7 Guard Removal
 def _(d):
     p = os.path.join(d, "EBVALI01.cbl"); s = _rf(p)
@@ -665,7 +677,7 @@ def show_batch(fail=False):
     return jobs
 
 # ═════════════════════════════════════════════════════════════
-# INJEÇÃO
+# INJEÇÃO E REVERSÃO (COM GIT E ZOWE)
 # ═════════════════════════════════════════════════════════════
 def do_inject(proj, inj_id, state, confirm=True):
     inj = INJ_MAP.get(inj_id)
@@ -681,10 +693,28 @@ def do_inject(proj, inj_id, state, confirm=True):
     if confirm:
         r = input(f"  {C.B}Injetar defeito real? (s/N): {C.R}").strip().lower()
         if r != 's': print(f"  {C.D}Cancelado.{C.R}"); return False
+        
     fn = MUTATIONS.get(inj_id)
     if not fn: print(f"  {C.RD}Mutação não implementada.{C.R}"); return False
+    
     try: fn(proj)
     except Exception as e: print(f"  {C.RD}Erro: {e}{C.R}"); return False
+    
+    repo_root = _root(proj)
+    
+    # Esconder spoiler e subir via Zowe
+    for f in inj["arqs"]:
+        try:
+            local_path = _expected_path(proj, f)
+            rel_path = os.path.relpath(local_path, repo_root)
+            
+            # Esconde localmente no VS Code
+            subprocess.run(["git", "update-index", "--assume-unchanged", rel_path], cwd=repo_root, capture_output=True)
+            # Sincroniza mainframe
+            sync_zowe(local_path)
+        except Exception as e:
+            print(f"  {C.RD}Erro ao processar {f}: {e}{C.R}")
+
     state["injections_active"].append({"id":inj_id,"titulo":inj["t"],"arquivos":inj["arqs"],"timestamp":datetime.now().isoformat()})
     save_state(proj, state)
     print(f"\n  {C.BGrd}{C.WH}{C.B} DEFEITO INJETADO {C.R}\n")
@@ -692,9 +722,9 @@ def do_inject(proj, inj_id, state, confirm=True):
     print(f"\n  {C.B}Sintoma:{C.R} {inj['sintoma']}")
     print(f"  {C.D}Dica: {inj['dica']}{C.R}\n")
     print(f"  Próximos passos:")
-    print(f"  1. Upload dos arquivos via Zowe CLI")
-    print(f"  2. Compile e execute")
-    print(f"  3. Diagnostique e corrija")
+    print(f"  1. O código modificado já foi submetido via Zowe em background.")
+    print(f"  2. Compile e execute pelo mainframe ou script.")
+    print(f"  3. Diagnostique e corrija.")
     print(f"  4. Quando terminar: {C.CY}python ebops.py revert {inj_id}{C.R}\n")
     return True
 
@@ -703,32 +733,51 @@ def do_revert(proj, state, inj_id=None):
     if not active: print(f"  {C.GR}Nenhuma injeção ativa.{C.R}\n"); return
     target = [a for a in active if a["id"]==inj_id] if inj_id else active
     if not target: print(f"  {C.RD}{inj_id} não está ativa.{C.R}\n"); return
+    
     files = set()
     for a in target:
         for f in a["arquivos"]: files.add(f)
+        
     print(f"  {C.B}Revertendo:{C.R}")
     for a in target: print(f"    {C.CY}{a['id']}{C.R} — {a['titulo']}")
     print(f"  {C.B}Arquivos:{C.R} {', '.join(sorted(files))}\n")
-    r = input(f"  {C.B}Confirmar git checkout? (s/N): {C.R}").strip().lower()
+    
+    r = input(f"  {C.B}Confirmar reversão e sincronização? (s/N): {C.R}").strip().lower()
     if r != 's': return
+    
     repo_root = _root(proj)
+    
     # Executa reverts customizados antes do git checkout
     for a in target:
         fn = REVERTS.get(a["id"])
         if fn:
             try: fn(proj)
             except: pass
+            
     for f in files:
         try:
-            rel = os.path.relpath(_expected_path(proj, f), repo_root)
+            local_path = _expected_path(proj, f)
+            rel = os.path.relpath(local_path, repo_root)
+            
+            # Tira o arquivo da invisibilidade
+            subprocess.run(["git", "update-index", "--no-assume-unchanged", rel], cwd=repo_root, capture_output=True)
+            
+            # Reverte código
             res = subprocess.run(["git","checkout","--",rel], cwd=repo_root, capture_output=True, text=True)
-            print(f"    {C.GR}✓{C.R} {f}" if res.returncode==0 else f"    {C.RD}✗{C.R} {f} — {res.stderr.strip()}")
-        except: print(f"    {C.RD}✗{C.R} Git não encontrado")
+            
+            if res.returncode == 0:
+                print(f"    {C.GR}✓{C.R} {f} restaurado localmente")
+                sync_zowe(local_path)
+            else:
+                print(f"    {C.RD}✗{C.R} {f} — {res.stderr.strip()}")
+        except Exception as e: 
+            print(f"    {C.RD}✗{C.R} Erro ao reverter {f}: {e}")
+            
     ids_to_remove = {a["id"] for a in target}
     state["injections_active"] = [a for a in active if a["id"] not in ids_to_remove]
     state["history"].extend(target)
     save_state(proj, state)
-    print(f"\n  {C.BGr}{C.WH}{C.B} REVERTIDO {C.R}\n")
+    print(f"\n  {C.BGr}{C.WH}{C.B} REVERTIDO E SINCRONIZADO {C.R}\n")
 
 # ═════════════════════════════════════════════════════════════
 # GERAR DIA
@@ -738,7 +787,6 @@ def gerar_dia(proj, state):
     day = state["day"]
     print(f"  {C.GR}{C.B}═══ DIA #{day} ═══{C.R}\n")
 
-    # Grade batch
     fail = random.random() > 0.5
     batch = show_batch(fail)
     batch_problem = None
@@ -751,7 +799,6 @@ def gerar_dia(proj, state):
         print(f"  {C.RD}{C.B}⚠ ALERTA:{C.R} Job {C.B}{j}{C.R} com status {C.YL}{st.upper()}{C.R} RC={rc}")
         print(f"  {C.D}Investigue o spool antes de prosseguir.{C.R}\n")
 
-    # Sortear tickets
     all_t = TEMPLATES + state.get("custom_templates", [])
     count = random.randint(2, 4)
     pool = list(all_t)
@@ -779,7 +826,6 @@ def gerar_dia(proj, state):
         }
         tickets_novos.append(ticket)
 
-    # Mostrar tickets
     print(f"  {C.GR}{C.B}Tickets do dia ({len(tickets_novos)}):{C.R}\n")
     for tk in tickets_novos:
         sc = SEV_COLORS.get(tk["severidade"], C.CY)
@@ -790,31 +836,28 @@ def gerar_dia(proj, state):
         print(f"    [{sc}{tk['severidade'].upper()}{C.R}] [{dc}{tk['dificuldade'].upper()}{C.R}] {C.D}{tk['ferramenta']} · {tk['tempo']}{C.R}{has_inj}")
         print()
 
-    # Tickets com injeção
     injectables = [tk for tk in tickets_novos if tk.get("inj") and tk["inj"] in INJ_MAP]
     if injectables:
         print(f"  {C.RD}{C.B}═══ DEFEITOS REAIS DISPONÍVEIS ═══{C.R}\n")
+        print(f"  Estes defeitos serão ocultados do VS Code e sincronizados via Zowe.\n")
         for tk in injectables:
             inj = INJ_MAP[tk["inj"]]
             print(f"  {C.CY}{tk['ticket_id']}{C.R} → {C.RD}{tk['inj']}{C.R}: {inj['t']}")
-            print(f"    {C.D}Arquivos que serão modificados: {', '.join(inj['arqs'])}{C.R}")
-            print(f"    {C.D}{inj['desc']}{C.R}")
-            print()
 
-        r = input(f"  {C.B}Injetar defeitos reais nos arquivos do projeto? (s/N): {C.R}").strip().lower()
+        r = input(f"\n  {C.B}Injetar defeitos reais e sincronizar? (s/N): {C.R}").strip().lower()
         if r == 's':
             for tk in injectables:
                 print(f"\n  {C.D}{'─'*50}{C.R}")
                 if do_inject(proj, tk["inj"], state, confirm=False):
                     tk["inj_ativo"] = True
 
-    # Salvar
     state["tickets"] = tickets_novos + state["tickets"]
     state["day"] = day + 1
     save_state(proj, state)
 
     print(f"\n  {C.GR}{C.B}Dia #{day} gerado.{C.R} {len(tickets_novos)} tickets no backlog.")
-    print(f"  {C.D}Use: python ebops.py tickets{C.R}\n")
+
+# ... (MANTENHA TODO O RESTO DO CÓDIGO DO ebops.py INALTERADO AQUI PARA BAIXO) ...
 
 # ═════════════════════════════════════════════════════════════
 # TICKETS
@@ -844,7 +887,6 @@ def show_tickets(state, filtro=None):
         print(f"    [{sc}{tk.get('severidade','media').upper()}{C.R}] [{dc}{tk.get('dificuldade','junior').upper()}{C.R}] {C.D}Dia #{tk.get('dia',0)} · {st_label}{C.R}{inj_flag}")
 
     print(f"\n  {C.D}Total: {len(tickets)} ticket(s){C.R}")
-    print(f"  {C.D}Filtrar: python ebops.py tickets [incidente|desenvolvimento|operação|change|investigação|backlog|concluido]{C.R}\n")
 
 def mover_ticket(state, ticket_id, novo_status):
     for t in state["tickets"]:
