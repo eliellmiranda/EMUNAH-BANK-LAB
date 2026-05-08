@@ -274,6 +274,17 @@ def _resolve_file(proj, filename):
         if os.path.isfile(candidate): return candidate
     return None
 
+def _expected_path(proj, filename):
+    existing = _resolve_file(proj, filename)
+    if existing:
+        return existing
+    ext = os.path.splitext(filename)[1].lower()
+    if ext in ('.jcl', '.proc'):
+        return os.path.join(_jcl(proj), filename)
+    if ext in ('.cbl', '.cpy'):
+        return os.path.join(_copy(proj), filename)
+    return os.path.join(proj, filename)
+
 # ═════════════════════════════════════════════════════════════
 # MAPA LOCAL → DATASET REMOTO
 # ═════════════════════════════════════════════════════════════
