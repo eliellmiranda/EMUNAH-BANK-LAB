@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-EBOPS — Emunah Bank Operations Simulator (Unified Edition)
-Um script. Gera dias. Injeta defeitos reais. Gerencia tickets.
+EBOPS — Emunah Bank Operations Simulator (Ghost Injection Edition)
+Um script. Gera dias. Injeta defeitos REAIS direto no mainframe via Zowe.
+Working tree local permanece intacto — sem spoiler no git.
 
 Uso:
     python ebops.py                     # Menu interativo
     python ebops.py dia                 # Gera novo dia
     python ebops.py tickets             # Lista tickets
     python ebops.py status              # Injeções ativas
-    python ebops.py revert [ID]         # Reverte injeções
+    python ebops.py inject INJ-001      # Injeta no remoto via Zowe
+    python ebops.py revert [ID]         # Reverte do snapshot
+    python ebops.py spy [ID]            # Compara local vs remoto
+    python ebops.py submit-all          # Submete cadeia inteira (EBJALL)
     python ebops.py where               # Mostra caminho do projeto
     python ebops.py set-path /caminho   # Define caminho manualmente
     python ebops.py reset               # Reseta tudo
@@ -37,6 +41,7 @@ def cprint(msg, color=C.R): print(f"{color}{msg}{C.R}")
 STATE_FILE = "ebops_state.json"
 CONFIG_FILE = ".ebops_config.json"
 MARKER = "EBVALI01.cbl"
+SNAPSHOT_REL = ".ebops/snapshots"
 
 def _is_proj(p): return os.path.isfile(os.path.join(p, MARKER))
 
@@ -188,7 +193,7 @@ TEMPLATES = [
 ]
 
 # ═════════════════════════════════════════════════════════════
-# CATÁLOGO DE INJEÇÕES - TODOS OS CASOS (Originais, Reais e Aleatórios)
+# CATÁLOGO DE INJEÇÕES
 # ═════════════════════════════════════════════════════════════
 INJECTIONS = [
 {"id":"INJ-001","t":"EBVALI01 rejeita créditos válidos","cat":"cobol","dif":"junior","tmp":"20min","arqs":["EBVALI01.cbl"],"desc":"Validação de tipo alterada: aceita apenas 'D', rejeitando 'C'.","sintoma":"Todos os créditos vão para REJEITO com motivo TIPO INVALIDO.","dica":"Analise o EVALUATE/IF de tipo no parágrafo 2100-VALIDAR-REGISTRO."},
@@ -209,7 +214,7 @@ INJECTIONS = [
 {"id":"INJ-016","t":"Copybook CPCNT001 sem sinal no saldo","cat":"copybook","dif":"pleno","tmp":"35min","arqs":["CPCNT001.cpy"],"desc":"PIC S9(13)V99 virou PIC 9(13)V99 — sem sinal. Débitos não subtraem.","sintoma":"Saldos incorretos. Conciliação diverge. Valores absurdos após débitos.","dica":"Verifique definição do campo de saldo no CPCNT001. Campos monetários precisam de S."},
 {"id":"INJ-017","t":"COMBO: bug validação + massa corrompida","cat":"combinado","dif":"pleno","tmp":"45min","arqs":["EBVALI01.cbl","lancamentos_d0.txt"],"desc":"Dois problemas: EBVALI01 rejeita créditos E massa tem valores com letras.","sintoma":"Rejeição massiva. Parte é bug do programa, parte é massa ruim. Separe as causas.","dica":"Analise os motivos de rejeição: TIPO INVALIDO (bug) vs VALOR INVALIDO (massa)."},
 {"id":"INJ-018","t":"COMBO: JCL errado + copybook deslocado","cat":"combinado","dif":"pleno","tmp":"50min","arqs":["EBJVALD.jcl","CPLCT001.cpy"],"desc":"STEPLIB errada E campo deslocado no copybook. Dois problemas em camadas.","sintoma":"Primeiro: S806. Após corrigir: campos errados. Precisa resolver em duas etapas.","dica":"Resolva na ordem: primeiro JCL (STEPLIB), depois copybook (soma dos campos)."},
-{"id":"INJ-019","t":"Arquivo de entrada renomeado — ausente","cat":"massa","dif":"junior","tmp":"10min","arqs":["lancamentos_d0.txt"],"desc":"Arquivo lancamentos_d0.txt renomeado para lancamentos_d0.bak. Upload não encontra o original.","sintoma":"Arquivo de entrada não existe para upload. EBJLOAD/EBJVALD falha.","dica":"Liste os arquivos do diretório. O arquivo foi renomeado, não deletado."},
+{"id":"INJ-019","t":"Arquivo de entrada renomeado — ausente","cat":"massa","dif":"junior","tmp":"10min","arqs":["lancamentos_d0.txt"],"desc":"Dataset ARQ.ENTRADA.SEQ deletado no remoto (local intacto).","sintoma":"Arquivo de entrada não existe para EBJLOAD/EBJVALD. Cadeia bloqueada.","dica":"Liste os datasets via Zowe. O membro foi deletado, não o arquivo local."},
 {"id":"INJ-020","t":"EBJSALD com TYPRUN=HOLD","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJSALD.jcl"],"desc":"TYPRUN=HOLD adicionado ao cartão JOB do EBJSALD. Job não executa automaticamente.","sintoma":"Job é submetido mas fica em HOLD. Não aparece como executado no SDSF.","dica":"Verifique o cartão JOB no JCL. Procure por TYPRUN=HOLD."},
 {"id":"INJ-021","t":"EBPOST01 sem IS NUMERIC antes de comparação","cat":"cobol","dif":"pleno","tmp":"30min","arqs":["EBPOST01.cbl"],"desc":"Checagem IS NUMERIC removida antes da comparação de valor no EBPOST01. Dado sujo causa S0C7.","sintoma":"Se a massa tiver valor não-numérico, o programa abenda com S0C7 no MOVE ou COMPUTE.","dica":"Procure onde MV-VALOR é comparado ou movido. A checagem IS NUMERIC deveria existir antes."},
 {"id":"INJ-022","t":"EBJPOST com REGION=1K — insuficiente","cat":"jcl","dif":"junior","tmp":"10min","arqs":["EBJPOST.jcl"],"desc":"REGION=1K adicionado ao JCL do EBJPOST. Memória insuficiente para o programa.","sintoma":"Abend S878 — REGION insuficiente.","dica":"Verifique o cartão JOB ou EXEC no JCL. REGION muito baixo."},
@@ -223,7 +228,7 @@ INJECTIONS = [
 {"id":"INJ-030","t":"EBJCLLD com DDNAMEs trocados (cliente↔conta)","cat":"jcl","dif":"pleno","tmp":"25min","arqs":["EBJCLLD.jcl"],"desc":"DDs CLIENTIN e CONTAIN trocados. Programa lê contas como clientes e vice-versa.","sintoma":"Carga aparentemente ok (RC=00) mas dados cruzados. Clientes no KSDS de contas.","dica":"Compare CLIENTIN e CONTAIN no JCL com o que o EBCLLOAD espera de cada DD."},
 {"id":"INJ-031","t":"Massa toda de crédito — sem débitos","cat":"massa","dif":"junior","tmp":"15min","arqs":["lancamentos_d0.txt"],"desc":"Todos os registros do lancamentos_d0.txt foram alterados para tipo 'C'. Nenhum débito no dia.","sintoma":"Saldos só crescem, nunca diminuem. Pode ser legítimo ou indicar falha no gerador de massa.","dica":"Examine o campo de tipo (posição 21) de todos os registros. Todos são 'C'."},
 {"id":"INJ-032","t":"EBVALI01 sem IS NUMERIC na agência","cat":"cobol","dif":"pleno","tmp":"25min","arqs":["EBVALI01.cbl"],"desc":"Checagem IS NUMERIC removida da validação de agência. MOVE direto para campo numérico.","sintoma":"Se massa tiver agência com letras, MOVE para WS-AGENCIA-NUM causa S0C7.","dica":"Procure a Regra 2 (agência) no 2100-VALIDAR-REGISTRO. O IF IS NUMERIC deveria estar lá."},
-{"id":"INJ-033","t":"COMBO: arquivo ausente + JCL com HOLD","cat":"combinado","dif":"pleno","tmp":"35min","arqs":["lancamentos_d0.txt","EBJSNAP.jcl"],"desc":"Massa renomeada (não encontra para upload) E EBJSNAP com TYPRUN=HOLD. Dois bloqueios em pontos diferentes da cadeia.","sintoma":"Primeiro: EBJWAIT não acha STAGE.ENTRADA.SEQ. Segundo: mesmo após resolver e a cadeia andar até EBJCUTF, EBJSNAP trava em HOLD e nunca gera SALDO.GDG(+1).","dica":"Resolva na ordem: primeiro o arquivo (renomear de volta), depois o JCL (remover TYPRUN=HOLD)."},
+{"id":"INJ-033","t":"COMBO: arquivo ausente + JCL com HOLD","cat":"combinado","dif":"pleno","tmp":"35min","arqs":["lancamentos_d0.txt","EBJSNAP.jcl"],"desc":"Massa deletada no remoto E EBJSNAP com TYPRUN=HOLD. Dois bloqueios em pontos diferentes da cadeia.","sintoma":"Primeiro: EBJWAIT não acha STAGE.ENTRADA.SEQ. Segundo: mesmo após resolver e a cadeia andar até EBJCUTF, EBJSNAP trava em HOLD e nunca gera SALDO.GDG(+1).","dica":"Resolva na ordem: primeiro o arquivo (re-upload), depois o JCL (remover TYPRUN=HOLD)."},
 {"id":"INJ-034","t":"COMBO: sem REWRITE + seed corrompida","cat":"combinado","dif":"pleno","tmp":"50min","arqs":["EBPOST01.cbl","contas.txt"],"desc":"EBPOST01 sem REWRITE (saldo não persiste) E contas.txt com saldo corrompido.","sintoma":"Mesmo corrigindo o REWRITE, a base já tem dados ruins. Precisa corrigir programa E seed.","dica":"Resolva o REWRITE primeiro, depois investigue por que os saldos base estão errados."},
 {"id":"INJ-042","t":"S0C7: Falha de Input Sanitization","cat":"cobol","dif":"pleno","tmp":"30min","arqs":["EBVALI01.cbl"],"desc":"Remove o guard IS NUMERIC antes de operações aritméticas. Dados externos com espaços causarão abend.","sintoma":"Job EBJVALD estoura com S0C7 (Data Exception) ao processar campos de valor com espaços.","dica":"Procure onde campos de arquivo externo são movidos para campos de cálculo sem validação prévia."},
 {"id":"INJ-043","t":"Saldo Zerado: CALL sem ON EXCEPTION","cat":"cobol","dif":"pleno","tmp":"45min","arqs":["EBPOST01.cbl"],"desc":"Remove o tratamento de erro em chamadas de subprogramas. Se o módulo falhar, o erro é ignorado.","sintoma":"Saldos aparecem zerados no extrato ou auditoria porque o subprograma de cálculo falhou e o chamador não percebeu.","dica":"Verifique a instrução CALL e a ausência da cláusula ON EXCEPTION."},
@@ -236,20 +241,15 @@ INJECTIONS = [
 {"id":"INJ-RAND-01","t":"Corrupção Aleatória de Variável","cat":"aleatorio","dif":"pleno","tmp":"?","arqs":["EBVALI01.cbl"],"desc":"Remove uma letra de uma variável de trabalho no meio da Procedure Division.","sintoma":"Erro de compilação estranho ou comportamento imprevisível em tempo de execução.","dica":"O compilador avisará que a variável não está definida, ou você verá um campo deslocado."}
 ]
 
-# Mapa de ID para injeção
 INJ_MAP = {i["id"]: i for i in INJECTIONS}
 
 # ═════════════════════════════════════════════════════════════
-# FUNÇÕES DE MUTAÇÃO (reuso do ebops_inject.py)
+# RESOLUÇÃO DE PATHS LOCAIS (apenas leitura — nada é gravado)
 # ═════════════════════════════════════════════════════════════
 def _rf(p):
     with open(p,'r',encoding='utf-8',errors='replace') as f: return f.read()
-def _wf(p,c):
-    with open(p,'w',encoding='utf-8') as f: f.write(c)
 
-def _root(d):
-    """Sobe dois níveis de cobol/batch para a raiz do repositório."""
-    return os.path.dirname(os.path.dirname(d))
+def _root(d): return os.path.dirname(os.path.dirname(d))
 def _jcl(d):
     j = os.path.join(_root(d), 'jcl', 'batch')
     return j if os.path.isdir(j) else d
@@ -262,8 +262,8 @@ def _data_in(d):
 def _data_seed(d):
     s = os.path.join(_root(d), 'data', 'seed')
     return s if os.path.isdir(s) else d
+
 def _resolve_file(proj, filename):
-    """Procura filename em cobol/batch, jcl/batch, copybooks/layouts, data/entrada, data/seed."""
     for candidate in [
         os.path.join(proj, filename),
         os.path.join(_jcl(proj), filename),
@@ -274,347 +274,421 @@ def _resolve_file(proj, filename):
         if os.path.isfile(candidate): return candidate
     return None
 
-def _expected_path(proj, filename):
-    """Retorna o caminho esperado mesmo que o arquivo não exista (ex: renomeado pelo INJ-019)."""
-    existing = _resolve_file(proj, filename)
-    if existing: return existing
-    ext = os.path.splitext(filename)[1].lower()
-    if ext == '.jcl': return os.path.join(_jcl(proj), filename)
-    if ext == '.cpy': return os.path.join(_copy(proj), filename)
-    if filename == 'lancamentos_d0.txt': return os.path.join(_data_in(proj), filename)
-    if filename == 'contas.txt': return os.path.join(_data_seed(proj), filename)
-    return os.path.join(proj, filename)
+# ═════════════════════════════════════════════════════════════
+# MAPA LOCAL → DATASET REMOTO
+# ═════════════════════════════════════════════════════════════
+HLQ = os.environ.get("EBOPS_HLQ", "Z77948.EMUNAH")
 
+DS_MAP = {
+    "EBVALI01.cbl": f"{HLQ}.DEV.SOURCE(EBVALI01)",
+    "EBPOST01.cbl": f"{HLQ}.DEV.SOURCE(EBPOST01)",
+    "EBJVALD.jcl":  f"{HLQ}.DEV.JCL(EBJVALD)",
+    "EBJPOST.jcl":  f"{HLQ}.DEV.JCL(EBJPOST)",
+    "EBJSNAP.jcl":  f"{HLQ}.DEV.JCL(EBJSNAP)",
+    "EBJSALD.jcl":  f"{HLQ}.DEV.JCL(EBJSALD)",
+    "EBJCONC.jcl":  f"{HLQ}.DEV.JCL(EBJCONC)",
+    "EBJCLLD.jcl":  f"{HLQ}.DEV.JCL(EBJCLLD)",
+    "EBJALL.jcl":   f"{HLQ}.DEV.JCL(EBJALL)",
+    "CPLCT001.cpy": f"{HLQ}.DEV.COPYLIB(CPLCT001)",
+    "CPCNT001.cpy": f"{HLQ}.DEV.COPYLIB(CPCNT001)",
+    "lancamentos_d0.txt": f"{HLQ}.STAGE.ENTRADA.SEQ",
+    "contas.txt":         f"{HLQ}.SEED.CONTAS.SEQ",
+}
+
+def _ds_member_for(filename: str) -> str:
+    if filename in DS_MAP: return DS_MAP[filename]
+    ext = os.path.splitext(filename)[1].lower()
+    base = os.path.splitext(os.path.basename(filename))[0].upper()
+    if ext == ".jcl": return f"{HLQ}.DEV.JCL({base})"
+    if ext == ".cbl": return f"{HLQ}.DEV.SOURCE({base})"
+    if ext == ".cpy": return f"{HLQ}.DEV.COPYLIB({base})"
+    return f"{HLQ}.DEV.MISC({base})"
+
+# ═════════════════════════════════════════════════════════════
+# HELPERS ZOWE
+# ═════════════════════════════════════════════════════════════
+def _zowe_check():
+    try:
+        r = subprocess.run(["zowe","--version"], capture_output=True, text=True, timeout=10)
+        return r.returncode == 0
+    except: return False
+
+def _zowe_upload_text(content, dataset_member):
+    try:
+        r = subprocess.run(
+            ["zowe","files","upload","stdin-to-data-set", dataset_member],
+            input=content, text=True, capture_output=True, timeout=120
+        )
+        return r.returncode == 0, (r.stderr or r.stdout).strip()
+    except Exception as e:
+        return False, str(e)
+
+def _zowe_download(dataset_member, local_path):
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+    try:
+        r = subprocess.run(
+            ["zowe","files","download","data-set", dataset_member,
+             "-f", local_path, "--binary","false"],
+            capture_output=True, text=True, timeout=120
+        )
+        return r.returncode == 0, (r.stderr or r.stdout).strip()
+    except Exception as e:
+        return False, str(e)
+
+def _zowe_delete_member(dataset_member):
+    try:
+        r = subprocess.run(
+            ["zowe","files","delete","data-set", dataset_member,"-f"],
+            capture_output=True, text=True, timeout=60
+        )
+        return r.returncode == 0, (r.stderr or r.stdout).strip()
+    except Exception as e:
+        return False, str(e)
+
+def _snapshot_dir(proj, inj_id):
+    p = os.path.join(_root(proj), SNAPSHOT_REL, inj_id)
+    os.makedirs(p, exist_ok=True)
+    return p
+
+# ═════════════════════════════════════════════════════════════
+# REGISTRO DE MUTAÇÕES
+# Cada @mut DEVE retornar dict {filename: novo_conteudo}.
+# Use None como conteúdo para sinalizar DELETE remoto.
+# ═════════════════════════════════════════════════════════════
 MUTATIONS = {}
 def mut(name):
     def decorator(fn):
         MUTATIONS[name] = fn; return fn
     return decorator
 
-REVERTS = {}
-def rev(name):
-    def decorator(fn):
-        REVERTS[name] = fn; return fn
-    return decorator
+def _read_local(proj, filename):
+    p = _resolve_file(proj, filename)
+    if not p: raise FileNotFoundError(filename)
+    return _rf(p)
 
 # ═════════════════════════════════════════════════════════════
-# MUTAÇÕES CORRIGIDAS E APRIMORADAS (REGEX FLEXÍVEL)
+# MUTAÇÕES (todas em memória)
 # ═════════════════════════════════════════════════════════════
-
 @mut("INJ-001")
 def _(d):
-    p = _resolve_file(d, "EBVALI01.cbl")
-    s = _rf(p)
-    texto_antigo = """           IF LCT-TIPO OF ENTRADA-REG NOT = 'C'
+    s = _read_local(d, "EBVALI01.cbl")
+    old = """           IF LCT-TIPO OF ENTRADA-REG NOT = 'C'
               AND LCT-TIPO OF ENTRADA-REG NOT = 'D'"""
-              
-    texto_novo   = """           IF LCT-TIPO OF ENTRADA-REG NOT = 'D'
+    new = """           IF LCT-TIPO OF ENTRADA-REG NOT = 'D'
                                                    """
-    s = s.replace(texto_antigo, texto_novo)
-    _wf(p, s)
+    return {"EBVALI01.cbl": s.replace(old, new)}
 
 @mut("INJ-002")
 def _(d):
-    p = _resolve_file(d, "EBVALI01.cbl")
-    s = _rf(p)
-    texto_antigo = """           IF REG-VALIDO AND
+    s = _read_local(d, "EBVALI01.cbl")
+    old = """           IF REG-VALIDO AND
               LCT-VALOR OF ENTRADA-REG <= ZERO"""
-              
-    texto_novo   = """           IF REG-VALIDO AND
+    new = """           IF REG-VALIDO AND
               LCT-VALOR OF ENTRADA-REG < ZERO """
-    s = s.replace(texto_antigo, texto_novo)
-    _wf(p, s)
+    return {"EBVALI01.cbl": s.replace(old, new)}
 
 @mut("INJ-003")
 def _(d):
-    p = _resolve_file(d, "EBVALI01.cbl")
-    s = _rf(p)
-    # Comenta a validação inline de erro do ENTRADA-IN, forçando o programa a continuar cego
-    texto_antigo = """           IF NOT FS-ENTRADA-OK
+    s = _read_local(d, "EBVALI01.cbl")
+    old = """           IF NOT FS-ENTRADA-OK
                DISPLAY '*** EBVALI01 ERRO OPEN ENTRADA - ' WS-FS-ENTRADA
                SET COM-ERRO TO TRUE
            END-IF"""
-           
-    texto_novo   = """      *    IF NOT FS-ENTRADA-OK
+    new = """      *    IF NOT FS-ENTRADA-OK
       *        DISPLAY '*** EBVALI01 ERRO OPEN ENTRADA - ' WS-FS-ENTRADA
       *        SET COM-ERRO TO TRUE
       *    END-IF"""
-    s = s.replace(texto_antigo, texto_novo)
-    _wf(p, s)
+    return {"EBVALI01.cbl": s.replace(old, new)}
 
 @mut("INJ-004")
 def _(d):
-    p = _resolve_file(d, "EBVALI01.cbl")
-    s = _rf(p)
-    # Adiciona um GO TO no primeiro erro (TIPO) para parar de acumular os outros
-    texto_antigo_1 = """               MOVE 'TIPO INVALIDO ' TO WS-REJ-DESC
+    s = _read_local(d, "EBVALI01.cbl")
+    old1 = """               MOVE 'TIPO INVALIDO ' TO WS-REJ-DESC
                SET REG-INVALIDO TO TRUE
            END-IF"""
-    texto_novo_1   = """               MOVE 'TIPO INVALIDO ' TO WS-REJ-DESC
+    new1 = """               MOVE 'TIPO INVALIDO ' TO WS-REJ-DESC
                SET REG-INVALIDO TO TRUE
                GO TO 2100-FIM-VALIDACAO
            END-IF"""
-           
-    # Cria o "alvo" do GO TO no final do parágrafo 2100
-    texto_antigo_2 = """      *--- Encaminha para valido ou rejeito ----------------------------*"""
-    texto_novo_2   = """       2100-FIM-VALIDACAO.
+    old2 = """      *--- Encaminha para valido ou rejeito ----------------------------*"""
+    new2 = """       2100-FIM-VALIDACAO.
       *--- Encaminha para valido ou rejeito ----------------------------*"""
-      
-    s = s.replace(texto_antigo_1, texto_novo_1)
-    s = s.replace(texto_antigo_2, texto_novo_2)
-    _wf(p, s)
-    
+    s = s.replace(old1, new1).replace(old2, new2)
+    return {"EBVALI01.cbl": s}
+
 @mut("INJ-005")
 def _(d):
-    p=os.path.join(d,"EBPOST01.cbl"); s=_rf(p)
-    s=s.replace("= 'C'","= 'TEMP_SWAP'").replace("= 'D'","= 'C'").replace("= 'TEMP_SWAP'","= 'D'")
-    _wf(p,s)
+    s = _read_local(d, "EBPOST01.cbl")
+    s = s.replace("= 'C'","= 'TEMP_SWAP'").replace("= 'D'","= 'C'").replace("= 'TEMP_SWAP'","= 'D'")
+    return {"EBPOST01.cbl": s}
 
 @mut("INJ-006")
 def _(d):
-    p=os.path.join(d,"EBPOST01.cbl"); s=_rf(p)
-    _wf(p, s.replace("ASSIGN TO AUDIT","ASSIGN TO AUDITLOG"))
+    s = _read_local(d, "EBPOST01.cbl")
+    return {"EBPOST01.cbl": s.replace("ASSIGN TO AUDIT","ASSIGN TO AUDITLOG")}
 
 @mut("INJ-007")
 def _(d):
-    p=os.path.join(_jcl(d),"EBJVALD.jcl"); s=_rf(p)
-    _wf(p, s.replace("DEV.LOADLIB","HML.LOADLIB"))
+    s = _read_local(d, "EBJVALD.jcl")
+    return {"EBJVALD.jcl": s.replace("DEV.LOADLIB","HML.LOADLIB")}
 
 @mut("INJ-008")
 def _(d):
-    p=os.path.join(_jcl(d),"EBJPOST.jcl"); s=_rf(p)
-    _wf(p, s.replace("ARQ.AUDIT.SEQ,DISP=MOD","ARQ.AUDIT.SEQ,DISP=SHR"))
+    s = _read_local(d, "EBJPOST.jcl")
+    return {"EBJPOST.jcl": s.replace("ARQ.AUDIT.SEQ,DISP=MOD","ARQ.AUDIT.SEQ,DISP=SHR")}
 
 @mut("INJ-009")
 def _(d):
-    p=os.path.join(_jcl(d),"EBJVALD.jcl"); s=_rf(p)
-    lines=[l for l in s.split('\n') if '//REJEITOS' not in l and not ('rejeitados' in l.lower() and l.startswith('//*'))]
-    _wf(p,'\n'.join(lines))
+    s = _read_local(d, "EBJVALD.jcl")
+    lines = [l for l in s.split('\n')
+             if '//REJEITOS' not in l
+             and not ('rejeitados' in l.lower() and l.startswith('//*'))]
+    return {"EBJVALD.jcl": '\n'.join(lines)}
 
 @mut("INJ-010")
 def _(d):
-    p=os.path.join(_jcl(d),"EBJPOST.jcl"); s=_rf(p)
-    _wf(p, s.replace("ARQ.LANCTO.ESDS","ARQ.LANCAMENTO.ESDS"))
+    s = _read_local(d, "EBJPOST.jcl")
+    return {"EBJPOST.jcl": s.replace("ARQ.LANCTO.ESDS","ARQ.LANCAMENTO.ESDS")}
 
 @mut("INJ-011")
 def _(d):
-    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); lines=_rf(p).split('\n')
+    lines = _read_local(d, "lancamentos_d0.txt").split('\n')
     for i in [1,4]:
         if i<len(lines) and len(lines[i])>=34:
             l=list(lines[i]); l[21]='A'; l[22]='B'; l[23]='C'; lines[i]=''.join(l)
-    _wf(p,'\n'.join(lines))
+    return {"lancamentos_d0.txt": '\n'.join(lines)}
 
 @mut("INJ-012")
 def _(d):
-    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); lines=_rf(p).split('\n')
+    lines = _read_local(d, "lancamentos_d0.txt").split('\n')
     for i in [2,6]:
         if i<len(lines) and len(lines[i])>=21:
             l=list(lines[i]); l[20]='X'; lines[i]=''.join(l)
-    _wf(p,'\n'.join(lines))
+    return {"lancamentos_d0.txt": '\n'.join(lines)}
 
 @mut("INJ-013")
 def _(d):
-    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); lines=_rf(p).split('\n')
+    lines = _read_local(d, "lancamentos_d0.txt").split('\n')
     for i in [3,7]:
         if i<len(lines) and len(lines[i])>80: lines[i]=lines[i][:80]
-    _wf(p,'\n'.join(lines))
+    return {"lancamentos_d0.txt": '\n'.join(lines)}
 
 @mut("INJ-014")
 def _(d):
-    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); lines=_rf(p).split('\n')
+    lines = _read_local(d, "lancamentos_d0.txt").split('\n')
     for i in [0,5]:
         if i<len(lines) and len(lines[i])>=12:
             l=list(lines[i]); l[4:12]=list('99999999'); lines[i]=''.join(l)
-    _wf(p,'\n'.join(lines))
+    return {"lancamentos_d0.txt": '\n'.join(lines)}
 
 @mut("INJ-015")
 def _(d):
-    p=os.path.join(_copy(d),"CPLCT001.cpy"); s=_rf(p)
-    _wf(p, re.sub(r'(LCT-TIPO\s+PIC\s+X\()01(\))',r'\g<1>02\2',s))
+    s = _read_local(d, "CPLCT001.cpy")
+    s = re.sub(r'(LCT-TIPO\s+PIC\s+X\()01(\))', r'\g<1>02\2', s)
+    return {"CPLCT001.cpy": s}
 
 @mut("INJ-016")
 def _(d):
-    p=os.path.join(_copy(d),"CPCNT001.cpy"); s=_rf(p)
-    _wf(p, re.sub(r'(CNT-SALDO\s+PIC\s+)S(9)',r'\g<1>\2',s,count=1))
+    s = _read_local(d, "CPCNT001.cpy")
+    s = re.sub(r'(CNT-SALDO\s+PIC\s+)S(9)', r'\g<1>\2', s, count=1)
+    return {"CPCNT001.cpy": s}
 
 @mut("INJ-017")
-def _(d): MUTATIONS["INJ-001"](d); MUTATIONS["INJ-011"](d)
+def _(d):
+    out = {}
+    out.update(MUTATIONS["INJ-001"](d))
+    out.update(MUTATIONS["INJ-011"](d))
+    return out
 
 @mut("INJ-018")
-def _(d): MUTATIONS["INJ-007"](d); MUTATIONS["INJ-015"](d)
+def _(d):
+    out = {}
+    out.update(MUTATIONS["INJ-007"](d))
+    out.update(MUTATIONS["INJ-015"](d))
+    return out
 
 @mut("INJ-019")
 def _(d):
-    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); b=p+".bak"
-    if os.path.exists(p): os.rename(p, b)
-
-@rev("INJ-019")
-def _(d):
-    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); b=p+".bak"
-    if not os.path.exists(p) and os.path.exists(b): os.rename(b, p)
+    return {"lancamentos_d0.txt": None}
 
 @mut("INJ-020")
 def _(d):
-    p=os.path.join(_jcl(d),"EBJSNAP.jcl"); s=_rf(p)
-    _wf(p, s.replace("CLASS=A,MSGCLASS=X","CLASS=A,MSGCLASS=X,TYPRUN=HOLD"))
+    s = _read_local(d, "EBJSNAP.jcl")
+    return {"EBJSNAP.jcl": s.replace("CLASS=A,MSGCLASS=X","CLASS=A,MSGCLASS=X,TYPRUN=HOLD")}
 
 @mut("INJ-021")
 def _(d):
-    p=os.path.join(d,"EBPOST01.cbl"); s=_rf(p)
-    # Remove the IS NUMERIC check on MV-VALOR (if it exists) — keeps the comparison but without protection
-    s=s.replace("IF MV-VALOR <= ZERO","IF MV-VALOR NOT NUMERIC\n               CONTINUE\n           ELSE\n           IF MV-VALOR <= ZERO")
-    _wf(p,s)
+    s = _read_local(d, "EBPOST01.cbl")
+    s = s.replace(
+        "IF MV-VALOR <= ZERO",
+        "IF MV-VALOR NOT NUMERIC\n               CONTINUE\n           ELSE\n           IF MV-VALOR <= ZERO"
+    )
+    return {"EBPOST01.cbl": s}
 
 @mut("INJ-022")
 def _(d):
-    p=os.path.join(_jcl(d),"EBJPOST.jcl"); s=_rf(p)
-    _wf(p, s.replace("EXEC PGM=EBPOST01","EXEC PGM=EBPOST01,REGION=1K"))
+    s = _read_local(d, "EBJPOST.jcl")
+    return {"EBJPOST.jcl": s.replace("EXEC PGM=EBPOST01","EXEC PGM=EBPOST01,REGION=1K")}
 
 @mut("INJ-023")
 def _(d):
-    p=os.path.join(d,"EBPOST01.cbl"); s=_rf(p)
-    s=re.sub(r'(WS-DATA-AUDIT\s+PIC\s+)9\(8\)',r'\g<1>X(8)',s,count=1)
-    s=re.sub(r'(WS-HORA-AUDIT\s+PIC\s+)9\(6\)',r'\g<1>X(6)',s,count=1)
-    _wf(p,s)
+    s = _read_local(d, "EBPOST01.cbl")
+    s = re.sub(r'(WS-DATA-AUDIT\s+PIC\s+)9\(8\)', r'\g<1>X(8)', s, count=1)
+    s = re.sub(r'(WS-HORA-AUDIT\s+PIC\s+)9\(6\)', r'\g<1>X(6)', s, count=1)
+    return {"EBPOST01.cbl": s}
 
 @mut("INJ-024")
 def _(d):
-    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); lines=_rf(p).split('\n')
+    lines = _read_local(d, "lancamentos_d0.txt").split('\n')
     for i in [0,3,6]:
         if i<len(lines) and len(lines[i])>=63:
             l=list(lines[i])
-            # Insert accented chars in historico field (pos 34-63)
             l[34]='D'; l[35]='E'; l[36]='P'; l[37]='Ó'; l[38]='S'
             l[39]='I'; l[40]='T'; l[41]='O'; l[42]=' '; l[43]='I'
             l[44]='N'; l[45]='I'; l[46]='C'; l[47]='I'; l[48]='A'; l[49]='L'
             lines[i]=''.join(l)
-    _wf(p,'\n'.join(lines))
+    return {"lancamentos_d0.txt": '\n'.join(lines)}
 
 @mut("INJ-025")
 def _(d):
-    p=os.path.join(_jcl(d),"EBJCONC.jcl"); s=_rf(p)
-    _wf(p, s.replace("ARQ.LANCTO.ESDS","ARQ.ENTRADA.SEQ"))
+    s = _read_local(d, "EBJCONC.jcl")
+    return {"EBJCONC.jcl": s.replace("ARQ.LANCTO.ESDS","ARQ.ENTRADA.SEQ")}
 
 @mut("INJ-026")
 def _(d):
-    p=os.path.join(_jcl(d),"EBJSNAP.jcl"); s=_rf(p)
-    lines=[l for l in s.split('\n') if 'SNAPOUT' not in l and 'SNAP-OUT' not in l]
-    _wf(p,'\n'.join(lines))
+    s = _read_local(d, "EBJSNAP.jcl")
+    lines = [l for l in s.split('\n') if 'SNAPOUT' not in l and 'SNAP-OUT' not in l]
+    return {"EBJSNAP.jcl": '\n'.join(lines)}
 
 @mut("INJ-027")
 def _(d):
-    p=os.path.join(_data_seed(d),"contas.txt"); lines=_rf(p).split('\n')
+    lines = _read_local(d, "contas.txt").split('\n')
     for i in [0,2]:
         if i<len(lines) and len(lines[i])>=40:
             l=list(lines[i]); l[30]='X'; l[31]='X'; l[32]='X'; lines[i]=''.join(l)
-    _wf(p,'\n'.join(lines))
+    return {"contas.txt": '\n'.join(lines)}
 
 @mut("INJ-028")
 def _(d):
-    p=os.path.join(_jcl(d),"EBJPOST.jcl"); s=_rf(p)
-    lines=[l for l in s.split('\n') if '//CLIENTE' not in l and not('clientes' in l.lower() and l.startswith('//*'))]
-    _wf(p,'\n'.join(lines))
+    s = _read_local(d, "EBJPOST.jcl")
+    lines = [l for l in s.split('\n')
+             if '//CLIENTE' not in l
+             and not('clientes' in l.lower() and l.startswith('//*'))]
+    return {"EBJPOST.jcl": '\n'.join(lines)}
 
 @mut("INJ-029")
 def _(d):
-    p=os.path.join(d,"EBPOST01.cbl"); s=_rf(p)
-    s=s.replace("            REWRITE CONTA-REG","      *    REWRITE CONTA-REG")
-    _wf(p,s)
+    s = _read_local(d, "EBPOST01.cbl")
+    s = s.replace("            REWRITE CONTA-REG","      *    REWRITE CONTA-REG")
+    return {"EBPOST01.cbl": s}
 
 @mut("INJ-030")
 def _(d):
-    p=os.path.join(_jcl(d),"EBJCLLD.jcl"); s=_rf(p)
-    s=s.replace("//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ","//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ")
-    s=s.replace("//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ","//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ")
-    _wf(p,s)
+    s = _read_local(d, "EBJCLLD.jcl")
+    s = s.replace(
+        "//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ",
+        "//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ"
+    )
+    s = s.replace(
+        "//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ",
+        "//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ"
+    )
+    return {"EBJCLLD.jcl": s}
 
 @mut("INJ-031")
 def _(d):
-    p=os.path.join(_data_in(d),"lancamentos_d0.txt"); lines=_rf(p).split('\n')
+    lines = _read_local(d, "lancamentos_d0.txt").split('\n')
     for i in range(len(lines)):
         if len(lines[i])>=21:
             l=list(lines[i]); l[20]='C'; lines[i]=''.join(l)
-    _wf(p,'\n'.join(lines))
+    return {"lancamentos_d0.txt": '\n'.join(lines)}
 
 @mut("INJ-032")
 def _(d):
-    p=os.path.join(d,"EBVALI01.cbl"); s=_rf(p)
-    old="            IF EN-AGENCIA IS NUMERIC\n                MOVE EN-AGENCIA TO WS-AGENCIA-NUM"
-    new="                MOVE EN-AGENCIA TO WS-AGENCIA-NUM"
-    s=s.replace(old,new)
-    # Also remove the ELSE for non-numeric agencia
-    s=s.replace("            ELSE\n                SET REGISTRO-INVALIDO TO TRUE\n                MOVE 'AGENCIA INVALIDA' TO WS-NOVO-MOTIVO\n                PERFORM 2300-ACUMULAR-MOTIVO\n            END-IF\n\n      *    Regra 3:",
-                "            END-IF\n\n      *    Regra 3:")
-    _wf(p,s)
+    s = _read_local(d, "EBVALI01.cbl")
+    old = "            IF EN-AGENCIA IS NUMERIC\n                MOVE EN-AGENCIA TO WS-AGENCIA-NUM"
+    new = "                MOVE EN-AGENCIA TO WS-AGENCIA-NUM"
+    s = s.replace(old, new)
+    s = s.replace(
+        "            ELSE\n                SET REGISTRO-INVALIDO TO TRUE\n                MOVE 'AGENCIA INVALIDA' TO WS-NOVO-MOTIVO\n                PERFORM 2300-ACUMULAR-MOTIVO\n            END-IF\n\n      *    Regra 3:",
+        "            END-IF\n\n      *    Regra 3:"
+    )
+    return {"EBVALI01.cbl": s}
 
 @mut("INJ-033")
-def _(d): MUTATIONS["INJ-019"](d); MUTATIONS["INJ-020"](d)
+def _(d):
+    out = {}
+    out.update(MUTATIONS["INJ-019"](d))
+    out.update(MUTATIONS["INJ-020"](d))
+    return out
 
 @mut("INJ-034")
-def _(d): MUTATIONS["INJ-029"](d); MUTATIONS["INJ-027"](d)
-
-# ── Novas Mutações de Cenários Reais e Aleatórios ──
-@mut("INJ-042") # S0C7 Guard Removal
 def _(d):
-    p = os.path.join(d, "EBVALI01.cbl"); s = _rf(p)
+    out = {}
+    out.update(MUTATIONS["INJ-029"](d))
+    out.update(MUTATIONS["INJ-027"](d))
+    return out
+
+@mut("INJ-042")
+def _(d):
+    s = _read_local(d, "EBVALI01.cbl")
     s = re.sub(r"IF\s+[A-Za-z0-9\-]+\s+IS\s+NUMERIC", "IF 1 = 1", s, flags=re.IGNORECASE)
-    _wf(p, s)
+    return {"EBVALI01.cbl": s}
 
-@mut("INJ-043") # Missing ON EXCEPTION
+@mut("INJ-043")
 def _(d):
-    p = os.path.join(d, "EBPOST01.cbl"); s = _rf(p)
+    s = _read_local(d, "EBPOST01.cbl")
     s = re.sub(r"ON\s+EXCEPTION.*?END-CALL", "END-CALL", s, flags=re.DOTALL | re.IGNORECASE)
-    _wf(p, s)
+    return {"EBPOST01.cbl": s}
 
-@mut("INJ-044") # Banker's Rounding failure
+@mut("INJ-044")
 def _(d):
-    p = os.path.join(d, "EBPOST01.cbl"); s = _rf(p)
+    s = _read_local(d, "EBPOST01.cbl")
     s = re.sub(r"(COMPUTE\s+[A-Za-z0-9\-]+)\s*=", r"\1 ROUNDED =", s, flags=re.IGNORECASE)
-    _wf(p, s)
+    return {"EBPOST01.cbl": s}
 
-@mut("INJ-045") # Missing INITIALIZE in Loop
+@mut("INJ-045")
 def _(d):
-    p = os.path.join(d, "EBVALI01.cbl"); s = _rf(p)
+    s = _read_local(d, "EBVALI01.cbl")
     s = re.sub(r"(\s+INITIALIZE\s+WS-[A-Za-z0-9\-]+)", r"      * \1", s, flags=re.IGNORECASE)
-    _wf(p, s)
+    return {"EBVALI01.cbl": s}
 
-@mut("INJ-046") # Ignore File Status 35
+@mut("INJ-046")
 def _(d):
-    p = os.path.join(d, "EBVALI01.cbl"); s = _rf(p)
-    s = re.sub(r"IF\s+FS-[A-Za-z0-9\-]+\s+NOT\s*=\s*'00'.*?END-IF\.", "           CONTINUE.", s, flags=re.DOTALL | re.IGNORECASE)
-    _wf(p, s)
+    s = _read_local(d, "EBVALI01.cbl")
+    s = re.sub(r"IF\s+FS-[A-Za-z0-9\-]+\s+NOT\s*=\s*'00'.*?END-IF\.",
+               "           CONTINUE.", s, flags=re.DOTALL | re.IGNORECASE)
+    return {"EBVALI01.cbl": s}
 
-@mut("INJ-047") # S0C4 array out of bounds
+@mut("INJ-047")
 def _(d):
-    p = os.path.join(d, "EBPOST01.cbl"); s = _rf(p)
+    s = _read_local(d, "EBPOST01.cbl")
     s = re.sub(r"OCCURS\s+([0-9]+)", "OCCURS 2", s, flags=re.IGNORECASE)
-    _wf(p, s)
+    return {"EBPOST01.cbl": s}
 
-@mut("INJ-051") # LRECL mismatch
+@mut("INJ-051")
 def _(d):
-    p = os.path.join(_jcl(d), "EBJPOST.jcl"); s = _rf(p)
+    s = _read_local(d, "EBJPOST.jcl")
     s = re.sub(r"LRECL=([0-9]+)", "LRECL=99", s, flags=re.IGNORECASE)
-    _wf(p, s)
+    return {"EBJPOST.jcl": s}
 
-@mut("INJ-053") # JCL COND Failure
+@mut("INJ-053")
 def _(d):
-    p = os.path.join(_jcl(d), "EBJPOST.jcl"); s = _rf(p)
+    s = _read_local(d, "EBJPOST.jcl")
     s = re.sub(r",COND=\([0-9]+,[A-Z]+\)", "", s, flags=re.IGNORECASE)
-    _wf(p, s)
+    return {"EBJPOST.jcl": s}
 
-@mut("INJ-RAND-01") # Random Corruption
+@mut("INJ-RAND-01")
 def _(d):
-    p = os.path.join(d, "EBVALI01.cbl"); s = _rf(p)
-    vars = re.findall(r"WS-[A-Za-z0-9\-]+", s)
-    if vars:
-        target = random.choice(vars)
-        corrupted = target[:-1]
-        s = s.replace(target, corrupted, 1)
-    _wf(p, s)
-
+    s = _read_local(d, "EBVALI01.cbl")
+    vars_ = re.findall(r"WS-[A-Za-z0-9\-]+", s)
+    if vars_:
+        target = random.choice(vars_)
+        s = s.replace(target, target[:-1], 1)
+    return {"EBVALI01.cbl": s}
 
 # ═════════════════════════════════════════════════════════════
-# GRADE BATCH
+# GRADE BATCH / DISPLAY
 # ═════════════════════════════════════════════════════════════
 GRADE=[("EBJPRECK","05:45","—"),
        ("EBJSOD",  "06:00","—"),
@@ -636,12 +710,9 @@ CAT_ICONS={"incidente":"🔥","desenvolvimento":"⚙️","operação":"📋","ch
 SEV_COLORS={"critica":C.RD,"alta":C.YL,"media":C.CY,"baixa":C.GR}
 DIF_COLORS={"junior":C.BL,"pleno":C.MG}
 
-# ═════════════════════════════════════════════════════════════
-# DISPLAY HELPERS
-# ═════════════════════════════════════════════════════════════
 def header():
     print(f"\n{C.GR}{C.B}╔══════════════════════════════════════════════════════════════╗")
-    print(f"║  EBOPS — Emunah Bank Operations Simulator                    ║")
+    print(f"║  EBOPS — Emunah Bank Operations Simulator (Ghost Edition)    ║")
     print(f"╚══════════════════════════════════════════════════════════════╝{C.R}\n")
 
 def show_batch(fail=False):
@@ -665,70 +736,175 @@ def show_batch(fail=False):
     return jobs
 
 # ═════════════════════════════════════════════════════════════
-# INJEÇÃO
+# INJEÇÃO / REVERT / SPY / SUBMIT-ALL
 # ═════════════════════════════════════════════════════════════
 def do_inject(proj, inj_id, state, confirm=True):
     inj = INJ_MAP.get(inj_id)
-    if not inj: print(f"  {C.RD}Injeção {inj_id} não encontrada.{C.R}"); return False
+    if not inj:
+        print(f"  {C.RD}Injeção {inj_id} não encontrada.{C.R}"); return False
     if inj_id in [a["id"] for a in state["injections_active"]]:
         print(f"  {C.YL}{inj_id} já está ativo.{C.R}"); return False
-    for f in inj["arqs"]:
-        if not _resolve_file(proj, f):
-            print(f"  {C.RD}Arquivo não encontrado: {f}{C.R}"); return False
-    print(f"\n  {C.YL}{C.B}Injeção: {inj_id}{C.R} — {inj['t']}")
-    print(f"  {C.D}Arquivos: {', '.join(inj['arqs'])}{C.R}")
-    print(f"  {inj['desc']}\n")
-    if confirm:
-        r = input(f"  {C.B}Injetar defeito real? (s/N): {C.R}").strip().lower()
-        if r != 's': print(f"  {C.D}Cancelado.{C.R}"); return False
+    if not _zowe_check():
+        print(f"  {C.RD}Zowe CLI não encontrado no PATH.{C.R}"); return False
+
     fn = MUTATIONS.get(inj_id)
-    if not fn: print(f"  {C.RD}Mutação não implementada.{C.R}"); return False
-    try: fn(proj)
-    except Exception as e: print(f"  {C.RD}Erro: {e}{C.R}"); return False
-    state["injections_active"].append({"id":inj_id,"titulo":inj["t"],"arquivos":inj["arqs"],"timestamp":datetime.now().isoformat()})
+    if not fn:
+        print(f"  {C.RD}Mutação não implementada.{C.R}"); return False
+
+    try:
+        mutated = fn(proj)
+    except Exception as e:
+        print(f"  {C.RD}Erro na mutação: {e}{C.R}"); return False
+
+    print(f"\n  {C.YL}{C.B}Injeção: {inj_id}{C.R} — {inj['t']}")
+    print(f"  {inj['desc']}")
+    print(f"  {C.D}Alvos remotos:{C.R}")
+    for f, content in mutated.items():
+        action = "DELETE" if content is None else "UPLOAD"
+        print(f"    {C.B}{action}{C.R} {_ds_member_for(f)}")
+
+    if confirm:
+        if input(f"\n  {C.B}Confirmar? (s/N): {C.R}").strip().lower() != 's':
+            print(f"  {C.D}Cancelado.{C.R}"); return False
+
+    snap_dir = _snapshot_dir(proj, inj_id)
+    snapshot_meta = []
+
+    print(f"\n  {C.B}1/2 Backup do remoto:{C.R}")
+    for filename in mutated.keys():
+        ds = _ds_member_for(filename)
+        snap_path = os.path.join(snap_dir, filename)
+        ok, msg = _zowe_download(ds, snap_path)
+        if ok:
+            snapshot_meta.append((filename, ds, snap_path))
+            print(f"    {C.GR}✓{C.R} {ds}")
+        else:
+            snapshot_meta.append((filename, ds, None))
+            head = msg.splitlines()[0] if msg else 'inexistente'
+            print(f"    {C.YL}!{C.R} {ds} (sem backup — {head})")
+
+    print(f"\n  {C.B}2/2 Aplicação no remoto:{C.R}")
+    aplicados = []
+    for filename, content in mutated.items():
+        ds = _ds_member_for(filename)
+        if content is None:
+            ok, msg = _zowe_delete_member(ds); tag = "DELETE"
+        else:
+            ok, msg = _zowe_upload_text(content, ds); tag = "UPLOAD"
+        if ok:
+            aplicados.append((filename, ds, tag))
+            print(f"    {C.GR}✓{C.R} {tag} {ds}")
+        else:
+            head = msg.splitlines()[0] if msg else ''
+            print(f"    {C.RD}✗{C.R} {tag} {ds} — {head}")
+            for fn2, ds2, _t in aplicados:
+                snap = next((s for f,d,s in snapshot_meta if f==fn2), None)
+                if snap and os.path.isfile(snap):
+                    _zowe_upload_text(_rf(snap), ds2)
+            return False
+
+    state["injections_active"].append({
+        "id": inj_id,
+        "titulo": inj["t"],
+        "arquivos": list(mutated.keys()),
+        "operacoes": [{"file": f, "ds": d, "action": t} for f,d,t in aplicados],
+        "snapshot_dir": os.path.relpath(snap_dir, _root(proj)),
+        "timestamp": datetime.now().isoformat()
+    })
     save_state(proj, state)
-    print(f"\n  {C.BGrd}{C.WH}{C.B} DEFEITO INJETADO {C.R}\n")
-    for f in inj["arqs"]: print(f"    {C.YL}• {f} modificado{C.R}")
+
+    print(f"\n  {C.BGrd}{C.WH}{C.B} DEFEITO INJETADO NO MAINFRAME {C.R}")
+    print(f"  {C.D}Working tree local: intacto. Sem spoiler no git.{C.R}")
     print(f"\n  {C.B}Sintoma:{C.R} {inj['sintoma']}")
-    print(f"  {C.D}Dica: {inj['dica']}{C.R}\n")
-    print(f"  Próximos passos:")
-    print(f"  1. Upload dos arquivos via Zowe CLI")
-    print(f"  2. Compile e execute")
-    print(f"  3. Diagnostique e corrija")
-    print(f"  4. Quando terminar: {C.CY}python ebops.py revert {inj_id}{C.R}\n")
+    print(f"  {C.D}Dica: {inj['dica']}{C.R}")
+    print(f"\n  Próximos passos:")
+    print(f"    1. Submeta a cadeia: {C.CY}python ebops.py submit-all{C.R}")
+    print(f"    2. Diagnostique pelo SDSF / spool")
+    print(f"    3. Compare local × remoto: {C.CY}python ebops.py spy {inj_id}{C.R}")
+    print(f"    4. Ao terminar, reverta:    {C.CY}python ebops.py revert {inj_id}{C.R}\n")
     return True
 
 def do_revert(proj, state, inj_id=None):
     active = state["injections_active"]
-    if not active: print(f"  {C.GR}Nenhuma injeção ativa.{C.R}\n"); return
+    if not active:
+        print(f"  {C.GR}Nenhuma injeção ativa.{C.R}\n"); return
     target = [a for a in active if a["id"]==inj_id] if inj_id else active
-    if not target: print(f"  {C.RD}{inj_id} não está ativa.{C.R}\n"); return
-    files = set()
-    for a in target:
-        for f in a["arquivos"]: files.add(f)
-    print(f"  {C.B}Revertendo:{C.R}")
+    if not target:
+        print(f"  {C.RD}{inj_id} não está ativa.{C.R}\n"); return
+    if not _zowe_check():
+        print(f"  {C.RD}Zowe CLI não encontrado no PATH.{C.R}"); return
+
+    print(f"  {C.B}Revertendo no mainframe:{C.R}")
     for a in target: print(f"    {C.CY}{a['id']}{C.R} — {a['titulo']}")
-    print(f"  {C.B}Arquivos:{C.R} {', '.join(sorted(files))}\n")
-    r = input(f"  {C.B}Confirmar git checkout? (s/N): {C.R}").strip().lower()
-    if r != 's': return
+    if input(f"  {C.B}Confirmar re-upload dos snapshots? (s/N): {C.R}").strip().lower() != 's':
+        return
+
     repo_root = _root(proj)
-    # Executa reverts customizados antes do git checkout
     for a in target:
-        fn = REVERTS.get(a["id"])
-        if fn:
-            try: fn(proj)
-            except: pass
-    for f in files:
-        try:
-            rel = os.path.relpath(_expected_path(proj, f), repo_root)
-            res = subprocess.run(["git","checkout","--",rel], cwd=repo_root, capture_output=True, text=True)
-            print(f"    {C.GR}✓{C.R} {f}" if res.returncode==0 else f"    {C.RD}✗{C.R} {f} — {res.stderr.strip()}")
-        except: print(f"    {C.RD}✗{C.R} Git não encontrado")
-    ids_to_remove = {a["id"] for a in target}
-    state["injections_active"] = [a for a in active if a["id"] not in ids_to_remove]
+        snap_dir = os.path.join(repo_root, a.get("snapshot_dir", os.path.join(SNAPSHOT_REL, a["id"])))
+        for op in a.get("operacoes", []):
+            f, ds, action = op["file"], op["ds"], op["action"]
+            snap = os.path.join(snap_dir, f)
+            if os.path.isfile(snap):
+                ok, _ = _zowe_upload_text(_rf(snap), ds)
+                print(f"    {C.GR if ok else C.RD}{'✓' if ok else '✗'}{C.R} restore {ds}")
+            else:
+                if action == "UPLOAD":
+                    _zowe_delete_member(ds)
+                    print(f"    {C.YL}!{C.R} {ds} (não existia antes — deletado)")
+                else:
+                    print(f"    {C.YL}!{C.R} {ds} (sem snapshot, ação era DELETE)")
+
+    ids = {a["id"] for a in target}
+    state["injections_active"] = [a for a in active if a["id"] not in ids]
     state["history"].extend(target)
     save_state(proj, state)
     print(f"\n  {C.BGr}{C.WH}{C.B} REVERTIDO {C.R}\n")
+
+def do_spy(proj, state, inj_id=None):
+    active = state["injections_active"]
+    if not active:
+        print(f"  {C.D}Nenhuma injeção ativa.{C.R}\n"); return
+    target = [a for a in active if a["id"]==inj_id] if inj_id else active
+    if not target:
+        print(f"  {C.RD}{inj_id} não está ativa.{C.R}\n"); return
+    if not _zowe_check():
+        print(f"  {C.RD}Zowe CLI não encontrado no PATH.{C.R}"); return
+
+    tmp_root = os.path.join(_root(proj), ".ebops", "spy")
+    os.makedirs(tmp_root, exist_ok=True)
+
+    for a in target:
+        print(f"\n  {C.YL}{C.B}{a['id']}{C.R} — {a['titulo']}")
+        for op in a.get("operacoes", []):
+            f, ds = op["file"], op["ds"]
+            print(f"\n  {C.D}── {ds}{C.R}")
+            tmp = os.path.join(tmp_root, f"{a['id']}__{os.path.basename(f)}")
+            ok, msg = _zowe_download(ds, tmp)
+            if not ok:
+                head = msg.splitlines()[0] if msg else ''
+                print(f"    {C.RD}download falhou:{C.R} {head}"); continue
+            local = _resolve_file(proj, f)
+            if not local:
+                print(f"    {C.YL}local não encontrado.{C.R}"); continue
+            r = subprocess.run(["diff","-u", local, tmp], capture_output=True, text=True)
+            if r.stdout.strip(): print(r.stdout)
+            else: print(f"    {C.GR}(local e remoto idênticos){C.R}")
+
+def do_submit_all(proj):
+    if not _zowe_check():
+        print(f"  {C.RD}Zowe CLI não encontrado no PATH.{C.R}"); return
+    ds = DS_MAP.get("EBJALL.jcl", f"{HLQ}.DEV.JCL(EBJALL)")
+    print(f"\n  {C.B}Submetendo cadeia completa via {ds} ...{C.R}")
+    r = subprocess.run(
+        ["zowe","jobs","submit","ds", ds, "--wait-for-output"],
+        capture_output=True, text=True, timeout=1800
+    )
+    print(r.stdout)
+    if r.returncode != 0:
+        print(f"  {C.RD}Falha:{C.R} {r.stderr}")
+    else:
+        print(f"  {C.GR}Cadeia finalizada.{C.R} Inspecione spool no SDSF.\n")
 
 # ═════════════════════════════════════════════════════════════
 # GERAR DIA
@@ -738,7 +914,6 @@ def gerar_dia(proj, state):
     day = state["day"]
     print(f"  {C.GR}{C.B}═══ DIA #{day} ═══{C.R}\n")
 
-    # Grade batch
     fail = random.random() > 0.5
     batch = show_batch(fail)
     batch_problem = None
@@ -748,14 +923,11 @@ def gerar_dia(proj, state):
 
     if batch_problem:
         j,st,rc = batch_problem
-        print(f"  {C.RD}{C.B}⚠ ALERTA:{C.R} Job {C.B}{j}{C.R} com status {C.YL}{st.upper()}{C.R} RC={rc}")
-        print(f"  {C.D}Investigue o spool antes de prosseguir.{C.R}\n")
+        print(f"  {C.RD}{C.B}⚠ ALERTA:{C.R} Job {C.B}{j}{C.R} status {C.YL}{st.upper()}{C.R} RC={rc}\n")
 
-    # Sortear tickets
     all_t = TEMPLATES + state.get("custom_templates", [])
     count = random.randint(2, 4)
-    pool = list(all_t)
-    random.shuffle(pool)
+    pool = list(all_t); random.shuffle(pool)
     tickets_novos = []
 
     for i in range(min(count, len(pool))):
@@ -779,7 +951,6 @@ def gerar_dia(proj, state):
         }
         tickets_novos.append(ticket)
 
-    # Mostrar tickets
     print(f"  {C.GR}{C.B}Tickets do dia ({len(tickets_novos)}):{C.R}\n")
     for tk in tickets_novos:
         sc = SEV_COLORS.get(tk["severidade"], C.CY)
@@ -790,31 +961,29 @@ def gerar_dia(proj, state):
         print(f"    [{sc}{tk['severidade'].upper()}{C.R}] [{dc}{tk['dificuldade'].upper()}{C.R}] {C.D}{tk['ferramenta']} · {tk['tempo']}{C.R}{has_inj}")
         print()
 
-    # Tickets com injeção
     injectables = [tk for tk in tickets_novos if tk.get("inj") and tk["inj"] in INJ_MAP]
     if injectables:
         print(f"  {C.RD}{C.B}═══ DEFEITOS REAIS DISPONÍVEIS ═══{C.R}\n")
         for tk in injectables:
             inj = INJ_MAP[tk["inj"]]
             print(f"  {C.CY}{tk['ticket_id']}{C.R} → {C.RD}{tk['inj']}{C.R}: {inj['t']}")
-            print(f"    {C.D}Arquivos que serão modificados: {', '.join(inj['arqs'])}{C.R}")
-            print(f"    {C.D}{inj['desc']}{C.R}")
-            print()
+            print(f"    {C.D}Datasets que serão alterados no host:{C.R}")
+            for f in inj['arqs']:
+                print(f"      {C.D}• {_ds_member_for(f)}{C.R}")
+            print(f"    {C.D}{inj['desc']}{C.R}\n")
 
-        r = input(f"  {C.B}Injetar defeitos reais nos arquivos do projeto? (s/N): {C.R}").strip().lower()
+        r = input(f"  {C.B}Injetar defeitos reais no MAINFRAME via Zowe? (s/N): {C.R}").strip().lower()
         if r == 's':
             for tk in injectables:
                 print(f"\n  {C.D}{'─'*50}{C.R}")
                 if do_inject(proj, tk["inj"], state, confirm=False):
                     tk["inj_ativo"] = True
 
-    # Salvar
     state["tickets"] = tickets_novos + state["tickets"]
     state["day"] = day + 1
     save_state(proj, state)
 
-    print(f"\n  {C.GR}{C.B}Dia #{day} gerado.{C.R} {len(tickets_novos)} tickets no backlog.")
-    print(f"  {C.D}Use: python ebops.py tickets{C.R}\n")
+    print(f"\n  {C.GR}{C.B}Dia #{day} gerado.{C.R} {len(tickets_novos)} tickets no backlog.\n")
 
 # ═════════════════════════════════════════════════════════════
 # TICKETS
@@ -843,8 +1012,7 @@ def show_tickets(state, filtro=None):
         print(f"  {C.CY}{tk['ticket_id']}{C.R} {icon} {tk['titulo']}")
         print(f"    [{sc}{tk.get('severidade','media').upper()}{C.R}] [{dc}{tk.get('dificuldade','junior').upper()}{C.R}] {C.D}Dia #{tk.get('dia',0)} · {st_label}{C.R}{inj_flag}")
 
-    print(f"\n  {C.D}Total: {len(tickets)} ticket(s){C.R}")
-    print(f"  {C.D}Filtrar: python ebops.py tickets [incidente|desenvolvimento|operação|change|investigação|backlog|concluido]{C.R}\n")
+    print(f"\n  {C.D}Total: {len(tickets)} ticket(s){C.R}\n")
 
 def mover_ticket(state, ticket_id, novo_status):
     for t in state["tickets"]:
@@ -857,7 +1025,7 @@ def mover_ticket(state, ticket_id, novo_status):
     return False
 
 # ═════════════════════════════════════════════════════════════
-# MENU INTERATIVO
+# MENU
 # ═════════════════════════════════════════════════════════════
 def menu(proj, state):
     while True:
@@ -867,21 +1035,24 @@ def menu(proj, state):
         bk = len([t for t in state["tickets"] if t.get("status")=="backlog"])
 
         print(f"  {C.GR}✓ Projeto:{C.R} {C.B}{proj}{C.R}")
+        print(f"  {C.D}HLQ remoto: {HLQ}{C.R}")
         print(f"  {C.D}Dia: #{state['day']} · Tickets: {total} (backlog: {bk}) · Injeções ativas: {len(active_inj)}{C.R}")
         if active_inj:
-            print(f"  {C.RD}{C.B}⚡ DEFEITOS ATIVOS:{C.R}")
+            print(f"  {C.RD}{C.B}⚡ DEFEITOS ATIVOS NO MAINFRAME:{C.R}")
             for a in active_inj:
                 print(f"     {C.RD}{a['id']}{C.R} → {', '.join(a['arquivos'])}")
         print()
-        print(f"  {C.B}1{C.R} — Gerar novo dia (tickets + injeções)")
+        print(f"  {C.B}1{C.R} — Gerar novo dia")
         print(f"  {C.B}2{C.R} — Ver tickets")
-        print(f"  {C.B}3{C.R} — Mover ticket (status)")
+        print(f"  {C.B}3{C.R} — Mover ticket")
         print(f"  {C.B}4{C.R} — Injetar defeito manual")
         print(f"  {C.B}5{C.R} — Ver injeções ativas")
         print(f"  {C.B}6{C.R} — Reverter injeções")
         print(f"  {C.B}7{C.R} — Listar cenários de injeção")
         print(f"  {C.B}8{C.R} — Importar templates JSON")
         print(f"  {C.B}9{C.R} — Exportar tickets")
+        print(f"  {C.B}S{C.R} — Spy (comparar local × remoto)")
+        print(f"  {C.B}A{C.R} — Submeter cadeia inteira (EBJALL)")
         print(f"  {C.B}R{C.R} — Resetar tudo")
         print(f"  {C.B}0{C.R} — Sair")
         print()
@@ -889,11 +1060,9 @@ def menu(proj, state):
         ch = input(f"  {C.GR}>{C.R} ").strip()
 
         if ch == '1':
-            gerar_dia(proj, state)
-            input(f"  {C.D}Enter para continuar...{C.R}")
+            gerar_dia(proj, state); input(f"  {C.D}Enter para continuar...{C.R}")
         elif ch == '2':
-            show_tickets(state)
-            input(f"  {C.D}Enter para continuar...{C.R}")
+            show_tickets(state); input(f"  {C.D}Enter para continuar...{C.R}")
         elif ch == '3':
             show_tickets(state)
             tid = input(f"  {C.GR}Ticket ID:{C.R} ").strip().upper()
@@ -902,8 +1071,7 @@ def menu(proj, state):
                 ns = input(f"  {C.GR}Novo status (1-4):{C.R} ").strip()
                 sm = {"1":"backlog","2":"em_andamento","3":"em_revisao","4":"concluido"}
                 if ns in sm:
-                    mover_ticket(state, tid, sm[ns])
-                    save_state(proj, state)
+                    mover_ticket(state, tid, sm[ns]); save_state(proj, state)
             input(f"  {C.D}Enter para continuar...{C.R}")
         elif ch == '4':
             print(f"\n  {C.B}Cenários de injeção:{C.R}")
@@ -922,11 +1090,9 @@ def menu(proj, state):
                     print(f"  {C.CY}{a['id']}{C.R} — {a['titulo']}")
                     print(f"    {C.YL}Arquivos: {', '.join(a['arquivos'])}{C.R}")
                     print(f"    {C.D}Desde: {a['timestamp']}{C.R}")
-            print()
-            input(f"  {C.D}Enter para continuar...{C.R}")
+            input(f"\n  {C.D}Enter para continuar...{C.R}")
         elif ch == '6':
-            do_revert(proj, state)
-            input(f"  {C.D}Enter para continuar...{C.R}")
+            do_revert(proj, state); input(f"  {C.D}Enter para continuar...{C.R}")
         elif ch == '7':
             for inj in INJECTIONS:
                 dc=DIF_COLORS.get(inj["dif"],C.BL)
@@ -956,6 +1122,13 @@ def menu(proj, state):
             out = os.path.join(proj, "ebops_tickets_export.json")
             with open(out,'w') as f: json.dump(state["tickets"], f, indent=2, ensure_ascii=False)
             print(f"  {C.GR}✓ Exportado: {out}{C.R}")
+            input(f"  {C.D}Enter para continuar...{C.R}")
+        elif ch.upper() == 'S':
+            iid = input(f"  {C.GR}ID da injeção (vazio = todas):{C.R} ").strip().upper() or None
+            do_spy(proj, state, iid)
+            input(f"  {C.D}Enter para continuar...{C.R}")
+        elif ch.upper() == 'A':
+            do_submit_all(proj)
             input(f"  {C.D}Enter para continuar...{C.R}")
         elif ch.upper() == 'R':
             if input(f"  {C.RD}Resetar TUDO? (s/N): {C.R}").strip().lower()=='s':
@@ -989,8 +1162,7 @@ def main():
     elif args[0] == 'tickets':
         show_tickets(state, args[1] if len(args)>1 else None)
     elif args[0] == 'mover' and len(args) >= 3:
-        mover_ticket(state, args[1].upper(), args[2])
-        save_state(proj, state)
+        mover_ticket(state, args[1].upper(), args[2]); save_state(proj, state)
     elif args[0] == 'status':
         header()
         active = state["injections_active"]
@@ -1004,11 +1176,16 @@ def main():
         do_inject(proj, args[1].upper(), state)
     elif args[0] == 'revert':
         do_revert(proj, state, args[1].upper() if len(args)>1 else None)
+    elif args[0] == 'spy':
+        do_spy(proj, state, args[1].upper() if len(args)>1 else None)
+    elif args[0] == 'submit-all':
+        do_submit_all(proj)
     elif args[0] == 'where':
         print(f"\n  {C.GR}✓ Projeto:{C.R} {C.B}{proj}{C.R}")
+        print(f"  {C.D}HLQ remoto:{C.R} {HLQ}")
         for f in ["EBVALI01.cbl","EBPOST01.cbl","EBJVALD.jcl","EBJPOST.jcl","CPLCT001.cpy","CPCNT001.cpy","lancamentos_d0.txt"]:
             ok = bool(_resolve_file(proj, f))
-            print(f"    {C.GR+'✓' if ok else C.RD+'✗'}{C.R} {f}")
+            print(f"    {C.GR+'✓' if ok else C.RD+'✗'}{C.R} {f}  →  {_ds_member_for(f)}")
         print()
     elif args[0] == 'reset':
         if input(f"  Resetar TUDO? (s/N): ").strip().lower()=='s':
@@ -1028,7 +1205,7 @@ def main():
                 t.setdefault("id",f"CUST-{random.randint(1000,9999)}")
             state["custom_templates"].extend(valid)
             save_state(proj, state)
-            print(f"  {C.GR}✓ {len(valid)} template(s) importado(s). Pool total: {len(TEMPLATES)+len(state['custom_templates'])}{C.R}\n")
+            print(f"  {C.GR}✓ {len(valid)} template(s) importado(s).{C.R}\n")
     elif args[0] == 'exportar':
         out = os.path.join(proj, "ebops_tickets_export.json")
         with open(out,'w') as f: json.dump(state["tickets"], f, indent=2, ensure_ascii=False)
@@ -1037,17 +1214,22 @@ def main():
         print(f"""
   Uso:
     python ebops.py                 Menu interativo
-    python ebops.py dia             Gera novo dia (tickets + injeções)
+    python ebops.py dia             Gera novo dia
     python ebops.py tickets [filtro] Lista tickets
-    python ebops.py mover EB-001-01 em_andamento  Move ticket
-    python ebops.py inject INJ-001  Injeta defeito específico
+    python ebops.py mover EB-001-01 em_andamento
+    python ebops.py inject INJ-001  Injeta no MAINFRAME via Zowe
+    python ebops.py revert [INJ-ID] Reverte (re-upload do snapshot)
+    python ebops.py spy [INJ-ID]    Compara local × remoto
+    python ebops.py submit-all      Submete cadeia completa (EBJALL)
     python ebops.py status          Injeções ativas
-    python ebops.py revert [INJ-ID] Reverte injeções
-    python ebops.py where           Mostra caminho do projeto
+    python ebops.py where           Mostra caminho e DS_MAP
     python ebops.py set-path /dir   Define caminho manualmente
     python ebops.py importar a.json Importa templates
     python ebops.py exportar        Exporta tickets
     python ebops.py reset           Reseta tudo
+
+  Variáveis de ambiente:
+    EBOPS_HLQ                       HLQ dos datasets (default: Z77948.EMUNAH)
 """)
 
 if __name__ == "__main__":
