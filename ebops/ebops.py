@@ -361,6 +361,12 @@ def mut(name):
         MUTATIONS[name] = fn; return fn
     return decorator
 
+REVERTS = {}
+def rev(name):
+    def decorator(fn):
+        REVERTS[name] = fn; return fn
+    return decorator
+
 def _read_local(proj, filename):
     p = _resolve_file(proj, filename)
     if not p: raise FileNotFoundError(filename)
