@@ -19,15 +19,16 @@
 //*   - ARQ.LANCTO.ESDS         (DELETE CLUSTER + DEFINE)
 //*   - ARQ.ENTRADA.SEQ         (recriado vazio LRECL=120)
 //*   - ARQ.ENTRADA.TRAILER.SEQ (recriado vazio LRECL=80)
-//*   - ARQ.REJEITOS.SEQ        (recriado vazio LRECL=120)
-//*   - ARQ.AUDIT.SEQ           (recriado vazio LRECL=120)
+//*   - ARQ.REJEITOS.SEQ        (recriado vazio LRECL=156)
+//*   - ARQ.AUDIT.SEQ           (recriado vazio LRECL=128)
 //*   - ARQ.CONCIL.SEQ          (recriado vazio LRECL=132)
 //*   - ARQ.ACCR.MOV.SEQ        (apagado - EBJACCR aloca a cada
 //*                              ciclo)
 //*   - ARQ.FECHTO.SEQ          (apagado - EBJEOD  aloca a cada
 //*                              ciclo)
 //*   - ARQ.REPR.LANCTO.SEQ     (recriado vazio LRECL=120)
-//*   - ARQ.REPR.REJPERM.SEQ    (recriado vazio LRECL=120)
+//*   - ARQ.REPR.REJPERM.SEQ    (recriado vazio LRECL=150)
+//*   - ARQ.RPOST.REJEITO.SEQ   (recriado vazio LRECL=156)
 //*
 //* O QUE ESTE JOB NAO TOCA (preservado):
 //*   - ARQ.CLIENTE.KSDS e ARQ.CONTA.KSDS (masters)
@@ -100,6 +101,9 @@
   DELETE 'Z77948.EMUNAH.ARQ.REPR.REJPERM.SEQ' NONVSAM PURGE
   SET MAXCC = 0
 //*       Rejeitos permanentes apos reprocessamento.
+  DELETE 'Z77948.EMUNAH.ARQ.RPOST.REJEITO.SEQ' NONVSAM PURGE
+  SET MAXCC = 0
+//*       Rejeitos da postagem de reprocessamento (EBJRPOST).
 /*
 //*
 //* === STEP DEFLCT: REDEFINIR LANCTO.ESDS VAZIO =================
@@ -138,13 +142,13 @@
 //REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
-//*           Rejeitos recriado vazio (LRECL=120).
+//             DCB=(RECFM=FB,LRECL=156,BLKSIZE=0)
+//*           Rejeitos recriado vazio (LRECL=156).
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
-//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
-//*           Auditoria recriada vazia (LRECL=120).
+//             DCB=(RECFM=FB,LRECL=128,BLKSIZE=0)
+//*           Auditoria recriada vazia (LRECL=128).
 //CONCIL   DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
@@ -158,8 +162,13 @@
 //REPRREJ  DD DSN=Z77948.EMUNAH.ARQ.REPR.REJPERM.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
-//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//             DCB=(RECFM=FB,LRECL=150,BLKSIZE=0)
 //*           Rejeitos permanentes (vazio).
+//RPSTREJ  DD DSN=Z77948.EMUNAH.ARQ.RPOST.REJEITO.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=156,BLKSIZE=0)
+//*           Rejeitos da postagem de reprocessamento (vazio).
 //*
 //* === STEP LISTRES: EVIDENCIA POS-RESET ========================
 //*   LISTCAT mostra os datasets recriados vazios e os masters
