@@ -271,6 +271,11 @@
 
            IF NOT COM-ERRO
                OPEN EXTEND REJEITOS-OUT
+      * Arquivo sequencial virgem retorna FS=90; formata abrindo OUTPUT
+               IF WS-FS-REJEITOS = '90'
+                   DISPLAY '*** AVISO: REJEITOS VIRGEM. FORCANDO OPEN OUTPUT.'
+                   OPEN OUTPUT REJEITOS-OUT
+               END-IF
                IF NOT FS-REJEITOS-OK
                    DISPLAY '*** EBVALI01 ERRO OPEN REJEITOS - '
                            WS-FS-REJEITOS
