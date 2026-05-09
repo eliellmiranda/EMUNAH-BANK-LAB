@@ -26,7 +26,7 @@
       * COPYBOOKS UTILIZADOS:                                         *
       *   CPLCT001 = layout de lancamento (120 bytes)                 *
       *   CPCNT001 = layout de conta      (100 bytes)                 *
-      *   CPREJ001 = layout de rejeito    (120 bytes)                 *
+      *   CPREJ001 = layout de rejeito    (156 bytes)                 *
       *   CPAUD001 = layout de auditoria  (120 bytes + 8b FILLER)     *
       *                                                               *
       * CODIGOS DE REJEICAO:                                          *
@@ -174,7 +174,7 @@
                            WS-FS-MOVTIN
                    SET COM-ERRO TO TRUE
            END-EVALUATE
-                          
+
            IF NOT COM-ERRO
                OPEN I-O CONTA-KSDS
                IF NOT FS-CONTA-OK
@@ -248,7 +248,7 @@
            IF MOV-VALIDO
                COMPUTE WS-SALDO-DISPONIVEL =
                    CNT-SALDO OF CONTA-REG + CNT-LIMITE OF CONTA-REG
-               IF LCT-TIPO OF MOVTO-REG = 'C'
+               IF LCT-TIPO OF MOVTO-REG = 'D'
                   AND LCT-VALOR OF MOVTO-REG > WS-SALDO-DISPONIVEL
                    MOVE 'P003' TO WS-REJ-COD
                    MOVE 'SALDO/LIMITE INSUFICIENTE' TO WS-REJ-DESC
