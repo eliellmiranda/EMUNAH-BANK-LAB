@@ -285,18 +285,25 @@
                PERFORM 4000-GRAVAR-REJEITO
            END-IF.
 
+      *---------------------------------------------------------------*
+      * 4000-GRAVAR-REJEITO                                           *
+      *---------------------------------------------------------------*
        4000-GRAVAR-REJEITO.
-           MOVE SPACES TO REJEITOS-REG
-
+           MOVE SPACES          TO REJEITOS-REG
            MOVE MOVTO-REG       TO REJ-REGISTRO-ORIG
            MOVE WS-REJ-COD      TO REJ-COD-MOTIVO
            MOVE WS-REJ-DESC     TO REJ-TXT-MOTIVO
            MOVE WS-TIMESTAMP    TO REJ-TIMESTAMP
-           SET REJ-ORIGEM-POST  TO TRUE
-
+           MOVE 'POST'          TO REJ-ORIGEM
            WRITE REJEITOS-REG
            IF FS-REJEITOS-OK
                ADD 1 TO WS-REJEITADOS
+               DISPLAY '*** EBPOST01 REJEITO ' WS-REJ-COD
+                       ' AG:'  LCT-AGENCIA   OF MOVTO-REG
+                       ' CT:'  LCT-NUM-CONTA OF MOVTO-REG
+                       ' '     LCT-TIPO      OF MOVTO-REG
+                       ' VLR:' LCT-VALOR     OF MOVTO-REG
+                       ' '     WS-REJ-DESC
                PERFORM 5100-AUDITAR-REJEITO
            ELSE
                DISPLAY '*** EBPOST01 ERRO WRITE REJEITOS - '
