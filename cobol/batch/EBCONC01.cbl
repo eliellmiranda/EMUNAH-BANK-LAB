@@ -95,7 +95,7 @@
       * CORRECAO: LRECL ajustado para 120 bytes conforme o catalogo   *
       *---------------------------------------------------------------*
        FD  REJEIT-IN
-           RECORD CONTAINS 120 CHARACTERS
+           RECORD CONTAINS 156 CHARACTERS
            RECORDING MODE IS F.
        01  REJEIT-REG                 PIC X(120).
 
