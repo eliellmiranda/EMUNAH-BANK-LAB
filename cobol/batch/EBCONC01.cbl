@@ -91,13 +91,13 @@
            COPY CPLCT001.
 
       *---------------------------------------------------------------*
-      * Arquivo de rejeitos (TEXTO PS)                                *
-      * CORRECAO: LRECL ajustado para 120 bytes conforme o catalogo   *
+      * Arquivo de rejeitos — layout completo para acessar REJ-ORIGEM *
       *---------------------------------------------------------------*
        FD  REJEIT-IN
            RECORD CONTAINS 156 CHARACTERS
            RECORDING MODE IS F.
-       01  REJEIT-REG                 PIC X(120).
+       01  REJEIT-REG.
+           COPY CPREJ001.
 
       *---------------------------------------------------------------*
       * Arquivo de snapshot (TEXTO PS)                                *
@@ -331,6 +331,10 @@
 
       *---------------------------------------------------------------*
       * 2200-CONTAR-REJEIT                                            *
+      * Conta apenas rejeitos de validacao (REJ-ORIGEM='VALI').       *
+      * Rejeitos de postagem (REJ-ORIGEM='POST') ja estao contidos    *
+      * em WS-CT-MOVTIN (o lancamento passou pelo EBJVALD) e nao      *
+      * devem entrar na equacao ENTRIN = MOVTIN + REJEIT.             *
       *---------------------------------------------------------------*
        2200-CONTAR-REJEIT.
            PERFORM UNTIL EOF-REJEIT OR OCORREU-ERRO-IO
@@ -339,13 +343,15 @@
                        SET EOF-REJEIT TO TRUE
                    NOT AT END
                        IF FS-REJEIT-OK
-                           ADD 1 TO WS-CT-REJEIT
+                           IF REJ-ORIGEM = 'VALI'
+                               ADD 1 TO WS-CT-REJEIT
+                           END-IF
                        ELSE
                            SET OCORREU-ERRO-IO TO TRUE
                        END-IF
                END-READ
            END-PERFORM.
-
+           
       *---------------------------------------------------------------*
       * 2300-SOMAR-SALDOIN                                            *
       *---------------------------------------------------------------*
