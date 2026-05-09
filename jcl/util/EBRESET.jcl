@@ -22,10 +22,8 @@
 //*   - ARQ.REJEITOS.SEQ        (recriado vazio LRECL=156)
 //*   - ARQ.AUDIT.SEQ           (recriado vazio LRECL=128)
 //*   - ARQ.CONCIL.SEQ          (recriado vazio LRECL=132)
-//*   - ARQ.ACCR.MOV.SEQ        (apagado - EBJACCR aloca a cada
-//*                              ciclo)
-//*   - ARQ.FECHTO.SEQ          (apagado - EBJEOD  aloca a cada
-//*                              ciclo)
+//*   - ARQ.ACCR.MOV.SEQ        (recriado vazio LRECL=120)
+//*   - ARQ.FECHTO.SEQ          (recriado vazio LRECL=132)
 //*   - ARQ.REPR.LANCTO.SEQ     (recriado vazio LRECL=120)
 //*   - ARQ.REPR.REJPERM.SEQ    (recriado vazio LRECL=150)
 //*   - ARQ.RPOST.REJEITO.SEQ   (recriado vazio LRECL=156)
@@ -44,6 +42,8 @@
 //*     EBCTL01 ou edicao manual no ISPF)
 //*   - Reexecutar a cadeia: EBJPRECK -> EBJSOD -> ... -> EBJEOD
 //*
+//* SCRATCH em todos os DELETE: remove do VTOC mesmo quando o
+//* catalogo esta dessincronizado. Previne IGD17001I em reruns.
 //* SET MAXCC=0 apos cada DELETE: idempotente. Nao falha se o
 //* dataset ja foi deletado ou nunca existiu.
 //* ============================================================
@@ -62,32 +62,26 @@
 /*
 //*
 //* === STEP DELSEQ: DELETAR SEQUENCIAIS DO CICLO ================
+//*   SCRATCH garante remocao do VTOC mesmo se o catalogo estiver
+//*   dessincronizado (previne IGD17001I em reruns).
 //*
 //DELSEQ   EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
 //SYSIN    DD *
-  DELETE 'Z77948.EMUNAH.ARQ.ENTRADA.SEQ' NONVSAM PURGE
+  DELETE 'Z77948.EMUNAH.ARQ.ENTRADA.SEQ' NONVSAM SCRATCH PURGE
   SET MAXCC = 0
-//*       Arquivo do dia promovido pelo EBJLOAD. Sera recriado
-//*       vazio. O proximo EBJLOAD repopula a partir do STAGE.
-  DELETE 'Z77948.EMUNAH.ARQ.ENTRADA.TRAILER.SEQ' NONVSAM PURGE
+  DELETE 'Z77948.EMUNAH.ARQ.ENTRADA.TRAILER.SEQ' NONVSAM SCRATCH PURGE
   SET MAXCC = 0
-//*       Trailer com count/hash do arquivo de entrada.
-  DELETE 'Z77948.EMUNAH.ARQ.REJEITOS.SEQ' NONVSAM PURGE
+  DELETE 'Z77948.EMUNAH.ARQ.REJEITOS.SEQ' NONVSAM SCRATCH PURGE
   SET MAXCC = 0
-//*       Rejeitos acumulados pelo EBJVALD via DISP=MOD.
-  DELETE 'Z77948.EMUNAH.ARQ.AUDIT.SEQ' NONVSAM PURGE
+  DELETE 'Z77948.EMUNAH.ARQ.AUDIT.SEQ' NONVSAM SCRATCH PURGE
   SET MAXCC = 0
-//*       Trilha de auditoria do dia.
-  DELETE 'Z77948.EMUNAH.ARQ.CONCIL.SEQ' NONVSAM PURGE
+  DELETE 'Z77948.EMUNAH.ARQ.CONCIL.SEQ' NONVSAM SCRATCH PURGE
   SET MAXCC = 0
-//*       Relatorio three-way de conciliacao (LRECL=132).
-  DELETE 'Z77948.EMUNAH.ARQ.ACCR.MOV.SEQ' NONVSAM PURGE
+  DELETE 'Z77948.EMUNAH.ARQ.ACCR.MOV.SEQ' NONVSAM SCRATCH PURGE
   SET MAXCC = 0
-//*       Movimentos de juros/tarifas. EBJACCR aloca a cada ciclo.
-  DELETE 'Z77948.EMUNAH.ARQ.FECHTO.SEQ' NONVSAM PURGE
+  DELETE 'Z77948.EMUNAH.ARQ.FECHTO.SEQ' NONVSAM SCRATCH PURGE
   SET MAXCC = 0
-//*       Relatorio de fechamento. EBJEOD aloca a cada ciclo.
 /*
 //*
 //* === STEP DELREPR: DELETAR DATASETS DE REPROCESSAMENTO ========
@@ -95,15 +89,12 @@
 //DELREPR  EXEC PGM=IDCAMS
 //SYSPRINT DD SYSOUT=*
 //SYSIN    DD *
-  DELETE 'Z77948.EMUNAH.ARQ.REPR.LANCTO.SEQ' NONVSAM PURGE
+  DELETE 'Z77948.EMUNAH.ARQ.REPR.LANCTO.SEQ' NONVSAM SCRATCH PURGE
   SET MAXCC = 0
-//*       Lancamentos recuperados pelo EBJREPR.
-  DELETE 'Z77948.EMUNAH.ARQ.REPR.REJPERM.SEQ' NONVSAM PURGE
+  DELETE 'Z77948.EMUNAH.ARQ.REPR.REJPERM.SEQ' NONVSAM SCRATCH PURGE
   SET MAXCC = 0
-//*       Rejeitos permanentes apos reprocessamento.
-  DELETE 'Z77948.EMUNAH.ARQ.RPOST.REJEITO.SEQ' NONVSAM PURGE
+  DELETE 'Z77948.EMUNAH.ARQ.RPOST.REJEITO.SEQ' NONVSAM SCRATCH PURGE
   SET MAXCC = 0
-//*       Rejeitos da postagem de reprocessamento (EBJRPOST).
 /*
 //*
 //* === STEP DEFLCT: REDEFINIR LANCTO.ESDS VAZIO =================
@@ -124,51 +115,51 @@
 /*
 //*
 //* === STEP RECRSEQ: RECRIAR SEQUENCIAIS NECESSARIOS ============
-//*   IEFBR14 + DD NEW,CATLG mantem mesmos DCB do EBALLOC.
-//*   ACCR.MOV.SEQ e FECHTO.SEQ NAO sao recriados aqui:
-//*   sao alocados dinamicamente em EBJACCR/EBJEOD a cada ciclo.
+//*   IEFBR14 + DD NEW,CATLG recria todos vazios com DCB correto.
+//*   ACCR.MOV.SEQ e FECHTO.SEQ incluidos: EBJACCR e EBJEOD usam
+//*   DISP=OLD e exigem que o dataset exista antes de executar.
 //*
 //RECRSEQ  EXEC PGM=IEFBR14
 //ENTRADA  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
 //             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
-//*           Arquivo do dia recriado vazio.
 //TRAILER  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.TRAILER.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(1,1)),
 //             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
-//*           Trailer/hash recriado vazio.
 //REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
 //             DCB=(RECFM=FB,LRECL=156,BLKSIZE=0)
-//*           Rejeitos recriado vazio (LRECL=156).
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
 //             DCB=(RECFM=FB,LRECL=128,BLKSIZE=0)
-//*           Auditoria recriada vazia (LRECL=128).
 //CONCIL   DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
 //             DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)
-//*           Conciliacao three-way recriada vazia (LRECL=132).
+//ACCRMOV  DD DSN=Z77948.EMUNAH.ARQ.ACCR.MOV.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,2)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//FECHTO   DD DSN=Z77948.EMUNAH.ARQ.FECHTO.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,2)),
+//             DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)
 //REPRLCT  DD DSN=Z77948.EMUNAH.ARQ.REPR.LANCTO.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
 //             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
-//*           Lancamentos para reprocessamento (vazio).
 //REPRREJ  DD DSN=Z77948.EMUNAH.ARQ.REPR.REJPERM.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
 //             DCB=(RECFM=FB,LRECL=150,BLKSIZE=0)
-//*           Rejeitos permanentes (vazio).
 //RPSTREJ  DD DSN=Z77948.EMUNAH.ARQ.RPOST.REJEITO.SEQ,
 //             DISP=(NEW,CATLG,DELETE),
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
 //             DCB=(RECFM=FB,LRECL=156,BLKSIZE=0)
-//*           Rejeitos da postagem de reprocessamento (vazio).
 //*
 //* === STEP LISTRES: EVIDENCIA POS-RESET ========================
 //*   LISTCAT mostra os datasets recriados vazios e os masters
