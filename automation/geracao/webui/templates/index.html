@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emunah Bank Lab</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: 'Segoe UI', system-ui, sans-serif; }
+  .tab-btn { transition: all .15s; }
+  .tab-btn.active { background:#1e3a5f; color:#fff; }
+  .tab-btn:not(.active):hover { background:#e2e8f0; }
+  .section { display:none; }
+  .section.active { display:block; }
+  .badge-C { background:#dcfce7; color:#166534; }
+  .badge-D { background:#fee2e2; color:#991b1b; }
+  .badge-A { background:#dbeafe; color:#1e40af; }
+  .badge-P { background:#fef9c3; color:#713f12; }
+  .btn-primary { background:#1e3a5f; color:#fff; }
+  .btn-primary:hover { background:#162d4a; }
+  .btn-danger { background:#dc2626; color:#fff; }
+  .btn-danger:hover { background:#b91c1c; }
+  .btn-green { background:#16a34a; color:#fff; }
+  .btn-green:hover { background:#15803d; }
+  table { border-collapse:collapse; width:100%; }
+  th { background:#1e3a5f; color:#fff; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; }
+  th, td { padding:.5rem .75rem; text-align:left; border-bottom:1px solid #e2e8f0; }
+  tr:hover td { background:#f8fafc; }
+  input, select, textarea { border:1px solid #cbd5e1; border-radius:.375rem; padding:.4rem .6rem; width:100%; font-size:.875rem; }
+  input:focus, select:focus { outline:2px solid #1e3a5f; border-color:#1e3a5f; }
+  .toast { position:fixed; bottom:1.5rem; right:1.5rem; padding:.75rem 1.25rem; border-radius:.5rem; color:#fff; font-size:.875rem; z-index:9999; animation:slide-in .2s ease; }
+  .toast.ok { background:#16a34a; }
+  .toast.err { background:#dc2626; }
+  @keyframes slide-in { from { opacity:0; transform:translateY(1rem); } to { opacity:1; transform:translateY(0); } }
+  .mono { font-family: 'Courier New', monospace; font-size:.8rem; }
+</style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<!-- Sidebar + Main Layout -->
+<div class="flex min-h-screen">
+
+  <!-- Sidebar -->
+  <aside class="w-56 bg-slate-900 text-white flex flex-col" style="min-width:14rem">
+    <div class="p-4 border-b border-slate-700">
+      <div class="text-xs text-slate-400 uppercase tracking-widest mb-1">Emunah Bank</div>
+      <div class="font-bold text-lg leading-tight">Lab Manager</div>
+    </div>
+    <nav class="flex flex-col gap-1 p-3 flex-1">
+      <button class="tab-btn active text-left px-3 py-2 rounded text-sm" data-tab="clientes">Clientes</button>
+      <button class="tab-btn text-left px-3 py-2 rounded text-sm" data-tab="contas">Contas</button>
+      <button class="tab-btn text-left px-3 py-2 rounded text-sm" data-tab="gerar">Gerar Lançamentos</button>
+      <button class="tab-btn text-left px-3 py-2 rounded text-sm" data-tab="lancamentos">Lançamentos</button>
+      <button class="tab-btn text-left px-3 py-2 rounded text-sm" data-tab="arquivos">Arquivos</button>
+    </nav>
+    <div class="p-3 border-t border-slate-700">
+      <div id="stats" class="text-xs text-slate-400 space-y-1"></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-6 overflow-auto">
+
+    <!-- CLIENTES -->
+    <section id="tab-clientes" class="section active">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-xl font-bold text-slate-800">Clientes</h1>
+        <div class="flex gap-2">
+          <button onclick="exportar('clientes')" class="text-xs px-3 py-1.5 rounded border border-slate-300 hover:bg-slate-100">⬇ Exportar TXT</button>
+          <button onclick="openModal('modal-seed')" class="text-xs px-3 py-1.5 rounded border border-slate-300 hover:bg-slate-100">⚡ Gerar Seed</button>
+          <button onclick="openModal('modal-add-cliente')" class="btn-primary text-xs px-3 py-1.5 rounded">+ Novo Cliente</button>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table id="tbl-clientes">
+          <thead><tr>
+            <th>ID</th><th>Nome</th><th>CPF</th><th>Nascimento</th><th>Cadastro</th><th>Status</th><th>Contas</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-clientes"><tr><td colspan="8" class="text-center text-slate-400 py-8">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CONTAS -->
+    <section id="tab-contas" class="section">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-xl font-bold text-slate-800">Contas</h1>
+        <div class="flex gap-2">
+          <button onclick="exportar('contas')" class="text-xs px-3 py-1.5 rounded border border-slate-300 hover:bg-slate-100">⬇ Exportar TXT</button>
+          <button onclick="openModal('modal-add-conta')" class="btn-primary text-xs px-3 py-1.5 rounded">+ Nova Conta</button>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table>
+          <thead><tr>
+            <th>Número</th><th>Agência</th><th>Cliente</th><th>Tipo</th><th>Status</th><th>Abertura</th><th>Saldo Inicial</th><th>Saldo Atual</th><th>Limite</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-contas"><tr><td colspan="10" class="text-center text-slate-400 py-8">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- GERAR LANÇAMENTOS -->
+    <section id="tab-gerar" class="section">
+      <h1 class="text-xl font-bold text-slate-800 mb-4">Gerar Lançamentos</h1>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <div class="bg-white rounded-lg shadow p-5">
+          <h2 class="font-semibold text-slate-700 mb-4 text-sm uppercase tracking-wide">Parâmetros</h2>
+          <form id="form-gerar" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-slate-500 block mb-1">Quantidade</label>
+                <input type="number" name="quantidade" value="25" min="1" max="999999">
+              </div>
+              <div>
+                <label class="text-xs text-slate-500 block mb-1">Data (AAAAMMDD)</label>
+                <input type="text" name="data" id="input-data" placeholder="Hoje">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-slate-500 block mb-1">Valor Mínimo R$</label>
+                <input type="text" name="valor_min" value="25.00">
+              </div>
+              <div>
+                <label class="text-xs text-slate-500 block mb-1">Valor Máximo R$</label>
+                <input type="text" name="valor_max" value="2500.00">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-slate-500 block mb-1">Status do Lançamento</label>
+                <select name="status">
+                  <option value="P">P - Pendente</option>
+                  <option value="A">A - Aprovado</option>
+                  <option value="R">R - Rejeitado</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-slate-500 block mb-1">Lote Inicial</label>
+                <input type="number" name="lote_inicial" value="1" min="1">
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 block mb-1">Seed (opcional - para reproduzir)</label>
+              <input type="number" name="seed" placeholder="Deixe em branco para aleatório">
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 block mb-1">Clientes (IDs ou nomes, separados por vírgula)</label>
+              <input type="text" name="clientes" placeholder="Ex: 1, 3, JOAO — vazio = todos">
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 block mb-1">Tipos</label>
+              <div class="flex gap-4 mt-1">
+                <label class="flex items-center gap-1 text-sm"><input type="checkbox" name="tipo_C" checked> Crédito (C)</label>
+                <label class="flex items-center gap-1 text-sm"><input type="checkbox" name="tipo_D" checked> Débito (D)</label>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 block mb-1">Canais</label>
+              <div id="canais-checks" class="grid grid-cols-4 gap-1 mt-1 text-sm"></div>
+            </div>
+            <div>
+              <label class="text-xs text-slate-500 block mb-1">Históricos</label>
+              <div id="historicos-checks" class="grid grid-cols-2 gap-1 mt-1 text-sm"></div>
+            </div>
+            <button type="submit" class="btn-green w-full py-2 rounded font-semibold text-sm mt-2">Gerar Arquivo</button>
+          </form>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-5">
+          <h2 class="font-semibold text-slate-700 mb-4 text-sm uppercase tracking-wide">Resultado</h2>
+          <div id="gerar-resultado" class="text-slate-400 text-sm">Preencha o formulário e clique em Gerar.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LANÇAMENTOS -->
+    <section id="tab-lancamentos" class="section">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-xl font-bold text-slate-800">Lançamentos</h1>
+        <div class="flex gap-2 items-center">
+          <input type="text" id="filtro-conta" placeholder="Conta nº" class="w-32 text-sm" oninput="loadLancamentos()">
+          <select id="filtro-arquivo" class="text-sm w-48" onchange="loadLancamentos()">
+            <option value="">Todos os arquivos</option>
+          </select>
+          <button onclick="loadLancamentos()" class="text-xs px-3 py-1.5 rounded border border-slate-300 hover:bg-slate-100">Atualizar</button>
+        </div>
+      </div>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>Conta</th><th>Agência</th><th>Data</th><th>Tipo</th><th>Valor</th><th>Histórico</th><th>Canal</th><th>Lote</th><th>Seq</th><th>Status</th><th>Arquivo</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-lancamentos"><tr><td colspan="13" class="text-center text-slate-400 py-8">Carregando...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ARQUIVOS -->
+    <section id="tab-arquivos" class="section">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-xl font-bold text-slate-800">Arquivos Gerados</h1>
+        <button onclick="loadArquivos()" class="text-xs px-3 py-1.5 rounded border border-slate-300 hover:bg-slate-100">Atualizar</button>
+      </div>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table>
+          <thead><tr>
+            <th>Nome</th><th>Data Geração</th><th>Quantidade</th><th>Arquivo</th><th></th>
+          </tr></thead>
+          <tbody id="tbody-arquivos"><tr><td colspan="5" class="text-center text-slate-400 py-8">Nenhum arquivo gerado.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MODAL: Novo Cliente -->
+<div id="modal-add-cliente" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+    <h2 class="font-bold text-lg mb-4">Novo Cliente</h2>
+    <form id="form-add-cliente" class="space-y-3">
+      <div>
+        <label class="text-xs text-slate-500 block mb-1">Nome</label>
+        <input type="text" name="nome" required placeholder="Nome completo">
+      </div>
+      <div>
+        <label class="text-xs text-slate-500 block mb-1">CPF (11 dígitos)</label>
+        <input type="text" name="cpf" required placeholder="Somente dígitos">
+      </div>
+      <div>
+        <label class="text-xs text-slate-500 block mb-1">Data de Nascimento (AAAAMMDD)</label>
+        <input type="text" name="data_nasc" required placeholder="19900101">
+      </div>
+      <div class="flex gap-2 justify-end pt-2">
+        <button type="button" onclick="closeModal('modal-add-cliente')" class="text-sm px-4 py-2 rounded border border-slate-300 hover:bg-slate-100">Cancelar</button>
+        <button type="submit" class="btn-primary text-sm px-4 py-2 rounded">Cadastrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: Nova Conta -->
+<div id="modal-add-conta" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+    <h2 class="font-bold text-lg mb-4">Nova Conta</h2>
+    <form id="form-add-conta" class="space-y-3">
+      <div>
+        <label class="text-xs text-slate-500 block mb-1">ID do Cliente</label>
+        <input type="number" name="client_id" required min="1">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">Tipo</label>
+          <select name="tipo">
+            <option value="C">C - Corrente</option>
+            <option value="P">P - Poupança</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">Agência</label>
+          <input type="number" name="agencia" value="1" min="1">
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">Saldo Inicial R$</label>
+          <input type="text" name="saldo" value="0.00">
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">Limite R$</label>
+          <input type="text" name="limite" value="0.00">
+        </div>
+      </div>
+      <div class="flex gap-2 justify-end pt-2">
+        <button type="button" onclick="closeModal('modal-add-conta')" class="text-sm px-4 py-2 rounded border border-slate-300 hover:bg-slate-100">Cancelar</button>
+        <button type="submit" class="btn-primary text-sm px-4 py-2 rounded">Cadastrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: Seed -->
+<div id="modal-seed" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
+    <h2 class="font-bold text-lg mb-4">Gerar Base Sintética</h2>
+    <form id="form-seed" class="space-y-3">
+      <div>
+        <label class="text-xs text-slate-500 block mb-1">Quantidade de Clientes</label>
+        <input type="number" name="quantidade" value="20" min="1" max="100">
+      </div>
+      <div>
+        <label class="text-xs text-slate-500 block mb-1">Contas por Cliente</label>
+        <input type="number" name="contas_por_cliente" value="2" min="1" max="5">
+      </div>
+      <div>
+        <label class="text-xs text-slate-500 block mb-1">Seed (opcional)</label>
+        <input type="number" name="seed" placeholder="Aleatório">
+      </div>
+      <div class="flex gap-2 justify-end pt-2">
+        <button type="button" onclick="closeModal('modal-seed')" class="text-sm px-4 py-2 rounded border border-slate-300 hover:bg-slate-100">Cancelar</button>
+        <button type="submit" class="btn-green text-sm px-4 py-2 rounded">Gerar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Utils
+// ---------------------------------------------------------------------------
+const CANAIS_DEFAULT = ['APP', 'ATM', 'PIX', 'INTERNET', 'BATCH', 'POS', 'TED', 'RH'];
+const HISTORICOS_DEFAULT = [
+  'DEPOSITO', 'PAGAMENTO BOLETO', 'TRANSFERENCIA', 'SAQUE',
+  'COMPRA DEBITO', 'APORTE', 'TED RECEBIDA', 'PIX ENVIADO',
+  'PIX RECEBIDO', 'AJUSTE FINANCEIRO'
+];
+
+function fmtBRL(centavos) {
+  return 'R$ ' + (centavos / 100).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+function fmtDate(yyyymmdd) {
+  if (!yyyymmdd || yyyymmdd.length < 8) return yyyymmdd;
+  return yyyymmdd.slice(6,8) + '/' + yyyymmdd.slice(4,6) + '/' + yyyymmdd.slice(0,4);
+}
+
+function fmtDateTime(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  return d.toLocaleString('pt-BR');
+}
+
+function badge(text, cls) {
+  return `<span class="inline-block px-2 py-0.5 rounded text-xs font-semibold ${cls}">${text}</span>`;
+}
+
+function today() {
+  const d = new Date();
+  return d.getFullYear().toString() +
+    String(d.getMonth()+1).padStart(2,'0') +
+    String(d.getDate()).padStart(2,'0');
+}
+
+async function api(method, url, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  return [r.ok, await r.json()];
+}
+
+function toast(msg, ok=true) {
+  const el = document.createElement('div');
+  el.className = `toast ${ok ? 'ok' : 'err'}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+// Close modal on backdrop click
+document.querySelectorAll('[id^="modal-"]').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); });
+});
+
+// ---------------------------------------------------------------------------
+// Tabs
+// ---------------------------------------------------------------------------
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    switch(btn.dataset.tab) {
+      case 'clientes': loadClientes(); break;
+      case 'contas': loadContas(); break;
+      case 'lancamentos': loadLancamentos(); break;
+      case 'arquivos': loadArquivos(); break;
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Stats
+// ---------------------------------------------------------------------------
+async function loadStats() {
+  const [ok, data] = await api('GET', '/api/stats');
+  if (!ok) return;
+  document.getElementById('stats').innerHTML = `
+    <div>👤 ${data.clientes} clientes</div>
+    <div>🏦 ${data.contas} contas</div>
+    <div>📋 ${data.lancamentos} lançamentos</div>
+    <div>📁 ${data.arquivos} arquivos</div>
+  `;
+}
+
+// ---------------------------------------------------------------------------
+// Clientes
+// ---------------------------------------------------------------------------
+async function loadClientes() {
+  const [ok, rows] = await api('GET', '/api/clientes');
+  const tbody = document.getElementById('tbody-clientes');
+  if (!ok || !rows.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-slate-400 py-8">Nenhum cliente cadastrado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td class="mono">${String(r.client_id).padStart(5,'0')}</td>
+      <td class="font-medium">${r.nome}</td>
+      <td class="mono text-slate-500">${r.cpf}</td>
+      <td>${fmtDate(r.data_nasc)}</td>
+      <td>${fmtDate(r.data_cad)}</td>
+      <td>${badge(r.status, r.status==='A' ? 'badge-A' : 'badge-P')}</td>
+      <td class="text-center">${r.qtd_contas}</td>
+      <td><button onclick="deleteCliente(${r.client_id},'${r.nome}')" class="btn-danger text-xs px-2 py-1 rounded">Excluir</button></td>
+    </tr>
+  `).join('');
+  loadStats();
+}
+
+async function deleteCliente(id, nome) {
+  if (!confirm(`Excluir cliente ${id} - ${nome} e todas as suas contas e lançamentos?`)) return;
+  const [ok, data] = await api('DELETE', `/api/clientes/${id}`);
+  toast(ok ? data.message : data.error, ok);
+  loadClientes();
+}
+
+document.getElementById('form-add-cliente').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const [ok, data] = await api('POST', '/api/clientes', {
+    nome: fd.get('nome'),
+    cpf: fd.get('cpf'),
+    data_nasc: fd.get('data_nasc'),
+  });
+  if (ok) {
+    toast(`Cliente ${data.client_id} - ${data.nome} cadastrado.`);
+    closeModal('modal-add-cliente');
+    e.target.reset();
+    loadClientes();
+  } else {
+    toast(data.error, false);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Contas
+// ---------------------------------------------------------------------------
+async function loadContas() {
+  const [ok, rows] = await api('GET', '/api/contas');
+  const tbody = document.getElementById('tbody-contas');
+  if (!ok || !rows.length) {
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center text-slate-400 py-8">Nenhuma conta cadastrada.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const saldoAtual = r.saldo_atual_centavos;
+    const saldoClass = saldoAtual < 0 ? 'text-red-600 font-semibold' : 'text-green-700 font-semibold';
+    return `
+    <tr>
+      <td class="mono font-semibold">${String(r.numero).padStart(8,'0')}</td>
+      <td class="mono">${String(r.agencia).padStart(4,'0')}</td>
+      <td class="text-xs">${r.cliente_nome}</td>
+      <td>${badge(r.tipo === 'C' ? 'Corrente' : 'Poupança', 'badge-A')}</td>
+      <td>${badge(r.status, r.status==='A' ? 'badge-A' : 'badge-P')}</td>
+      <td>${fmtDate(r.data_abertura)}</td>
+      <td class="text-right mono text-slate-500">${fmtBRL(r.saldo_centavos)}</td>
+      <td class="text-right mono ${saldoClass}">${fmtBRL(saldoAtual)}</td>
+      <td class="text-right mono text-slate-500">${fmtBRL(r.limite_centavos)}</td>
+      <td><button onclick="deleteConta(${r.numero})" class="btn-danger text-xs px-2 py-1 rounded">Excluir</button></td>
+    </tr>
+  `}).join('');
+  loadStats();
+}
+
+async function deleteConta(numero) {
+  if (!confirm(`Excluir conta ${String(numero).padStart(8,'0')} e todos os seus lançamentos?`)) return;
+  const [ok, data] = await api('DELETE', `/api/contas/${numero}`);
+  toast(ok ? data.message : data.error, ok);
+  loadContas();
+}
+
+document.getElementById('form-add-conta').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const [ok, data] = await api('POST', '/api/contas', {
+    client_id: parseInt(fd.get('client_id')),
+    tipo: fd.get('tipo'),
+    agencia: parseInt(fd.get('agencia')),
+    saldo: fd.get('saldo'),
+    limite: fd.get('limite'),
+  });
+  if (ok) {
+    toast(`Conta ${String(data.numero).padStart(8,'0')} criada.`);
+    closeModal('modal-add-conta');
+    e.target.reset();
+    loadContas();
+  } else {
+    toast(data.error, false);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Seed
+// ---------------------------------------------------------------------------
+document.getElementById('form-seed').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const seed = fd.get('seed');
+  const [ok, data] = await api('POST', '/api/clientes/seed', {
+    quantidade: parseInt(fd.get('quantidade')),
+    contas_por_cliente: parseInt(fd.get('contas_por_cliente')),
+    seed: seed ? parseInt(seed) : null,
+  });
+  if (ok) {
+    toast(`Seed gerado: ${data.clientes} clientes, ${data.contas} contas.`);
+    closeModal('modal-seed');
+    e.target.reset();
+    loadClientes();
+  } else {
+    toast(data.error || 'Erro ao gerar seed.', false);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Gerar Lançamentos
+// ---------------------------------------------------------------------------
+function buildChecks(containerId, items, defaultChecked=true) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map(item => `
+    <label class="flex items-center gap-1 text-xs">
+      <input type="checkbox" name="${containerId}_${item}" ${defaultChecked ? 'checked' : ''}> ${item}
+    </label>
+  `).join('');
+}
+
+buildChecks('canais-checks', CANAIS_DEFAULT);
+buildChecks('historicos-checks', HISTORICOS_DEFAULT);
+
+document.getElementById('input-data').value = today();
+
+document.getElementById('form-gerar').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+
+  const tipos = [];
+  if (fd.get('tipo_C')) tipos.push('C');
+  if (fd.get('tipo_D')) tipos.push('D');
+  if (!tipos.length) { toast('Selecione ao menos um tipo.', false); return; }
+
+  const canais = CANAIS_DEFAULT.filter(c => fd.get(`canais-checks_${c}`));
+  if (!canais.length) { toast('Selecione ao menos um canal.', false); return; }
+
+  const historicos = HISTORICOS_DEFAULT.filter(h => fd.get(`historicos-checks_${h}`));
+  if (!historicos.length) { toast('Selecione ao menos um histórico.', false); return; }
+
+  const clientes_raw = fd.get('clientes').trim();
+  const clientes = clientes_raw ? clientes_raw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+  const seed_raw = fd.get('seed').trim();
+  const body = {
+    quantidade: parseInt(fd.get('quantidade')),
+    data: fd.get('data').trim() || null,
+    valor_min: fd.get('valor_min'),
+    valor_max: fd.get('valor_max'),
+    status: fd.get('status'),
+    lote_inicial: parseInt(fd.get('lote_inicial')),
+    seed: seed_raw ? parseInt(seed_raw) : null,
+    tipos, canais, historicos, clientes,
+  };
+
+  const btn = e.target.querySelector('[type=submit]');
+  btn.disabled = true;
+  btn.textContent = 'Gerando...';
+
+  const [ok, data] = await api('POST', '/api/lancamentos/gerar', body);
+  btn.disabled = false;
+  btn.textContent = 'Gerar Arquivo';
+
+  const resultado = document.getElementById('gerar-resultado');
+  if (ok) {
+    resultado.innerHTML = `
+      <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+        <div class="font-semibold text-green-800 mb-3">✅ Arquivo gerado com sucesso!</div>
+        <table class="text-sm w-full">
+          <tr><td class="text-slate-500 py-1">Arquivo</td><td class="font-mono font-bold">${data.arquivo}</td></tr>
+          <tr><td class="text-slate-500 py-1">Registros</td><td class="font-bold">${data.quantidade}</td></tr>
+          <tr><td class="text-slate-500 py-1">Contas elegíveis</td><td>${data.contas}</td></tr>
+        </table>
+        <div class="mt-3 flex gap-2">
+          <a href="/api/arquivos/${data.arquivo}" class="btn-primary text-xs px-3 py-1.5 rounded inline-block">⬇ Download</a>
+          <button onclick="document.querySelector('[data-tab=arquivos]').click()" class="text-xs px-3 py-1.5 rounded border border-slate-300 hover:bg-slate-100">Ver Arquivos</button>
+        </div>
+      </div>
+    `;
+    toast(`${data.arquivo} gerado com ${data.quantidade} lançamentos.`);
+    loadStats();
+  } else {
+    resultado.innerHTML = `<div class="p-4 bg-red-50 rounded-lg border border-red-200 text-red-700 text-sm">❌ ${data.error}</div>`;
+    toast(data.error, false);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Lançamentos
+// ---------------------------------------------------------------------------
+async function loadLancamentos() {
+  const conta = document.getElementById('filtro-conta').value.trim();
+  const arquivo = document.getElementById('filtro-arquivo').value;
+  let url = '/api/lancamentos?limit=200';
+  if (conta) url += `&conta=${conta}`;
+  if (arquivo) url += `&arquivo=${encodeURIComponent(arquivo)}`;
+
+  const [ok, rows] = await api('GET', url);
+  const tbody = document.getElementById('tbody-lancamentos');
+  if (!ok || !rows.length) {
+    tbody.innerHTML = '<tr><td colspan="13" class="text-center text-slate-400 py-8">Nenhum lançamento encontrado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => {
+    const tipoCls = r.tipo === 'C' ? 'badge-C' : 'badge-D';
+    const valor = fmtBRL(r.valor_centavos);
+    return `
+    <tr>
+      <td class="text-slate-400 text-xs">${r.id}</td>
+      <td class="mono">${String(r.conta_numero).padStart(8,'0')}</td>
+      <td class="mono">${String(r.agencia).padStart(4,'0')}</td>
+      <td>${fmtDate(r.data_movimento)}</td>
+      <td>${badge(r.tipo, tipoCls)}</td>
+      <td class="text-right mono ${r.tipo==='C'?'text-green-700':'text-red-600'}">${valor}</td>
+      <td class="text-xs">${r.historico}</td>
+      <td class="text-xs">${r.canal}</td>
+      <td class="mono text-xs">${String(r.lote).padStart(6,'0')}</td>
+      <td class="mono text-xs">${String(r.nseq).padStart(6,'0')}</td>
+      <td>${badge(r.status, 'badge-P')}</td>
+      <td class="text-xs text-slate-500">${r.arquivo || '-'}</td>
+      <td><button onclick="deleteLancamento(${r.id})" class="btn-danger text-xs px-2 py-1 rounded">✕</button></td>
+    </tr>
+  `}).join('');
+}
+
+async function deleteLancamento(id) {
+  if (!confirm(`Excluir lançamento #${id}?`)) return;
+  const [ok, data] = await api('DELETE', `/api/lancamentos/${id}`);
+  toast(ok ? data.message : data.error, ok);
+  loadLancamentos();
+  loadStats();
+}
+
+// ---------------------------------------------------------------------------
+// Arquivos
+// ---------------------------------------------------------------------------
+async function loadArquivos() {
+  const [ok, rows] = await api('GET', '/api/arquivos');
+
+  // Populate filtro-arquivo select
+  const sel = document.getElementById('filtro-arquivo');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Todos os arquivos</option>';
+  if (ok) rows.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.nome;
+    opt.textContent = r.nome;
+    if (r.nome === current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  const tbody = document.getElementById('tbody-arquivos');
+  if (!ok || !rows.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-8">Nenhum arquivo gerado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td class="font-mono font-semibold">${r.nome}</td>
+      <td>${fmtDateTime(r.data_geracao)}</td>
+      <td class="text-center">${r.quantidade}</td>
+      <td>${r.existe ? `<a href="/api/arquivos/${r.nome}" class="text-blue-600 underline text-sm">⬇ Download</a>` : '<span class="text-slate-400 text-xs">arquivo ausente</span>'}</td>
+      <td><button onclick="deleteArquivo('${r.nome}')" class="btn-danger text-xs px-2 py-1 rounded">Excluir</button></td>
+    </tr>
+  `).join('');
+}
+
+async function deleteArquivo(nome) {
+  if (!confirm(`Excluir arquivo ${nome} e todos os seus lançamentos?`)) return;
+  const [ok, data] = await api('DELETE', `/api/arquivos/${nome}`);
+  toast(ok ? data.message : data.error, ok);
+  loadArquivos();
+  loadStats();
+}
+
+// ---------------------------------------------------------------------------
+// Export
+// ---------------------------------------------------------------------------
+function exportar(tipo) {
+  window.location.href = `/api/export/${tipo}`;
+}
+
+// ---------------------------------------------------------------------------
+// Init
+// ---------------------------------------------------------------------------
+loadClientes();
+loadStats();
+</script>
+</body>
+</html>
