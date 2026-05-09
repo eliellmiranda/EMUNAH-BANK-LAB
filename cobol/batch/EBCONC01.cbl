@@ -300,6 +300,10 @@
 
       *---------------------------------------------------------------*
       * 2100-LER-MOVTIN                                               *
+      * Conta apenas registros de validacao (LCT-STATUS='V') para     *
+      * o CHECK 1. Accruals (EBJACCR) gravam STATUS=SPACES e nao      *
+      * devem entrar na equacao ENTRIN = MOVTIN + REJEIT.             *
+      * A soma de creditos/debitos continua sobre todos os registros. *
       *---------------------------------------------------------------*
        2100-LER-MOVTIN.
            PERFORM UNTIL EOF-MOVTIN OR OCORREU-ERRO-IO
@@ -308,7 +312,9 @@
                        SET EOF-MOVTIN TO TRUE
                    NOT AT END
                        IF FS-MOVTIN-OK
-                           ADD 1 TO WS-CT-MOVTIN
+                           IF LCT-STATUS = 'V'
+                               ADD 1 TO WS-CT-MOVTIN
+                           END-IF
                            EVALUATE LCT-TIPO
                                WHEN 'C'
                                    ADD LCT-VALOR TO WS-SOMA-CREDITOS
