@@ -42,9 +42,9 @@
 //*
 //* --- ARQUIVOS DE CONTAS E SALDOS ---
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
-//* SALDOIN = Saldo do fechamento do dia anterior
-//SALDOIN  DD DSN=Z77948.EMUNAH.ARQ.SALDO.GDG(-1),DISP=SHR
-//* SNAPIN = Saldo capturado pelo EBJSNAP no ciclo atual
+//* SALDOIN = Snapshot do dia atual gerado pelo EBJSNAP (GDG(0))
+//SALDOIN  DD DSN=Z77948.EMUNAH.ARQ.SALDO.GDG(0),DISP=SHR
+//* SNAPIN = DD mantida por compatibilidade (nao usada pelo programa)
 //SNAPIN   DD DSN=Z77948.EMUNAH.ARQ.SALDO.GDG(0),DISP=SHR
 //*
 //* --- ARQUIVOS DE SAIDA E AUDITORIA ---
