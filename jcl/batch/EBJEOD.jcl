@@ -43,9 +43,9 @@
 //* Arquivo de conciliacao gerado pelo EBJCONC.
 //CONTA    DD DSN=Z77948.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
 //* VSAM KSDS de contas para totalizacao do dia.
-//SALDOIN  DD DSN=Z77948.EMUNAH.ARQ.SALDO.GDG(-1),DISP=SHR
-//* GDG de saldo do dia anterior. (-1) evita a leitura do 
-//* snapshot de hoje gerado pelo EBJSNAP.
+//SALDOIN  DD DSN=Z77948.EMUNAH.ARQ.SALDO.GDG(0),DISP=SHR
+//* Snapshot do dia atual gerado pelo EBJSNAP (deve ser usado para
+//* comparacao com o KSDS — mesma geracao usada pelo EBJCONC).
 //FECHOUT  DD DSN=Z77948.EMUNAH.ARQ.FECHTO.SEQ,DISP=OLD
 //* Relatorio de fechamento do dia. (Requer alocacao previa)
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
