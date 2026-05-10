@@ -48,6 +48,14 @@
 //             DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)
 //* Extrato gerado para cada cliente (LRECL=132).
 //*
+//* --- TRILHA DE AUDITORIA ---
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
+//             DISP=(MOD,CATLG,CATLG),
+//             UNIT=SYSDA,SPACE=(TRK,(5,2)),
+//             DCB=(RECFM=FB,LRECL=128,BLKSIZE=0)
+//* Trilha de auditoria - OPEN EXTEND acumula registros a cada execucao.
+//* DISP=MOD cria o arquivo se nao existir, ou posiciona no fim se existir.
+//*
 //SYSOUT   DD SYSOUT=*
 //SYSPRINT DD SYSOUT=*
 //*
