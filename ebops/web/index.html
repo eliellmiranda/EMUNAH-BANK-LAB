@@ -575,13 +575,31 @@ a { color: var(--blue); text-decoration: none; }
 <div class="modal-overlay" id="modal-inject-result">
   <div class="modal">
     <h2>⚡ Injeção Aplicada</h2>
-    <label>ID</label><div id="mir-id" style="font-size:calc(15px + var(--font-bump));color:var(--orange);"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div>
+        <label>ID</label>
+        <div id="mir-id" style="font-size:calc(15px + var(--font-bump));color:var(--orange);"></div>
+      </div>
+      <div>
+        <label>Severidade</label>
+        <div id="mir-sev" style="font-size:calc(15px + var(--font-bump));"></div>
+      </div>
+      <div>
+        <label>Camada de Falha</label>
+        <div id="mir-camada" style="font-size:calc(14px + var(--font-bump));color:var(--orange);"></div>
+      </div>
+      <div>
+        <label>RC / Abend Esperado</label>
+        <div id="mir-rc" style="font-size:calc(13px + var(--font-bump));color:var(--text2);"></div>
+      </div>
+    </div>
     <label>Título</label><div id="mir-title" style="font-size:calc(15px + var(--font-bump));"></div>
     <label>Arquivos Afetados</label><div id="mir-files" style="font-size:calc(14px + var(--font-bump));color:var(--text2);"></div>
-    <label>Sintoma Observável</label><div id="mir-sintoma" style="font-size:calc(14px + var(--font-bump));color:var(--yellow);"></div>
-    <label>Dica</label>
-    <button class="dica-reveal-btn" onclick="toggleDica(this)">👁 Revelar dica</button>
-    <div class="dica-content" id="mir-dica"></div>
+    <label>Sintoma Observável</label>
+    <div id="mir-sintoma" style="font-size:calc(14px + var(--font-bump));color:var(--yellow);background:var(--bg);padding:8px;border-radius:4px;margin-top:4px;white-space:pre-wrap;line-height:1.6;"></div>
+    <label>Dica de Diagnóstico</label>
+    <button class="dica-reveal-btn" onclick="toggleDica(this)">💡 Revelar dica</button>
+    <div class="dica-content" id="mir-dica" style="white-space:pre-wrap;line-height:1.6;"></div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('modal-inject-result')">✕ OK</button>
     </div>
@@ -904,20 +922,35 @@ async function loadCatalog() {
   try {
     const injs = await api('/api/injections');
     const grid = document.getElementById('inj-catalog');
-    grid.innerHTML = injs.map(inj => `
-      <div class="inj-card">
-        <div class="inj-id">${inj.id}</div>
-        <div class="inj-title">${inj.t}</div>
-        <div class="inj-detail">Arquivos: ${inj.arqs.join(', ')}</div>
-        <button class="sintoma-reveal-btn" onclick="toggleSintoma(this)">👁 Revelar sintoma</button>
-        <div class="inj-sintoma-hidden">Sintoma: ${inj.sintoma}</div>
-        <button class="sintoma-reveal-btn" style="margin-top:4px;" onclick="toggleDicaCatalog(this)">👁 Revelar dica</button>
-        <div class="inj-sintoma-hidden" style="color:var(--cyan);">Dica: ${inj.dica}</div>
-        <div style="margin-top:8px;">
-          <button class="btn btn-sm btn-yellow" onclick="injectDefect('${inj.id}')">⚡ Injetar</button>
-        </div>
-      </div>
-    `).join('');
+    grid.innerHTML = injs.map(inj => {
+      const sevBadge = inj.sev
+        ? `<span class="tag tag-sev-${inj.sev}" style="font-size:calc(10px + var(--font-bump));">${inj.sev.toUpperCase()}</span>`
+        : '';
+      const camadaLine = (inj.camada || inj.rc_abend)
+        ? `<div class="inj-detail" style="color:var(--orange);margin-top:3px;">
+             ${inj.camada ? `Camada ${inj.camada}` : ''} ${inj.camada && inj.rc_abend ? '—' : ''} ${inj.rc_abend || ''}
+           </div>`
+        : '';
+      return `
+        <div class="inj-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:4px;">
+            <div class="inj-id">${inj.id}</div>
+            ${sevBadge}
+          </div>
+          <div class="inj-title">${inj.t}</div>
+          <div class="inj-detail">Arquivos: ${(inj.arqs||[]).join(', ')}</div>
+          ${camadaLine}
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
+            <button class="sintoma-reveal-btn" onclick="toggleSintoma(this)">👁 Revelar sintoma</button>
+            <div class="inj-sintoma-hidden" style="white-space:pre-wrap;line-height:1.5;">${inj.sintoma}</div>
+            <button class="sintoma-reveal-btn" onclick="toggleDicaCatalog(this)">💡 Revelar dica</button>
+            <div class="inj-sintoma-hidden" style="color:var(--cyan);white-space:pre-wrap;line-height:1.5;">${inj.dica}</div>
+          </div>
+          <div style="margin-top:10px;">
+            <button class="btn btn-sm btn-yellow" onclick="injectDefect('${inj.id}')">⚡ Injetar</button>
+          </div>
+        </div>`;
+    }).join('');
   } catch(e) {}
 }
 
@@ -929,15 +962,29 @@ async function loadActiveInjections() {
       div.innerHTML = '<p style="color:var(--text2);font-size:calc(14px + var(--font-bump));">Nenhuma injeção ativa.</p>';
       return;
     }
-    div.innerHTML = active.map(a => `
-      <div class="active-inj">
-        <div class="inj-info">
-          <strong style="color:var(--orange);">${a.id}</strong> — ${a.titulo}
-          <div style="font-size:calc(11px + var(--font-bump));color:var(--text2);">Arquivos: ${(a.arquivos||[]).join(', ')}</div>
-        </div>
-        <button class="btn btn-sm btn-red" onclick="revertInjection('${a.id}')">↩ Reverter</button>
-      </div>
-    `).join('') + `
+    div.innerHTML = active.map(a => {
+      const ts = a.timestamp ? a.timestamp.replace('T',' ').substring(0,16) : '—';
+      const sevBadge = a.sev
+        ? `<span class="tag tag-sev-${a.sev}" style="font-size:calc(10px + var(--font-bump));margin-left:6px;">${a.sev.toUpperCase()}</span>`
+        : '';
+      const camadaLine = (a.camada || a.rc_abend)
+        ? `<div style="font-size:calc(11px + var(--font-bump));color:var(--orange);margin-top:2px;">Camada ${a.camada||'?'} — ${a.rc_abend||''}</div>`
+        : '';
+      return `
+        <div class="active-inj">
+          <div class="inj-info">
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+              <strong style="color:var(--orange);">${a.id}</strong>
+              <span>— ${a.titulo}</span>${sevBadge}
+            </div>
+            <div style="font-size:calc(11px + var(--font-bump));color:var(--text2);margin-top:2px;">
+              Arquivos: ${(a.arquivos||[]).join(', ')} &nbsp;|&nbsp; Desde: ${ts}
+            </div>
+            ${camadaLine}
+          </div>
+          <button class="btn btn-sm btn-red" onclick="revertInjection('${a.id}')">↩ Reverter</button>
+        </div>`;
+    }).join('') + `
       <div style="margin-top:8px;">
         <button class="btn btn-sm btn-red" onclick="revertInjection(null)">↩ Reverter Todas</button>
       </div>
@@ -956,10 +1003,24 @@ async function injectDefect(injId) {
     document.getElementById('mir-title').textContent = res.titulo;
     document.getElementById('mir-files').textContent = (res.arquivos||[]).join(', ');
     document.getElementById('mir-sintoma').textContent = res.sintoma;
+
+    const camadaEl = document.getElementById('mir-camada');
+    camadaEl.textContent = res.camada ? `Camada ${res.camada}` : '—';
+
+    const rcEl = document.getElementById('mir-rc');
+    rcEl.textContent = res.rc_abend || '—';
+
+    const sevEl = document.getElementById('mir-sev');
+    if (res.sev) {
+      sevEl.innerHTML = `<span class="tag tag-sev-${res.sev}">${res.sev.toUpperCase()}</span>`;
+    } else {
+      sevEl.textContent = '—';
+    }
+
     const dicaEl = document.getElementById('mir-dica');
     dicaEl.textContent = res.dica;
     dicaEl.style.display = 'none';
-    document.querySelector('.dica-reveal-btn').textContent = '👁 Revelar dica';
+    document.querySelector('.dica-reveal-btn').textContent = '💡 Revelar dica';
     openModal('modal-inject-result');
     loadActiveInjections(); loadInfo();
   } catch(e) {}
