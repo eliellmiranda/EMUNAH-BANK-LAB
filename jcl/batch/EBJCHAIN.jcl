@@ -198,7 +198,7 @@
 //             UNIT=SYSDA,SPACE=(TRK,(5,5)),
 //             DCB=(RECFM=FB,LRECL=156,BLKSIZE=0)
 //AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
-//             DISP=(MOD,CATLG,DELETE),
+//             DISP=(MOD,CATLG,CATLG),
 //             UNIT=SYSDA,SPACE=(TRK,(10,5)),
 //             DCB=(RECFM=FB,LRECL=128,BLKSIZE=0)
 //SYSOUT   DD SYSOUT=*
