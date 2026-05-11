@@ -969,6 +969,77 @@ def api_banco_export(tipo):
                     headers={"Content-Disposition": f"attachment; filename={tipo}.txt"})
 
 
+# ============================================================
+#   DEMANDAS DO DIA — sorteia N injecoes aleatorias e aplica
+# ============================================================
+@app.route('/api/demandas/gerar/stream')
+def api_demandas_gerar_stream():
+    try:
+        qtd = int(request.args.get("quantidade", 1))
+    except (TypeError, ValueError):
+        qtd = 1
+    qtd = max(1, min(qtd, 5))   # limite de seguranca
+    return sse_response(_gerar_demandas_stream(qtd))
+
+
+def _gerar_demandas_stream(qtd_pedida):
+    injecoes = load_injecoes()
+    estado = load_estado()
+    ids_ativas = {int(a["Id"]) for a in estado["injecoes_ativas"]}
+
+    candidatas = [
+        inj for inj in injecoes
+        if int(inj["Id"]) not in ids_ativas
+        and membro_permitido(inj["TipoDataset"], inj["Membro"])
+    ]
+
+    if not candidatas:
+        yield ("line", "Nenhuma injecao disponivel (todas ja estao ativas).")
+        yield ("done", {"ok": False, "rc": 0, "aplicadas": []})
+        return
+
+    qtd = qtd_pedida
+    if qtd > len(candidatas):
+        yield ("line", f"Apenas {len(candidatas)} injecao(oes) disponivel(eis) "
+                       f"(pedido: {qtd_pedida}).")
+        qtd = len(candidatas)
+
+    random.shuffle(candidatas)
+    selecionadas = candidatas[:qtd]
+
+    yield ("line", f">>> Gerando {qtd} demanda(s) aleatoria(s) do dia")
+    yield ("line", "")
+
+    aplicadas, falhas = [], []
+    for i, inj in enumerate(selecionadas, 1):
+        sev = (inj.get("SeveridadeTicket") or "").upper()
+        yield ("line", f"[{i}/{qtd}] #{inj['Id']} - {inj['Titulo']}")
+        yield ("line", f"        Severidade: {sev} | Camada: {inj['CamadaFalha']}")
+        yield ("line", f"        Aplicando via Zowe...")
+
+        result, _ = _processar_injecao(int(inj["Id"]), reverter=False)
+        if result.get("ok"):
+            aplicadas.append(inj)
+            yield ("line", f"        OK - ticket EB-{int(inj['Id']):03d} criado em Backlog")
+        else:
+            falhas.append({"Id": int(inj["Id"]), "erro": result.get("erro", "?")})
+            yield ("line", f"        FALHA: {result.get('erro', '?')}")
+        yield ("line", "")
+
+    yield ("line", f">>> Resultado: {len(aplicadas)} aplicada(s), {len(falhas)} falha(s)")
+    if aplicadas:
+        yield ("line", "")
+        yield ("line", "Para reverter: aba 'Ativas', cards do 'Catalogo' ou botao na")
+        yield ("line", "aba 'Tickets (Jira)' (icone do envelope vermelho).")
+
+    yield ("done", {
+        "ok": len(aplicadas) > 0,
+        "rc": 0 if not falhas else 1,
+        "aplicadas": [{"Id": int(a["Id"]), "Titulo": a["Titulo"]} for a in aplicadas],
+        "falhas": falhas,
+    })
+
+
 if __name__ == '__main__':
     print("\n  EBOPS Web Server v5")
     print(f"  Injecoes: {INJECOES_FILE}")
