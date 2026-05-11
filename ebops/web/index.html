@@ -963,6 +963,7 @@ function applyTheme(t) {
   document.body.setAttribute('data-theme', t);
   const btn = document.getElementById('theme-toggle');
   if (btn) btn.textContent = t === 'light' ? '🌞 Claro' : '🌙 Escuro';
+}
 
 function abrirGerarDemandas() {
   document.getElementById('gd-qtd').value = 1;
@@ -981,7 +982,6 @@ function executarGerarDemandas() {
   );
 }
 
-}
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
   const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
