@@ -11,313 +11,216 @@
 <style>
 :root {
   --font-bump: 2.667px;
-  --bg: #0d1117;
-  --bg2: #161b22;
-  --bg3: #21262d;
-  --border: #30363d;
-  --text: #c9d1d9;
-  --text2: #8b949e;
-  --green: #3fb950;
-  --red: #f85149;
-  --yellow: #d29922;
-  --blue: #58a6ff;
-  --cyan: #39d353;
-  --magenta: #bc8cff;
-  --orange: #f0883e;
+  --bg: #0d1117; --bg2: #161b22; --bg3: #21262d; --border: #30363d;
+  --text: #c9d1d9; --text2: #8b949e;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922;
+  --blue: #58a6ff; --cyan: #39d353; --magenta: #bc8cff; --orange: #f0883e;
   --shadow: 0 10px 28px rgba(0,0,0,.18);
 }
 body[data-theme="light"] {
-  --bg: #f6f8fb;
-  --bg2: #ffffff;
-  --bg3: #eef2f7;
-  --border: #cfd8e3;
-  --text: #17202a;
-  --text2: #5c6672;
-  --green: #1f8f4d;
-  --red: #cf3f37;
-  --yellow: #b37a00;
-  --blue: #1369ce;
-  --cyan: #127e72;
-  --magenta: #8d56d6;
-  --orange: #c96b1a;
+  --bg: #f6f8fb; --bg2: #ffffff; --bg3: #eef2f7; --border: #cfd8e3;
+  --text: #17202a; --text2: #5c6672;
+  --green: #1f8f4d; --red: #cf3f37; --yellow: #b37a00;
+  --blue: #1369ce; --cyan: #127e72; --magenta: #8d56d6; --orange: #c96b1a;
   --shadow: 0 10px 24px rgba(15, 23, 42, .08);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body {
   font-family: 'IBM Plex Mono','Cascadia Code','Fira Code','Consolas',monospace;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; display: flex; flex-direction: column;
 }
 a { color: var(--blue); text-decoration: none; }
 
-/* ── Header ── */
 .header {
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  padding: 12px 24px; display: flex; align-items: center;
+  justify-content: space-between; position: sticky; top: 0; z-index: 100;
 }
-.header h1 {
-  font-size: calc(18px + var(--font-bump));
-  color: var(--green);
-  letter-spacing: 1px;
-}
+.header h1 { font-size: calc(18px + var(--font-bump)); color: var(--green); letter-spacing: 1px; }
 .header h1 span { color: var(--text2); font-weight: normal; }
-.header-actions { display: flex; gap: 8px; align-items: center; }
+.header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
-/* ── Buttons ── */
 .btn {
-  padding: 6px 14px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg3);
-  color: var(--text);
-  font-family: inherit;
-  font-size: calc(14px + var(--font-bump));
-  cursor: pointer;
-  transition: all .15s;
+  padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg3); color: var(--text); font-family: inherit;
+  font-size: calc(14px + var(--font-bump)); cursor: pointer; transition: all .15s;
 }
 .btn:hover { border-color: var(--text2); background: var(--border); }
-.btn-green { border-color: var(--green); color: var(--green); }
-.btn-green:hover { background: var(--green); color: var(--bg); }
-.btn-red { border-color: var(--red); color: var(--red); }
-.btn-red:hover { background: var(--red); color: #fff; }
-.btn-blue { border-color: var(--blue); color: var(--blue); }
-.btn-blue:hover { background: var(--blue); color: var(--bg); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-green  { border-color: var(--green);  color: var(--green); }
+.btn-green:hover  { background: var(--green); color: var(--bg); }
+.btn-red    { border-color: var(--red);    color: var(--red); }
+.btn-red:hover    { background: var(--red); color: #fff; }
+.btn-blue   { border-color: var(--blue);   color: var(--blue); }
+.btn-blue:hover   { background: var(--blue); color: var(--bg); }
 .btn-yellow { border-color: var(--yellow); color: var(--yellow); }
 .btn-yellow:hover { background: var(--yellow); color: var(--bg); }
+.btn-orange { border-color: var(--orange); color: var(--orange); }
+.btn-orange:hover { background: var(--orange); color: var(--bg); }
 .btn-sm { padding: 3px 8px; font-size: calc(12px + var(--font-bump)); }
 
-/* ── Gerar Dia — botão grande ── */
-.btn-gerar-dia {
-  background: var(--green);
-  color: var(--bg);
-  border: none;
-  border-radius: 8px;
-  padding: 14px 20px;
-  font-family: inherit;
-  font-size: calc(14px + var(--font-bump));
-  font-weight: bold;
-  cursor: pointer;
-  letter-spacing: .5px;
-  transition: opacity .15s, transform .1s;
-  flex-shrink: 0;
-  min-width: 110px;
-  box-shadow: 0 4px 14px rgba(63,185,80,.25);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  text-align: center;
-  line-height: 1.3;
-}
-.btn-gerar-dia:hover { opacity: .88; transform: translateY(-2px); }
-.btn-gerar-dia:active { transform: translateY(0); }
-.btn-gerar-dia .btn-icon { font-size: 1.5em; line-height: 1; }
-
-/* ── Reverter Dia ── */
-.btn-reverter-dia {
-  background: none;
-  color: var(--red);
-  border: 1px solid var(--red);
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-family: inherit;
-  font-size: calc(13px + var(--font-bump));
-  font-weight: 600;
-  cursor: pointer;
-  transition: background .15s, transform .1s;
-  flex-shrink: 0;
-  min-width: 110px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  text-align: center;
-  line-height: 1.3;
-}
-.btn-reverter-dia:hover { background: rgba(248,81,73,.12); transform: translateY(-1px); }
-.btn-reverter-dia:active { transform: translateY(0); }
-.btn-reverter-dia .btn-icon { font-size: 1.2em; line-height: 1; }
-
-/* ── Tabs ── */
 .tabs {
-  display: flex;
-  gap: 0;
-  background: var(--bg2);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
+  display: flex; gap: 0; background: var(--bg2);
+  border-bottom: 1px solid var(--border); padding: 0 24px; flex-wrap: wrap;
 }
 .tab {
-  padding: 10px 18px;
-  font-size: calc(15px + var(--font-bump));
-  color: var(--text2);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all .15s;
-  font-family: inherit;
-  background: none;
-  border-top: none;
-  border-left: none;
-  border-right: none;
+  padding: 10px 18px; font-size: calc(15px + var(--font-bump));
+  color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all .15s; font-family: inherit; background: none;
+  border-top: none; border-left: none; border-right: none;
 }
 .tab:hover { color: var(--text); }
 .tab.active { color: var(--green); border-bottom-color: var(--green); }
 
-/* ── Layout ── */
 .main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; width: 100%; flex: 1; }
 .section { display: none; }
 .section.active { display: block; }
 
-/* ── Dashboard topo ── */
-.dashboard-top {
-  display: flex;
-  gap: 16px;
-  align-items: stretch;
-  margin-bottom: 20px;
-}
-.dashboard-top .stats {
-  flex: 1;
-  margin-bottom: 0;
-}
-
-/* ── Cards ── */
 .card {
-  box-shadow: var(--shadow);
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 12px;
+  box-shadow: var(--shadow); background: var(--bg2);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 16px; margin-bottom: 12px;
 }
 .card h3 {
-  font-size: calc(15px + var(--font-bump));
-  color: var(--green);
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: .5px;
+  font-size: calc(15px + var(--font-bump)); color: var(--green);
+  margin-bottom: 10px; text-transform: uppercase; letter-spacing: .5px;
 }
 
-/* ── Stats row ── */
 .stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px; margin-bottom: 16px;
 }
 .stat {
-  box-shadow: var(--shadow);
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px;
-  text-align: center;
+  box-shadow: var(--shadow); background: var(--bg2);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px; text-align: center;
 }
-.stat-link {
-  display: block;
-  cursor: pointer;
-  transition: transform .15s, border-color .15s, background .15s;
-}
+.stat-link { display: block; cursor: pointer;
+  transition: transform .15s, border-color .15s, background .15s; }
 .stat-link:hover { border-color: var(--blue); background: var(--bg3); transform: translateY(-1px); }
 .stat .value { font-size: calc(30px + var(--font-bump)); font-weight: bold; color: var(--green); }
 .stat .label { font-size: calc(12px + var(--font-bump)); color: var(--text2); margin-top: 4px; text-transform: uppercase; }
 
-/* ── Batch table ── */
-.batch-table { width: 100%; border-collapse: collapse; font-size: calc(14px + var(--font-bump)); }
-.batch-table th {
+.jobs-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;
+}
+.job-btn {
+  padding: 14px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text); font-family: inherit;
+  font-size: calc(14px + var(--font-bump)); cursor: pointer; text-align: left;
+  transition: border-color .15s, transform .1s;
+}
+.job-btn:hover { border-color: var(--orange); transform: translateY(-1px); }
+.job-btn .job-name { color: var(--orange); font-weight: bold; }
+.job-btn .job-desc { display: block; color: var(--text2); font-size: calc(12px + var(--font-bump)); margin-top: 4px; }
+
+.tbl { width: 100%; border-collapse: collapse; font-size: calc(14px + var(--font-bump)); }
+.tbl th {
   text-align: left; padding: 8px 10px; color: var(--text2);
-  border-bottom: 1px solid var(--border); font-size: calc(13px + var(--font-bump)); text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  font-size: calc(13px + var(--font-bump)); text-transform: uppercase;
 }
-.batch-table td { font-size: calc(14px + var(--font-bump)); padding: 6px 10px; border-bottom: 1px solid rgba(48,54,61,.5); }
-.batch-table tr:hover td { background: rgba(48,54,61,.3); }
-.st-ok { color: var(--green); }
-.st-error { color: var(--red); font-weight: bold; }
-.st-warning { color: var(--yellow); }
-.st-hold { color: var(--orange); }
-.st-pending { color: var(--text2); }
+.tbl td { padding: 6px 10px; border-bottom: 1px solid rgba(48,54,61,.5); }
+.tbl tr:hover td { background: rgba(48,54,61,.3); }
+.st-ok    { color: var(--green); }
+.st-fail  { color: var(--red); font-weight: bold; }
+.st-block { color: var(--yellow); }
+.row-fail  td { background: rgba(248,81,73,.10) !important; }
+.row-block td { opacity: .55; }
 
-/* ── Kanban board ── */
-.kanban { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
-.kanban-col {
-  box-shadow: var(--shadow);
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  min-height: 300px;
-}
-.kanban-col-header {
-  padding: 10px 12px; border-bottom: 1px solid var(--border);
-  font-size: calc(14px + var(--font-bump)); font-weight: bold;
-  display: flex; justify-content: space-between; align-items: center;
-}
-.kanban-col-header .count {
-  background: var(--bg3); padding: 2px 8px; border-radius: 10px;
-  font-size: calc(13px + var(--font-bump)); color: var(--text2);
-}
-.kanban-col-body { padding: 8px; }
-
-.ticket-card {
-  box-shadow: var(--shadow);
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 6px; padding: 10px; margin-bottom: 8px;
-  cursor: pointer; transition: border-color .15s;
-}
-.ticket-card:hover { border-color: var(--text2); }
-.ticket-card .ticket-id { font-size: calc(13px + var(--font-bump)); color: var(--cyan); margin-bottom: 4px; }
-.ticket-card .ticket-title { font-size: calc(14px + var(--font-bump)); margin-bottom: 6px; line-height: 1.4; }
-.ticket-tags { display: flex; gap: 4px; flex-wrap: wrap; }
-.tag {
-  font-size: calc(11px + var(--font-bump)); padding: 1px 6px;
-  border-radius: 3px; border: 1px solid;
-}
-.tag-sev-critica { color: var(--red); border-color: var(--red); }
-.tag-sev-alta { color: var(--yellow); border-color: var(--yellow); }
-.tag-sev-media { color: var(--cyan); border-color: var(--cyan); }
-.tag-sev-baixa { color: var(--green); border-color: var(--green); }
-.tag-cat { color: var(--magenta); border-color: var(--magenta); }
-.tag-dif { color: var(--blue); border-color: var(--blue); }
-.tag-inj { color: var(--orange); border-color: var(--orange); }
-
-/* ── Injection list ── */
-.inj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
+.inj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 10px; }
 .inj-card {
-  box-shadow: var(--shadow);
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 6px; padding: 12px;
+  box-shadow: var(--shadow); background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 12px; display: flex; flex-direction: column;
 }
+.inj-card.is-active { border-color: var(--orange); }
 .inj-card .inj-id { color: var(--orange); font-size: calc(13px + var(--font-bump)); font-weight: bold; }
 .inj-card .inj-title { font-size: calc(14px + var(--font-bump)); margin: 4px 0; }
 .inj-card .inj-detail { font-size: calc(13px + var(--font-bump)); color: var(--text2); margin: 2px 0; }
 
-/* ── Sintoma oculto ── */
-.sintoma-reveal-btn {
+.tag {
+  font-size: calc(11px + var(--font-bump)); padding: 1px 6px;
+  border-radius: 3px; border: 1px solid; display: inline-block;
+}
+.tag-sev-critica { color: var(--red); border-color: var(--red); }
+.tag-sev-alta    { color: var(--yellow); border-color: var(--yellow); }
+.tag-sev-media   { color: var(--cyan); border-color: var(--cyan); }
+.tag-sev-baixa   { color: var(--green); border-color: var(--green); }
+.tag-camada      { color: var(--blue); border-color: var(--blue); }
+.tag-status-backlog      { color: var(--text2); border-color: var(--text2); }
+.tag-status-em-andamento { color: var(--blue);  border-color: var(--blue); }
+.tag-status-em-revisao   { color: var(--magenta); border-color: var(--magenta); }
+.tag-status-concluido    { color: var(--green); border-color: var(--green); }
+
+.reveal-btn {
   background: none; border: 1px solid var(--border); border-radius: 4px;
   color: var(--text2); font-family: inherit;
-  font-size: calc(12px + var(--font-bump));
-  cursor: pointer; padding: 2px 8px; margin-top: 6px;
-  transition: border-color .15s, color .15s;
+  font-size: calc(12px + var(--font-bump)); cursor: pointer;
+  padding: 3px 10px; margin-top: 6px; transition: border-color .15s, color .15s;
 }
-.sintoma-reveal-btn:hover { border-color: var(--yellow); color: var(--yellow); }
-.inj-sintoma-hidden { display: none; font-size: calc(13px + var(--font-bump)); color: var(--yellow); margin-top: 4px; }
+.reveal-btn.sintoma:hover { border-color: var(--yellow); color: var(--yellow); }
+.reveal-btn.dica:hover    { border-color: var(--cyan); color: var(--cyan); }
+.reveal-content {
+  display: none; margin-top: 4px; padding: 6px;
+  background: var(--bg); border-radius: 4px;
+  font-size: calc(13px + var(--font-bump)); line-height: 1.5;
+  white-space: pre-wrap;
+}
+.reveal-content.sintoma { color: var(--yellow); }
+.reveal-content.dica    { color: var(--cyan); }
+.alvo-badge {
+  display: inline-block; padding: 2px 6px; margin-bottom: 6px;
+  border: 1px solid var(--orange); border-radius: 4px; color: var(--orange);
+  font-size: calc(11px + var(--font-bump));
+}
 
-/* ── Active injections ── */
 .active-inj {
   background: rgba(248,81,73,.08); border: 1px solid rgba(248,81,73,.3);
   border-radius: 6px; padding: 10px 14px; margin-bottom: 8px;
   display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; flex-wrap: wrap;
 }
-.active-inj .inj-info { flex: 1; }
+.active-inj .inj-info { flex: 1; min-width: 200px; }
 
-/* ── Modal ── */
+/* Kanban (Tickets Jira) */
+.kanban {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 4px;
+}
+.kan-col {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 8px; min-height: 400px; display: flex; flex-direction: column;
+}
+.kan-header {
+  padding: 10px 12px; border-bottom: 1px solid var(--border);
+  font-size: calc(14px + var(--font-bump));
+  display: flex; justify-content: space-between; align-items: center;
+}
+.kan-header .col-name { font-weight: bold; }
+.kan-header .count {
+  background: var(--bg3); padding: 2px 8px; border-radius: 10px;
+  font-size: calc(13px + var(--font-bump)); color: var(--text2);
+}
+.kan-body { padding: 8px; flex: 1; min-height: 300px; }
+.kan-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px; margin-bottom: 8px;
+  cursor: pointer; transition: border-color .15s, transform .1s;
+}
+.kan-card:hover { border-color: var(--text2); transform: translateY(-1px); }
+.kan-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.kan-card .kan-id { color: var(--cyan); font-size: calc(13px + var(--font-bump)); font-weight: bold; }
+.kan-card .kan-title { font-size: calc(13px + var(--font-bump)); line-height: 1.4; margin-bottom: 6px; }
+.kan-card-actions { display: flex; gap: 4px; margin-top: 6px; }
+.kan-move {
+  background: none; border: 1px solid var(--border); border-radius: 3px;
+  color: var(--text2); cursor: pointer; font-family: inherit;
+  font-size: calc(11px + var(--font-bump)); padding: 2px 6px;
+}
+.kan-move:hover { border-color: var(--blue); color: var(--blue); }
+.kan-empty { color: var(--text2); text-align: center; padding: 20px; font-size: calc(12px + var(--font-bump)); }
+
 .modal-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,.6); z-index: 200;
@@ -325,69 +228,130 @@ a { color: var(--blue); text-decoration: none; }
 }
 .modal-overlay.open { display: flex; }
 .modal {
-  box-shadow: var(--shadow);
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 10px; width: 580px; max-width: 95vw;
-  max-height: 85vh; overflow-y: auto; padding: 20px;
+  box-shadow: var(--shadow); background: var(--bg2);
+  border: 1px solid var(--border); border-radius: 10px;
+  width: 720px; max-width: 95vw; max-height: 85vh;
+  overflow-y: auto; padding: 20px;
 }
-.modal h2 { font-size: calc(15px + var(--font-bump)); color: var(--green); margin-bottom: 14px; }
+.modal h2 { font-size: calc(16px + var(--font-bump)); color: var(--green); margin-bottom: 14px; }
 .modal label {
   font-size: calc(13px + var(--font-bump)); color: var(--text2);
-  text-transform: uppercase; display: block; margin-bottom: 4px; margin-top: 10px;
+  text-transform: uppercase; display: block;
+  margin-bottom: 4px; margin-top: 10px;
 }
-.modal textarea {
-  width: 100%; min-height: 80px; background: var(--bg);
-  border: 1px solid var(--border); border-radius: 4px;
-  color: var(--text); font-family: inherit;
-  font-size: calc(14px + var(--font-bump)); padding: 8px; resize: vertical;
+.modal .field {
+  font-size: calc(14px + var(--font-bump)); background: var(--bg);
+  padding: 8px; border-radius: 4px; white-space: pre-wrap; line-height: 1.5;
 }
-.modal .modal-actions { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
-.modal select {
-  background: var(--bg); border: 1px solid var(--border);
-  color: var(--text); font-family: inherit;
-  font-size: calc(14px + var(--font-bump)); padding: 6px 8px;
-  border-radius: 4px; width: 100%;
+.modal textarea, .modal select {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); font-family: inherit;
+  font-size: calc(14px + var(--font-bump)); padding: 8px;
+}
+.modal textarea { min-height: 80px; resize: vertical; }
+.modal .modal-actions {
+  display: flex; gap: 8px; margin-top: 16px;
+  justify-content: flex-end; flex-wrap: wrap;
+}
+.modal input[type="number"], .modal input[type="text"] {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); font-family: inherit;
+  font-size: calc(14px + var(--font-bump)); padding: 8px;
 }
 
-/* ── Dica oculta no modal de injeção ── */
-.dica-reveal-btn {
-  background: none; border: 1px solid var(--border); border-radius: 4px;
-  color: var(--text2); font-family: inherit;
-  font-size: calc(12px + var(--font-bump)); cursor: pointer;
-  padding: 3px 10px; margin-top: 8px; transition: border-color .15s, color .15s;
-}
-.dica-reveal-btn:hover { border-color: var(--cyan); color: var(--cyan); }
-.dica-content { display: none; font-size: calc(14px + var(--font-bump)); color: var(--cyan); margin-top: 6px; }
-
-/* ── Banner injeção automática ── */
-.auto-inj-banner {
-  background: rgba(240,136,62,.1); border: 1px solid rgba(240,136,62,.4);
-  border-radius: 6px; padding: 12px; margin-top: 12px;
-}
-.auto-inj-banner p { font-size: calc(13px + var(--font-bump)); color: var(--orange); margin-bottom: 8px; }
-
-/* ── Toast ── */
-.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
-.toast {
-  padding: 10px 16px; border-radius: 6px;
-  font-size: calc(14px + var(--font-bump)); animation: toast-in .3s; border: 1px solid;
-}
-.toast-ok  { background: rgba(63,185,80,.15);  border-color: var(--green);  color: var(--green); }
-.toast-err { background: rgba(248,81,73,.15);  border-color: var(--red);    color: var(--red); }
-.toast-info{ background: rgba(88,166,255,.15); border-color: var(--blue);   color: var(--blue); }
-@keyframes toast-in { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-
-/* ── Filter bar ── */
-.filter-bar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+.filter-bar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
 .filter-bar input {
   background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
   color: var(--text); font-family: inherit;
   font-size: calc(14px + var(--font-bump)); padding: 6px 10px;
-  flex: 1; max-width: 300px;
+  flex: 1; min-width: 200px; max-width: 380px;
 }
-.filter-bar input::placeholder { color: var(--text2); }
 
-/* ── Footer ── */
+/* Job streaming + progress bar */
+.job-running {
+  display: none; align-items: center; gap: 10px; padding: 10px;
+  background: rgba(63,185,80,.08); border: 1px solid var(--green);
+  border-radius: 6px; margin: 8px 0;
+}
+.job-running.active { display: flex; }
+.spinner-inline {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border); border-top-color: var(--green);
+  border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
+}
+.job-progress { margin: 10px 0; display: none; }
+.job-progress.active { display: block; }
+.job-progress-bar {
+  height: 12px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 6px;
+  overflow: hidden; position: relative;
+}
+.job-progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--green), var(--cyan));
+  background-size: 200% 100%;
+  transition: width .25s linear;
+  position: relative;
+}
+.job-progress-fill::after {
+  content: ''; position: absolute; inset: 0;
+  background-image: linear-gradient(45deg,
+    rgba(255,255,255,.18) 25%, transparent 25%,
+    transparent 50%, rgba(255,255,255,.18) 50%,
+    rgba(255,255,255,.18) 75%, transparent 75%, transparent);
+  background-size: 18px 18px;
+  animation: stripes 1s linear infinite;
+}
+.job-progress-fill.done::after { animation: none; opacity: 0; }
+@keyframes stripes { from { background-position: 0 0; } to { background-position: 18px 0; } }
+.job-progress-text {
+  display: flex; justify-content: space-between;
+  font-size: calc(12px + var(--font-bump));
+  color: var(--text2); margin-top: 4px;
+}
+#mj-progress-pct { color: var(--cyan); font-weight: bold; }
+.job-log {
+  background: var(--bg); padding: 10px; border-radius: 4px;
+  max-height: 320px; overflow-y: auto; min-height: 120px;
+  font-size: calc(12px + var(--font-bump));
+  white-space: pre-wrap; color: var(--text2);
+  font-family: inherit; margin: 4px 0;
+}
+.job-log .first { color: var(--green); font-weight: bold; }
+
+.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 300; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  padding: 10px 16px; border-radius: 6px;
+  font-size: calc(14px + var(--font-bump));
+  animation: toast-in .3s; border: 1px solid; max-width: 480px;
+}
+.toast-ok  { background: rgba(63,185,80,.15);  border-color: var(--green); color: var(--green); }
+.toast-err { background: rgba(248,81,73,.15);  border-color: var(--red);   color: var(--red); }
+.toast-info{ background: rgba(88,166,255,.15); border-color: var(--blue);  color: var(--blue); }
+@keyframes toast-in { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+.loading-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.55); z-index: 250;
+  justify-content: center; align-items: center;
+  flex-direction: column; gap: 12px;
+}
+.loading-overlay.open { display: flex; }
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border); border-top-color: var(--green);
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+.loading-msg { color: var(--text); font-size: calc(14px + var(--font-bump)); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.diag-row { padding: 8px; border-bottom: 1px solid var(--border); }
+.diag-preview {
+  background: var(--bg); padding: 8px; border-radius: 4px;
+  font-size: calc(12px + var(--font-bump)); margin-top: 6px;
+  max-height: 240px; overflow: auto; white-space: pre;
+}
+
 .footer {
   text-align: center; padding: 18px 24px;
   color: var(--text2); font-size: calc(12px + var(--font-bump));
@@ -395,349 +359,613 @@ a { color: var(--blue); text-decoration: none; }
   font-style: italic; letter-spacing: .3px;
 }
 
-/* ── Loading ── */
-.loading { text-align: center; padding: 40px; color: var(--text2); }
-.spinner {
-  display: inline-block; width: 20px; height: 20px;
-  border: 2px solid var(--border); border-top-color: var(--green);
-  border-radius: 50%; animation: spin .6s linear infinite;
-  margin-right: 8px; vertical-align: middle;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--border); }
 
-/* ── Responsive ── */
-@media (max-width: 900px) {
-  .kanban { grid-template-columns: 1fr 1fr; }
-  .stats { grid-template-columns: 1fr 1fr; }
-  .dashboard-top { flex-direction: column; }
-  .btn-gerar-dia { width: 100%; }
-}
+@media (max-width: 900px) { .kanban { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 600px) {
   .kanban { grid-template-columns: 1fr; }
-  .tabs { overflow-x: auto; }
   .header { flex-direction: column; gap: 8px; }
-  .header-actions { flex-wrap: wrap; justify-content: center; }
+  .tabs { overflow-x: auto; }
 }
+
+/* === Banco === */
+.banco-subnav {
+  display: flex; gap: 4px; margin-bottom: 16px;
+  border-bottom: 1px solid var(--border); flex-wrap: wrap;
+}
+.sub-btn {
+  padding: 8px 14px; background: none; border: 1px solid var(--border);
+  border-bottom: none; border-radius: 6px 6px 0 0; cursor: pointer;
+  color: var(--text2); font-family: inherit;
+  font-size: calc(13px + var(--font-bump));
+}
+.sub-btn:hover { color: var(--text); }
+.sub-btn.active {
+  color: var(--green); border-color: var(--green);
+  background: var(--bg2); position: relative; top: 1px;
+}
+.sub-section { display: none; }
+.sub-section.active { display: block; }
+
+.banco-form-row {
+  display: grid; gap: 10px; margin-bottom: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+.banco-form-row label, .banco-checks-label {
+  font-size: calc(11px + var(--font-bump));
+  color: var(--text2); display: block; margin-bottom: 4px;
+  text-transform: uppercase; letter-spacing: .3px;
+}
+.banco-form-row input, .banco-form-row select, .bk-input {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text); font-family: inherit;
+  font-size: calc(13px + var(--font-bump)); padding: 6px 8px;
+}
+.banco-checks {
+  display: grid; gap: 4px; margin: 6px 0 12px;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+.banco-checks label {
+  font-size: calc(12px + var(--font-bump)); color: var(--text);
+  display: flex; align-items: center; gap: 4px; cursor: pointer;
+}
+.badge-cs {
+  display: inline-block; font-size: calc(11px + var(--font-bump));
+  padding: 1px 6px; border-radius: 3px; border: 1px solid;
+}
+.badge-A { color: var(--green); border-color: var(--green); }
+.badge-P { color: var(--yellow); border-color: var(--yellow); }
+.badge-R { color: var(--red); border-color: var(--red); }
+.badge-C { color: var(--blue);  border-color: var(--blue); }
+.badge-D { color: var(--red);   border-color: var(--red); }
+
 </style>
 </head>
 <body>
 
-<!-- ═══════ HEADER ═══════ -->
 <div class="header">
   <h1>EBOPS <span>— Emunah Bank Operations Simulator</span></h1>
   <div class="header-actions">
     <button class="btn btn-blue" id="theme-toggle" onclick="toggleTheme()">🌙 Escuro</button>
-    <button class="btn btn-green" onclick="exportar()">💾 Backup</button>
-    <input type="file" id="input-import-tickets" accept=".json" style="display:none" onchange="importarTickets(this)">
-    <button class="btn btn-blue" onclick="showImportModal('tickets')">📥 Importar Tickets</button>
-    <input type="file" id="input-import-injecoes" accept=".json" style="display:none" onchange="importarInjecoes(this)">
-    <button class="btn btn-blue" onclick="showImportModal('injecoes')">📥 Importar Injeções</button>
-    <button class="btn btn-red" onclick="resetar()">🗑 Reset</button>
+    <button class="btn" onclick="recarregar()">🔄 Recarregar</button>
+
+    <input type="file" id="file-importar-inj" accept=".json" style="display:none" onchange="importarInjecoesFromFile(this)">
+    <button class="btn btn-yellow" onclick="document.getElementById('file-importar-inj').click()" title="Importar injeções de um .json">
+  📥 Importar
+    </button>
+
   </div>
 </div>
 
-<!-- ═══════ TABS ═══════ -->
 <div class="tabs">
   <button class="tab active" data-tab="dashboard">Dashboard</button>
+  <button class="tab" data-tab="catalogo">Catálogo</button>
   <button class="tab" data-tab="tickets">Tickets</button>
-  <button class="tab" data-tab="injecoes">Injeções</button>
+  <button class="tab" data-tab="ativas">Ativas</button>
   <button class="tab" data-tab="historico">Histórico</button>
+  <button class="tab" data-tab="diagnostico">Diagnóstico</button>
+  <button class="tab" data-tab="banco">Banco</button>
 </div>
 
-<!-- ═══════ MAIN ═══════ -->
 <div class="main">
 
-  <!-- ─── Dashboard ─── -->
-  <div id="sec-dashboard" class="section active">
+  <!-- Banco -->
+<div id="sec-banco" class="section">
+  <div class="stats">
+    <div class="stat"><div class="value" id="bk-clientes" style="color:var(--blue);">-</div><div class="label">Clientes</div></div>
+    <div class="stat"><div class="value" id="bk-contas" style="color:var(--cyan);">-</div><div class="label">Contas</div></div>
+    <div class="stat"><div class="value" id="bk-lanc" style="color:var(--magenta);">-</div><div class="label">Lançamentos</div></div>
+    <div class="stat"><div class="value" id="bk-arq" style="color:var(--orange);">-</div><div class="label">Arquivos</div></div>
+  </div>
 
-    <!-- Topo: botões de dia + stats -->
-    <div class="dashboard-top">
-      <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
-        <button class="btn-gerar-dia" onclick="gerarDia()">
-          <span class="btn-icon">⚡</span>
-          <span>Gerar</span>
-          <span>Dia</span>
-        </button>
-        <button class="btn-reverter-dia" onclick="revertarDia()">
-          <span class="btn-icon">↩</span>
-          <span>Reverter</span>
-          <span>Dia</span>
-        </button>
-      </div>
-      <div class="stats" id="stats-row">
-        <div class="stat">
-          <div class="value" id="st-dia">-</div>
-          <div class="label">Dia Atual</div>
-        </div>
-        <a class="stat stat-link" href="#" onclick="goToTab('tickets'); return false;">
-          <div class="value" id="st-tickets">-</div>
-          <div class="label">Tickets</div>
-        </a>
-        <a class="stat stat-link" href="#" onclick="goToTab('injecoes'); return false;">
-          <div class="value" id="st-inj">-</div>
-          <div class="label">Injeções Ativas</div>
-        </a>
-        <a class="stat stat-link" href="#" onclick="goToTab('historico'); return false;">
-          <div class="value" id="st-hist">-</div>
-          <div class="label">Histórico</div>
-        </a>
-      </div>
-    </div>
+  <div class="banco-subnav">
+    <button class="sub-btn active" data-sub="clientes">Clientes</button>
+    <button class="sub-btn" data-sub="contas">Contas</button>
+    <button class="sub-btn" data-sub="lancamentos">Lançamentos</button>
+    <button class="sub-btn" data-sub="arquivos">Arquivos</button>
+    <button class="sub-btn" data-sub="gerar">🐍 Gerar + 📤 Seed</button>
+  </div>
 
+  <!-- Clientes -->
+  <div id="sub-clientes" class="sub-section active">
     <div class="card">
-      <h3>Grade Batch</h3>
-      <div style="display:flex;gap:8px;margin-bottom:10px;">
-        <button class="btn btn-sm btn-green" onclick="loadBatch(false)">✅ Batch Normal</button>
-        <button class="btn btn-sm btn-red" onclick="loadBatch(true)">⚠️ Simular Falha</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <h3 style="margin:0;">Clientes</h3>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-sm" onclick="exportarBanco('clientes')">⬇ Exportar TXT</button>
+          <button class="btn btn-sm btn-yellow" onclick="openModal('modal-bk-seed-cli')">⚡ Seed Sintético</button>
+          <button class="btn btn-sm btn-green" onclick="openModal('modal-bk-add-cli')">+ Novo</button>
+        </div>
       </div>
-      <table class="batch-table">
-        <thead><tr><th>Job</th><th>Hora</th><th>Programa</th><th>Status</th><th>RC</th></tr></thead>
-        <tbody id="batch-body"></tbody>
+      <table class="tbl">
+        <thead><tr><th>ID</th><th>Nome</th><th>CPF</th><th>Nasc.</th><th>Status</th><th>Contas</th><th></th></tr></thead>
+        <tbody id="bk-tbody-cli"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- ─── Tickets ─── -->
-  <div id="sec-tickets" class="section">
-    <div class="filter-bar">
-      <input type="text" id="filtro-tickets" placeholder="Filtrar por categoria, severidade, status, título..." oninput="loadTickets()">
-      <button class="btn btn-sm" onclick="document.getElementById('filtro-tickets').value='';loadTickets()">✕ Limpar</button>
+  <!-- Contas -->
+  <div id="sub-contas" class="sub-section">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <h3 style="margin:0;">Contas</h3>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-sm" onclick="exportarBanco('contas')">⬇ Exportar TXT</button>
+          <button class="btn btn-sm btn-green" onclick="openModal('modal-bk-add-conta')">+ Nova</button>
+        </div>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>Número</th><th>Ag.</th><th>Cliente</th><th>Tipo</th><th>Status</th><th>Saldo</th><th>Limite</th><th></th></tr></thead>
+        <tbody id="bk-tbody-con"></tbody>
+      </table>
     </div>
-    <div class="kanban" id="kanban-board"></div>
   </div>
 
-  <!-- ─── Injeções ─── -->
-  <div id="sec-injecoes" class="section">
+  <!-- Lançamentos -->
+  <div id="sub-lancamentos" class="sub-section">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <h3 style="margin:0;">Lançamentos</h3>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <input type="text" id="bk-filt-conta" class="bk-input" placeholder="Conta nº" style="width:120px;" oninput="loadBkLanc()">
+          <select id="bk-filt-arq" class="bk-input" style="width:auto;" onchange="loadBkLanc()">
+            <option value="">Todos os arquivos</option>
+          </select>
+          <button class="btn btn-sm" onclick="loadBkLanc()">↻</button>
+          <button class="btn btn-sm" onclick="exportarBanco('lancamentos')">⬇ Exportar</button>
+        </div>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>ID</th><th>Conta</th><th>Data</th><th>T</th><th>Valor</th><th>Histórico</th><th>Canal</th><th>Arquivo</th><th></th></tr></thead>
+        <tbody id="bk-tbody-lanc"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Arquivos -->
+  <div id="sub-arquivos" class="sub-section">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 style="margin:0;">Arquivos Gerados</h3>
+        <button class="btn btn-sm" onclick="loadBkArquivos()">↻ Atualizar</button>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>Nome</th><th>Gerado em</th><th>Qtd</th><th>Ações</th></tr></thead>
+        <tbody id="bk-tbody-arq"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Gerar + Seed -->
+  <div id="sub-gerar" class="sub-section">
+    <div class="card">
+      <h3>🐍 Gerar Lançamentos</h3>
+      <p style="color:var(--text2);font-size:calc(12px + var(--font-bump));margin-bottom:14px;">
+        Gera lançamentos aleatórios para as contas cadastradas e escreve um TXT que vira candidato a Seed.
+      </p>
+      <form id="bk-form-gerar" onsubmit="event.preventDefault();gerarLancamentos();">
+        <div class="banco-form-row">
+          <div><label>Quantidade</label><input type="number" name="quantidade" value="25" min="1"></div>
+          <div><label>Data (AAAAMMDD)</label><input type="text" name="data" id="bk-data"></div>
+          <div><label>Valor mín R$</label><input type="text" name="valor_min" value="25.00"></div>
+          <div><label>Valor máx R$</label><input type="text" name="valor_max" value="2500.00"></div>
+          <div><label>Status</label>
+            <select name="status">
+              <option value="P">P - Pendente</option>
+              <option value="A">A - Aprovado</option>
+              <option value="R">R - Rejeitado</option>
+            </select>
+          </div>
+          <div><label>Lote inicial</label><input type="number" name="lote_inicial" value="1" min="1"></div>
+          <div><label>Seed</label><input type="number" name="seed" placeholder="(aleatório)"></div>
+          <div><label>Clientes</label><input type="text" name="clientes" placeholder="IDs/nomes (1,JOAO)"></div>
+        </div>
+        <div class="banco-checks-label">Tipos</div>
+        <div class="banco-checks">
+          <label><input type="checkbox" name="tipo_C" checked> Crédito (C)</label>
+          <label><input type="checkbox" name="tipo_D" checked> Débito (D)</label>
+        </div>
+        <div class="banco-checks-label">Canais</div>
+        <div id="bk-canais" class="banco-checks"></div>
+        <div class="banco-checks-label">Históricos</div>
+        <div id="bk-hist" class="banco-checks"></div>
+        <button type="submit" class="btn btn-green" style="margin-top:6px;">▶ Gerar Arquivo</button>
+      </form>
+      <div id="bk-gerar-result" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <h3>📤 Seed — Upload ao Mainframe</h3>
+      <p style="color:var(--text2);font-size:calc(12px + var(--font-bump));margin-bottom:14px;">
+        Envia um arquivo gerado para <code style="color:var(--cyan);">Z77948.EMUNAH.STAGE.ENTRADA.SEQ</code>.
+      </p>
+      <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <div class="banco-checks-label">Arquivo</div>
+          <select id="bk-seed-arq" class="bk-input"></select>
+        </div>
+        <button class="btn btn-green" onclick="seedMainframe()">📤 Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- Dashboard -->
+  <div id="sec-dashboard" class="section active">
+    <div class="stats">
+      <div class="stat">
+        <div class="value" id="st-total">-</div>
+        <div class="label">Catálogo</div>
+      </div>
+      <a class="stat stat-link" href="#" onclick="goToTab('ativas');return false;">
+        <div class="value" id="st-ativas" style="color:var(--orange);">-</div>
+        <div class="label">Ativas</div>
+      </a>
+      <a class="stat stat-link" href="#" onclick="goToTab('tickets');return false;">
+        <div class="value" id="st-tickets" style="color:var(--blue);">-</div>
+        <div class="label">Tickets</div>
+      </a>
+      <a class="stat stat-link" href="#" onclick="goToTab('historico');return false;">
+        <div class="value" id="st-hist">-</div>
+        <div class="label">Histórico</div>
+      </a>
+    </div>
+
+    <div class="card">
+      <h3>Jobs no Mainframe (Zowe)</h3>
+      <div class="jobs-grid">
+        <button class="job-btn" onclick="rodarJob('EBRESET')"><span class="job-name">⟳ EBRESET</span><span class="job-desc">Reset do ambiente</span></button>
+        <button class="job-btn" onclick="rodarJob('EBDEPLOY')"><span class="job-name">🔨 EBDEPLOY</span><span class="job-desc">Compilar fontes</span></button>
+        <button class="job-btn" onclick="rodarJob('EBJCHAIN')"><span class="job-name">⛓ EBJCHAIN</span><span class="job-desc">Rodar cadeia diária</span></button>
+        <button class="job-btn" onclick="rodarJob('EBSETSTS')"><span class="job-name">📋 EBSETSTS</span><span class="job-desc">Set status</span></button>
+        <button class="job-btn" onclick="rodarBackup()"><span class="job-name">💾 Backup</span><span class="job-desc">Z77948.EMUNAH.** → local</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Dados de Entrada</h3>
+         <p style="color:var(--text2);font-size:calc(12px + var(--font-bump));margin-bottom:10px;">
+    Gere a massa de lançamentos (Python) e suba para o STAGE no mainframe.
+          </p>
+    <div class="jobs-grid">
+        <button class="job-btn" onclick="openModal('modal-gerar-massa')">
+          <span class="job-name">🐍 Gerar Massa</span>
+          <span class="job-desc">Python → lancamentos-dDD.txt</span>
+        </button>
+        <button class="job-btn" onclick="openModal('modal-seed')">
+          <span class="job-name">📤 Seed</span>
+          <span class="job-desc">Upload → STAGE.ENTRADA.SEQ</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Cadeia Batch (Simulação D-1)</h3>
+      <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-sm" onclick="resetBatch()">↺ Reset</button>
+        <span style="color:var(--text2);font-size:calc(12px + var(--font-bump));">
+          Clique no 💥 para simular falha — os jobs seguintes ficam BLOQUEADO
+        </span>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>Job</th><th>Hora</th><th>Pgm</th><th>Descrição</th><th>Status</th><th>RC</th><th></th></tr>
+        </thead>
+        <tbody id="batch-tbody"></tbody>
+      </table>
+    </div>
+
     <div class="card">
       <h3>Injeções Ativas</h3>
-      <div id="active-inj-list"><p style="color:var(--text2);font-size:calc(14px + var(--font-bump));">Nenhuma injeção ativa.</p></div>
-    </div>
-    <div class="card">
-      <h3>Catálogo de Injeções</h3>
-      <div class="inj-grid" id="inj-catalog"></div>
+      <div id="db-ativas"></div>
     </div>
   </div>
 
-  <!-- ─── Histórico ─── -->
+  <!-- Catálogo -->
+  <div id="sec-catalogo" class="section">
+    <div class="filter-bar">
+      <input type="text" id="filtro-cat"
+             placeholder="Filtrar por título, severidade, camada..."
+             oninput="renderCatalogo()">
+      <button class="btn btn-sm" onclick="document.getElementById('filtro-cat').value='';renderCatalogo()">✕ Limpar</button>
+    </div>
+    <div class="inj-grid" id="catalogo-grid"></div>
+  </div>
+
+  <!-- Tickets (Jira) -->
+  <div id="sec-tickets" class="section">
+    <div class="card">
+      <h3>Quadro Kanban</h3>
+      <p style="color:var(--text2);font-size:calc(12px + var(--font-bump));margin-bottom:10px;">
+        Cada injeção aplicada gera um ticket em <b>Backlog</b>.
+        Use os botões ← → no card ou abra o ticket para mudar o status.
+        Ao reverter, o ticket vai para <b>Concluído</b>.
+      </p>
+      <div class="kanban" id="kanban"></div>
+    </div>
+  </div>
+
+  <!-- Ativas -->
+  <div id="sec-ativas" class="section">
+    <div class="card"><h3>Injeções Ativas</h3><div id="ativas-list"></div></div>
+  </div>
+
+  <!-- Histórico -->
   <div id="sec-historico" class="section">
+    <div class="card"><h3>Reversões Registradas</h3><div id="hist-list"></div></div>
+  </div>
+
+  <!-- Diagnóstico -->
+  <div id="sec-diagnostico" class="section">
     <div class="card">
-      <h3>Injeções Revertidas</h3>
-      <div id="history-list"><p style="color:var(--text2);font-size:calc(14px + var(--font-bump));">Nenhum registro.</p></div>
+      <h3>Diagnóstico de Strings</h3>
+      <p style="color:var(--text2);font-size:calc(13px + var(--font-bump));margin-bottom:10px;">
+        Baixa cada membro do catálogo e compara o conteúdo real com
+        <code style="color:var(--cyan);">injecoes.json</code>.
+      </p>
+      <button class="btn btn-yellow" onclick="rodarDiagnostico()">▶ Rodar Diagnóstico</button>
+      <div id="diag-result" style="margin-top:14px;"></div>
     </div>
   </div>
 
-</div><!-- /main -->
+</div>
 
-<!-- ═══════ FOOTER ═══════ -->
 <footer class="footer">
   "[...] mas o justo viverá pela sua fé." — Habacuque 2:4
 </footer>
 
-<!-- ═══════ MODAL: Ticket Detail ═══════ -->
+<!-- Modal: Ticket Simulado (após aplicar) -->
 <div class="modal-overlay" id="modal-ticket">
   <div class="modal">
-    <h2 id="modal-ticket-title"></h2>
+    <h2>🎫 Ticket Simulado — EBOPS</h2>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-      <div><label>ID</label><div id="md-id" style="font-size:calc(15px + var(--font-bump));color:var(--cyan);"></div></div>
-      <div><label>Dia</label><div id="md-dia" style="font-size:calc(15px + var(--font-bump));"></div></div>
-      <div><label>Categoria</label><div id="md-cat" style="font-size:calc(15px + var(--font-bump));"></div></div>
-      <div><label>Severidade</label><div id="md-sev" style="font-size:calc(15px + var(--font-bump));"></div></div>
-      <div><label>Dificuldade</label><div id="md-dif" style="font-size:calc(15px + var(--font-bump));"></div></div>
-      <div><label>Tempo</label><div id="md-tempo" style="font-size:calc(15px + var(--font-bump));"></div></div>
-      <div><label>Ferramenta</label><div id="md-fer" style="font-size:calc(15px + var(--font-bump));"></div></div>
-      <div><label>Injeção</label><div id="md-inj" style="font-size:calc(15px + var(--font-bump));"></div></div>
+      <div><label>Abertura</label><div class="field" id="t-abertura"></div></div>
+      <div><label>Severidade</label><div class="field" id="t-sev"></div></div>
+      <div><label>Camada</label><div class="field" id="t-camada"></div></div>
+      <div><label>RC / Abend</label><div class="field" id="t-rc" style="font-size:calc(12px + var(--font-bump));"></div></div>
     </div>
-    <label>Descrição</label>
-    <div id="md-desc" style="font-size:calc(14px + var(--font-bump));color:var(--text);background:var(--bg);padding:8px;border-radius:4px;white-space:pre-wrap;"></div>
-    <label>Status</label>
-    <select id="md-status" onchange="moveTicketFromModal()">
-      <option value="backlog">Backlog</option>
-      <option value="em_andamento">Em Andamento</option>
-      <option value="em_revisao">Em Revisão</option>
-      <option value="concluido">Concluído</option>
-    </select>
-    <label>Notas</label>
-    <textarea id="md-notas" placeholder="Anote observações aqui..."></textarea>
+    <label>Sintoma Reportado</label>
+    <div class="field" id="t-sintoma" style="color:var(--yellow);"></div>
+    <label>Dica de Diagnóstico</label>
+    <button class="reveal-btn dica" onclick="toggleEl('t-dica', this, 'dica')">💡 Revelar dica</button>
+    <div class="reveal-content dica" id="t-dica"></div>
+    <div id="t-compilar-aviso" style="display:none;margin-top:14px;padding:10px;background:rgba(240,136,62,.1);border:1px solid var(--orange);border-radius:6px;">
+      <p style="color:var(--orange);font-size:calc(13px + var(--font-bump));margin-bottom:8px;">⚠ Fonte alterado — recompilação necessária.</p>
+      <button class="btn btn-sm btn-orange" onclick="closeModal('modal-ticket');rodarJob('EBDEPLOY')">🔨 Compilar agora</button>
+    </div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('modal-ticket')">✕ Fechar</button>
-      <button class="btn btn-green" onclick="salvarNotas()">💾 Salvar Notas</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════ MODAL: Injection Result ═══════ -->
-<div class="modal-overlay" id="modal-inject-result">
+<!-- Modal: Ticket Jira (Kanban detail) -->
+<div class="modal-overlay" id="modal-jira">
   <div class="modal">
-    <h2>⚡ Injeção Aplicada</h2>
+    <h2 id="tj-key">EB-000</h2>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div><label>Severidade</label><div class="field" id="tj-sev"></div></div>
+      <div><label>Camada</label><div class="field" id="tj-camada"></div></div>
       <div>
-        <label>ID</label>
-        <div id="mir-id" style="font-size:calc(15px + var(--font-bump));color:var(--orange);"></div>
+        <label>Status</label>
+        <select id="tj-status" onchange="mudarStatusTicketModal()">
+          <option value="backlog">Backlog</option>
+          <option value="em_andamento">Em Andamento</option>
+          <option value="em_revisao">Em Revisão</option>
+          <option value="concluido">Concluído</option>
+        </select>
       </div>
-      <div>
-        <label>Severidade</label>
-        <div id="mir-sev" style="font-size:calc(15px + var(--font-bump));"></div>
-      </div>
-      <div>
-        <label>Camada de Falha</label>
-        <div id="mir-camada" style="font-size:calc(14px + var(--font-bump));color:var(--orange);"></div>
-      </div>
-      <div>
-        <label>RC / Abend Esperado</label>
-        <div id="mir-rc" style="font-size:calc(13px + var(--font-bump));color:var(--text2);"></div>
-      </div>
+      <div><label>Criado em</label><div class="field" id="tj-criado" style="font-size:calc(12px + var(--font-bump));"></div></div>
     </div>
-    <label>Título</label><div id="mir-title" style="font-size:calc(15px + var(--font-bump));"></div>
-    <label>Arquivos Afetados</label><div id="mir-files" style="font-size:calc(14px + var(--font-bump));color:var(--text2);"></div>
-    <label>Sintoma Observável</label>
-    <div id="mir-sintoma" style="font-size:calc(14px + var(--font-bump));color:var(--yellow);background:var(--bg);padding:8px;border-radius:4px;margin-top:4px;white-space:pre-wrap;line-height:1.6;"></div>
+    <label>Título</label>
+    <div class="field" id="tj-titulo"></div>
+    <label>Sintoma Reportado</label>
+    <div class="field" id="tj-sintoma" style="color:var(--yellow);"></div>
     <label>Dica de Diagnóstico</label>
-    <button class="dica-reveal-btn" onclick="toggleDica(this)">💡 Revelar dica</button>
-    <div class="dica-content" id="mir-dica" style="white-space:pre-wrap;line-height:1.6;"></div>
+    <button class="reveal-btn dica" onclick="toggleEl('tj-dica', this, 'dica')">💡 Revelar dica</button>
+    <div class="reveal-content dica" id="tj-dica"></div>
+    <label>Notas</label>
+    <textarea id="tj-notas" placeholder="Suas observações..."></textarea>
     <div class="modal-actions">
-      <button class="btn" onclick="closeModal('modal-inject-result')">✕ OK</button>
+      <button class="btn" onclick="closeModal('modal-jira')">✕ Fechar</button>
+      <button class="btn btn-green" onclick="salvarNotasTicket()">💾 Salvar Notas</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════ MODAL: Novo Dia Result ═══════ -->
-<div class="modal-overlay" id="modal-dia">
+<!-- Modal: Job streaming -->
+<div class="modal-overlay" id="modal-job">
   <div class="modal">
-    <h2 id="modal-dia-title">Novo Dia Gerado</h2>
-    <div id="modal-dia-body"></div>
+    <h2 id="mj-title">Job</h2>
+    <div class="job-running" id="mj-running">
+      <div class="spinner-inline"></div>
+      <span id="mj-running-msg">Executando no mainframe...</span>
+    </div>
+    <div class="job-progress" id="mj-progress">
+      <div class="job-progress-bar">
+        <div class="job-progress-fill" id="mj-progress-fill"></div>
+      </div>
+      <div class="job-progress-text">
+        <span><span id="mj-progress-pct">0%</span></span>
+        <span><span id="mj-progress-time">0.0s</span> decorridos</span>
+      </div>
+    </div>
+    <div id="mj-status" class="field" style="display:none;"></div>
+    <label>Log (Zowe — tempo real)</label>
+    <pre id="mj-log" class="job-log"></pre>
     <div class="modal-actions">
-      <button class="btn btn-green" onclick="closeModal('modal-dia');loadTickets();loadInfo();">✓ OK</button>
+      <button class="btn" id="mj-close" onclick="fecharJobModal()">Cancelar</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════ MODAL: Import Tickets ═══════ -->
-<div class="modal-overlay" id="modal-import-tickets">
+
+<!-- Modal: Gerar Massa -->
+<div class="modal-overlay" id="modal-gerar-massa">
   <div class="modal">
-    <h2>📥 Importar Tickets</h2>
-    <p style="font-size:calc(13px + var(--font-bump));color:var(--text2);margin-bottom:12px;">
-      Selecione um arquivo <code style="color:var(--cyan);">.json</code> com a lista de tickets no formato abaixo.
-      Tickets com <code style="color:var(--cyan);">ticket_id</code> já existente serão ignorados.
+    <h2>🐍 Gerar Massa de Lançamentos</h2>
+    <label>Dia (1-31)</label>
+    <input type="number" id="gm-dia" min="1" max="31" value="15">
+    <label>Quantidade de lançamentos</label>
+    <input type="number" id="gm-qtd" min="1" value="100">
+    <p style="color:var(--text2);font-size:calc(12px + var(--font-bump));margin-top:10px;">
+      Saída: <code style="color:var(--cyan);">data/entrada/lancamentos-d&lt;DIA&gt;.txt</code><br>
+      Data passada ao gerador: <code style="color:var(--cyan);">AAAAMM + DIA</code> (mês atual)
     </p>
-    <label>Modelo esperado</label>
-    <pre style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;font-size:calc(11px + var(--font-bump));color:var(--cyan);overflow-x:auto;margin-top:4px;line-height:1.5;">[
-  {
-    "ticket_id": "EB-001-01",
-    "titulo": "Título do ticket",
-    "categoria": "incidente",
-    "severidade": "alta",
-    "dificuldade": "pleno",
-    "tempo": "60min",
-    "ferramenta": "SDSF / JES",
-    "descricao": "Descrição detalhada...",
-    "tags": ["cobol", "batch"],
-    "status": "backlog",
-    "dia": 1,
-    "inj": null,
-    "notas": ""
-  }
-]</pre>
     <div class="modal-actions">
-      <button class="btn" onclick="closeModal('modal-import-tickets')">✕ Cancelar</button>
-      <button class="btn btn-blue" onclick="closeModal('modal-import-tickets');document.getElementById('input-import-tickets').click()">📂 Selecionar Arquivo</button>
+      <button class="btn" onclick="closeModal('modal-gerar-massa')">✕ Cancelar</button>
+      <button class="btn btn-green" onclick="executarGerarMassa()">▶ Gerar</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════ MODAL: Import Injeções ═══════ -->
-<div class="modal-overlay" id="modal-import-injecoes">
+<!-- Modal: Seed -->
+<div class="modal-overlay" id="modal-seed">
   <div class="modal">
-    <h2>📥 Importar Injeções</h2>
-    <p style="font-size:calc(13px + var(--font-bump));color:var(--text2);margin-bottom:12px;">
-      Selecione um arquivo <code style="color:var(--cyan);">.json</code> com injeções customizadas no formato abaixo.
-      Injeções com <code style="color:var(--cyan);">id</code> já existente serão ignoradas.
+    <h2>📤 Seed — Upload de Lançamentos</h2>
+    <label>Dia (1-31)</label>
+    <input type="number" id="sd-dia" min="1" max="31" value="15">
+    <p style="color:var(--text2);font-size:calc(12px + var(--font-bump));margin-top:10px;">
+      Origem: <code style="color:var(--cyan);">data/entrada/lancamentos-d&lt;DIA&gt;.txt</code><br>
+      Destino: <code style="color:var(--cyan);">Z77948.EMUNAH.STAGE.ENTRADA.SEQ(LANCD&lt;DIA&gt;)</code>
     </p>
-    <label>Modelo esperado</label>
-    <pre style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;font-size:calc(11px + var(--font-bump));color:var(--cyan);overflow-x:auto;margin-top:4px;line-height:1.5;">[
-  {
-    "id": "INJ-CUS-001",
-    "titulo": "Título da injeção",
-    "arquivos": ["EBVALI01.cbl"],
-    "sintoma": "Sintoma observável no batch ou no spool...",
-    "dica": "Dica de diagnóstico para o analista."
-  }
-]</pre>
     <div class="modal-actions">
-      <button class="btn" onclick="closeModal('modal-import-injecoes')">✕ Cancelar</button>
-      <button class="btn btn-blue" onclick="closeModal('modal-import-injecoes');document.getElementById('input-import-injecoes').click()">📂 Selecionar Arquivo</button>
+      <button class="btn" onclick="closeModal('modal-seed')">✕ Cancelar</button>
+      <button class="btn btn-green" onclick="executarSeed()">▶ Upload</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════ TOAST ═══════ -->
+
+<!-- Modal: Novo Cliente -->
+<div class="modal-overlay" id="modal-bk-add-cli">
+  <div class="modal">
+    <h2>+ Novo Cliente</h2>
+    <label>Nome</label><input class="bk-input" type="text" id="bk-ncli-nome">
+    <label>CPF (11 dígitos)</label><input class="bk-input" type="text" id="bk-ncli-cpf">
+    <label>Nascimento (AAAAMMDD)</label><input class="bk-input" type="text" id="bk-ncli-nasc" placeholder="19900101">
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-bk-add-cli')">✕ Cancelar</button>
+      <button class="btn btn-green" onclick="addCliente()">Cadastrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nova Conta -->
+<div class="modal-overlay" id="modal-bk-add-conta">
+  <div class="modal">
+    <h2>+ Nova Conta</h2>
+    <label>Client ID</label><input class="bk-input" type="number" id="bk-ncon-cli" min="1">
+    <label>Tipo</label>
+    <select class="bk-input" id="bk-ncon-tipo">
+      <option value="C">C - Corrente</option>
+      <option value="P">P - Poupança</option>
+    </select>
+    <label>Agência</label><input class="bk-input" type="number" id="bk-ncon-ag" value="1" min="1">
+    <label>Saldo (R$)</label><input class="bk-input" type="text" id="bk-ncon-saldo" value="0.00">
+    <label>Limite (R$)</label><input class="bk-input" type="text" id="bk-ncon-lim" value="0.00">
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-bk-add-conta')">✕ Cancelar</button>
+      <button class="btn btn-green" onclick="addConta()">Cadastrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Seed Sintético -->
+<div class="modal-overlay" id="modal-bk-seed-cli">
+  <div class="modal">
+    <h2>⚡ Seed Sintético — Clientes em Massa</h2>
+    <label>Quantidade de clientes</label><input class="bk-input" type="number" id="bk-scli-qtd" value="20" min="1" max="200">
+    <label>Contas por cliente</label><input class="bk-input" type="number" id="bk-scli-cpc" value="2" min="1" max="5">
+    <label>Seed</label><input class="bk-input" type="number" id="bk-scli-seed" placeholder="(aleatório)">
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-bk-seed-cli')">✕ Cancelar</button>
+      <button class="btn btn-green" onclick="seedClientes()">Gerar</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-msg" id="loading-msg">Processando...</div>
+</div>
+
 <div class="toast-container" id="toast-container"></div>
 
 <script>
 const API = '';
+let CATALOGO = [];
+let ESTADO = { injecoes_ativas: [], historico: [], tickets: [] };
+let JOB_ES = null;
+let TICKET_ATUAL = null;
+
+const STATUS_KEYS = ['backlog','em_andamento','em_revisao','concluido'];
+const STATUS_NAMES = {
+  backlog:'Backlog', em_andamento:'Em Andamento',
+  em_revisao:'Em Revisão', concluido:'Concluído'
+};
+const STATUS_CLS = (s) => 'tag-status-' + (s || '').replace(/_/g,'-');
 
 async function api(path, opts) {
-  try {
-    const res = await fetch(API + path, opts);
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-    return data;
-  } catch(e) {
-    toast(e.message, 'err');
-    throw e;
+  const res = await fetch(API + path, opts);
+  let data;
+  try { data = await res.json(); } catch(e) { data = {}; }
+  if (!res.ok) {
+    const msg = data.erro || data.error || `HTTP ${res.status}`;
+    const err = new Error(msg); err.data = data;
+    throw err;
   }
+  return data;
 }
 
-// ═══════════════════════════════════════════════════════
-// TEMA
-// ═══════════════════════════════════════════════════════
+// Theme
 const THEME_KEY = 'ebops-theme';
-
-function applyTheme(theme) {
-  document.body.setAttribute('data-theme', theme);
+function applyTheme(t) {
+  document.body.setAttribute('data-theme', t);
   const btn = document.getElementById('theme-toggle');
-  if (btn) btn.textContent = theme === 'light' ? '🌞 Claro' : '🌙 Escuro';
+  if (btn) btn.textContent = t === 'light' ? '🌞 Claro' : '🌙 Escuro';
 }
-
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
   const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
   applyTheme(saved || (prefersLight ? 'light' : 'dark'));
 }
-
 function toggleTheme() {
-  const current = document.body.getAttribute('data-theme') || 'dark';
-  const next = current === 'dark' ? 'light' : 'dark';
+  const cur = document.body.getAttribute('data-theme') || 'dark';
+  const next = cur === 'dark' ? 'light' : 'dark';
   localStorage.setItem(THEME_KEY, next);
   applyTheme(next);
 }
 
-// ═══════════════════════════════════════════════════════
-// TABS
-// ═══════════════════════════════════════════════════════
-function goToTab(tabName) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+function goToTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('sec-' + tabName).classList.add('active');
-
-  if (tabName === 'dashboard') { loadInfo(); loadBatch(false); }
-  else if (tabName === 'tickets') loadTickets();
-  else if (tabName === 'injecoes') { loadActiveInjections(); loadCatalog(); }
-  else if (tabName === 'historico') loadHistory();
+  document.getElementById('sec-' + name).classList.add('active');
+  if (name === 'dashboard')        { renderDashboard(); renderBatch(); }
+  else if (name === 'catalogo')    renderCatalogo();
+  else if (name === 'tickets')     renderKanban();
+  else if (name === 'ativas')      renderAtivas();
+  else if (name === 'historico')   renderHistorico();
+  else if (name === 'banco') { loadBkStats(); loadBkClientes(); }
 }
-
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => goToTab(tab.dataset.tab));
 });
 
-// ═══════════════════════════════════════════════════════
-// TOAST
-// ═══════════════════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+function setLoading(on, msg) {
+  document.getElementById('loading-msg').textContent = msg || 'Processando...';
+  document.getElementById('loading').classList.toggle('open', !!on);
+}
 function toast(msg, type='ok') {
   const el = document.createElement('div');
   el.className = 'toast toast-' + type;
@@ -746,501 +974,868 @@ function toast(msg, type='ok') {
   setTimeout(() => el.remove(), 4000);
 }
 
-// ═══════════════════════════════════════════════════════
-// MODAL
-// ═══════════════════════════════════════════════════════
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-
-document.querySelectorAll('.modal-overlay').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-});
-
-// ═══════════════════════════════════════════════════════
-// DICA OCULTA (modal de resultado de injeção)
-// ═══════════════════════════════════════════════════════
-function toggleDica(btn) {
-  const content = document.getElementById('mir-dica');
-  const visible = content.style.display === 'block';
-  content.style.display = visible ? 'none' : 'block';
-  btn.textContent = visible ? '👁 Revelar dica' : '🙈 Ocultar dica';
+function toggleEl(targetId, btn, kind) {
+  const el = document.getElementById(targetId);
+  const visible = el.style.display === 'block';
+  el.style.display = visible ? 'none' : 'block';
+  const icon = kind === 'dica' ? '💡' : '👁';
+  const label = kind === 'dica' ? 'dica' : 'sintoma';
+  btn.textContent = visible ? `${icon} Revelar ${label}` : `🙈 Ocultar ${label}`;
 }
-
-// ═══════════════════════════════════════════════════════
-// SINTOMA OCULTO (catálogo de injeções)
-// ═══════════════════════════════════════════════════════
-function toggleSintoma(btn) {
+function toggleSibling(btn, kind) {
   const el = btn.nextElementSibling;
   const visible = el.style.display === 'block';
   el.style.display = visible ? 'none' : 'block';
-  btn.textContent = visible ? '👁 Revelar sintoma' : '🙈 Ocultar sintoma';
+  const icon = kind === 'dica' ? '💡' : '👁';
+  const label = kind === 'dica' ? 'dica' : 'sintoma';
+  btn.textContent = visible ? `${icon} Revelar ${label}` : `🙈 Ocultar ${label}`;
 }
 
-function toggleDicaCatalog(btn) {
-  const el = btn.nextElementSibling;
-  const visible = el.style.display === 'block';
-  el.style.display = visible ? 'none' : 'block';
-  btn.textContent = visible ? '👁 Revelar dica' : '🙈 Ocultar dica';
+// ---- Cadeia batch -------------------------------------------
+const CADEIA = [
+  {job:'EBJPRECK', hora:'01:50', pgm:'IDCAMS',   desc:'Pré-check de datasets'},
+  {job:'EBJSOD',   hora:'02:00', pgm:'EBCTL01',  desc:'SOD — abre o dia (OPEN)'},
+  {job:'EBJBCKPD', hora:'02:05', pgm:'IEBGENER', desc:'Backup diário'},
+  {job:'EBJWAIT',  hora:'02:10', pgm:'ICETOOL',  desc:'Watcher do staging'},
+  {job:'EBJLOAD',  hora:'02:15', pgm:'IEBGENER', desc:'Carga do dia'},
+  {job:'EBJVALD',  hora:'02:20', pgm:'EBVALI01', desc:'Validação'},
+  {job:'EBJRPOST', hora:'02:25', pgm:'EBPOST01', desc:'Postagem (reproc.)'},
+  {job:'EBJCUTF',  hora:'02:30', pgm:'EBCTL01',  desc:'Cutoff financeiro (OPEN→EOTI)'},
+  {job:'EBJACCR',  hora:'02:35', pgm:'EBACCR01', desc:'Accrual (em EOTI)'},
+  {job:'EBJCUTE',  hora:'02:40', pgm:'EBCTL01',  desc:'Cutoff contábil (EOTI→EOFI)'},
+  {job:'EBJSNAP',  hora:'02:45', pgm:'EBSNAP01', desc:'Snapshot (após EOFI)'},
+  {job:'EBJCONC',  hora:'02:50', pgm:'EBCONC01', desc:'Conciliação'},
+  {job:'EBJEXTR',  hora:'02:55', pgm:'EBEXTR01', desc:'Extrato'},
+  {job:'EBJEOD',   hora:'03:00', pgm:'EBJEOD01', desc:'EOD — fecha o dia (CLOSED)'},
+];
+let failIdx = -1;
+function renderBatch() {
+  const tbody = document.getElementById('batch-tbody');
+  tbody.innerHTML = CADEIA.map((j, i) => {
+    let status, rc, cls, rowCls = '';
+    if (failIdx < 0)        { status='OK';        rc='0000'; cls='st-ok'; }
+    else if (i < failIdx)   { status='OK';        rc='0000'; cls='st-ok'; }
+    else if (i === failIdx) { status='FALHOU';    rc='0012'; cls='st-fail';  rowCls='row-fail'; }
+    else                    { status='BLOQUEADO'; rc='----'; cls='st-block'; rowCls='row-block'; }
+    return `<tr class="${rowCls}">
+      <td><strong>${j.job}</strong></td>
+      <td>${j.hora}</td>
+      <td style="color:var(--text2);">${j.pgm}</td>
+      <td style="color:var(--text2);font-size:calc(12px + var(--font-bump));">${j.desc}</td>
+      <td class="${cls}">${status}</td>
+      <td class="${cls}">${rc}</td>
+      <td><button class="btn btn-sm btn-red" title="Simular falha aqui" onclick="simularFalha(${i})">💥</button></td>
+    </tr>`;
+  }).join('');
 }
+function simularFalha(i) {
+  failIdx = i; renderBatch();
+  const bloqueados = CADEIA.length - i - 1;
+  toast(`${CADEIA[i].job} FALHOU — ${bloqueados} job(s) bloqueado(s)`, 'err');
+}
+function resetBatch() { failIdx = -1; renderBatch(); toast('Cadeia resetada','info'); }
 
-// ═══════════════════════════════════════════════════════
-// DASHBOARD
-// ═══════════════════════════════════════════════════════
-async function loadInfo() {
+// ---- Data ---------------------------------------------------
+async function carregarTudo() {
   try {
-    const d = await api('/api/info');
-    document.getElementById('st-dia').textContent = d.day;
-    document.getElementById('st-tickets').textContent = d.total_tickets;
-    document.getElementById('st-inj').textContent = d.active_injections;
-    document.getElementById('st-hist').textContent = d.history_count;
-  } catch(e) {}
+    [CATALOGO, ESTADO] = await Promise.all([
+      api('/api/injecoes'), api('/api/estado'),
+    ]);
+    atualizarStats();
+    const cur = document.querySelector('.tab.active')?.dataset.tab || 'dashboard';
+    goToTab(cur);
+  } catch(e) { toast('Erro: ' + e.message, 'err'); }
 }
-
-async function loadBatch(fail) {
-  try {
-    const jobs = await api('/api/batch?fail=' + fail);
-    const tbody = document.getElementById('batch-body');
-    tbody.innerHTML = jobs.map(j => `
-      <tr>
-        <td style="font-weight:bold;">${j.job}</td>
-        <td>${j.hora}</td>
-        <td>${j.pgm}</td>
-        <td class="st-${j.status}">${j.status.toUpperCase()}</td>
-        <td class="st-${j.status}">${j.rc}</td>
-      </tr>
-    `).join('');
-  } catch(e) {}
+function atualizarStats() {
+  document.getElementById('st-total').textContent = CATALOGO.length;
+  document.getElementById('st-ativas').textContent = ESTADO.injecoes_ativas.length;
+  document.getElementById('st-tickets').textContent = (ESTADO.tickets || []).length;
+  document.getElementById('st-hist').textContent = ESTADO.historico.length;
 }
+function recarregar() { carregarTudo(); toast('Recarregado'); }
 
-// ═══════════════════════════════════════════════════════
-// TICKETS (KANBAN)
-// ═══════════════════════════════════════════════════════
-const STATUS_ORDER = ['backlog','em_andamento','em_revisao','concluido'];
-const STATUS_NAMES = {backlog:'Backlog',em_andamento:'Em Andamento',em_revisao:'Em Revisão',concluido:'Concluído'};
-const CAT_ICONS = {incidente:'🔥',desenvolvimento:'⚙️','operação':'📋',change:'🔄','investigação':'🔍'};
-let currentTickets = [];
-
-async function loadTickets() {
-  const filtro = document.getElementById('filtro-tickets').value;
-  try {
-    const d = await api('/api/tickets?filtro=' + encodeURIComponent(filtro));
-    currentTickets = d.tickets;
-    renderKanban(d.tickets, d.counts);
-  } catch(e) {}
-}
-
-function renderKanban(tickets, counts) {
-  const board = document.getElementById('kanban-board');
-  board.innerHTML = STATUS_ORDER.map(st => {
-    const col_tickets = tickets.filter(t => t.status === st);
-    const count = counts[st] || 0;
-    return `
-      <div class="kanban-col">
-        <div class="kanban-col-header">
-          ${STATUS_NAMES[st]}
-          <span class="count">${count}</span>
-        </div>
-        <div class="kanban-col-body">
-          ${col_tickets.length === 0
-            ? '<div style="text-align:center;color:var(--text2);font-size:calc(11px + var(--font-bump));padding:20px;">—</div>'
-            : col_tickets.map(t => renderTicketCard(t)).join('')}
+// ---- Renderers ----------------------------------------------
+function renderDashboard() {
+  atualizarStats();
+  const div = document.getElementById('db-ativas');
+  const list = ESTADO.injecoes_ativas;
+  if (!list.length) {
+    div.innerHTML = '<p style="color:var(--text2);font-size:calc(14px + var(--font-bump));">Nenhuma injeção ativa.</p>';
+    return;
+  }
+  div.innerHTML = list.map(a => `
+    <div class="active-inj">
+      <div class="inj-info">
+        <div><strong style="color:var(--orange);">#${a.Id}</strong> — ${escapeHtml(a.Titulo)}</div>
+        <div style="font-size:calc(12px + var(--font-bump));color:var(--text2);margin-top:2px;">
+          ${a.TipoDataset}(${a.Membro}) &nbsp;|&nbsp; desde ${a.Timestamp || '?'}
         </div>
       </div>
-    `;
+      <button class="btn btn-sm btn-red" onclick="reverter(${a.Id})">↩ Reverter</button>
+    </div>`).join('');
+}
+
+function renderCatalogo() {
+  const filtro = (document.getElementById('filtro-cat').value || '').toLowerCase();
+  const ativosIds = new Set(ESTADO.injecoes_ativas.map(a => Number(a.Id)));
+  const ticketsMap = new Map((ESTADO.tickets || []).map(t => [Number(t.Id), t]));
+  const grid = document.getElementById('catalogo-grid');
+
+  // Filtro NAO inclui Membro/TipoDataset (spoilers)
+  const lista = CATALOGO.filter(i => {
+    if (!filtro) return true;
+    return [i.Titulo, i.SeveridadeTicket, String(i.Id),
+            i.AbendOuRC, String(i.CamadaFalha)]
+      .filter(Boolean).some(s => String(s).toLowerCase().includes(filtro));
+  });
+  if (!lista.length) { grid.innerHTML = '<p style="color:var(--text2);">Nenhum resultado.</p>'; return; }
+
+  grid.innerHTML = lista.map(inj => {
+    const ativa = ativosIds.has(Number(inj.Id));
+    const ticket = ticketsMap.get(Number(inj.Id));
+    const sevCls = `tag-sev-${(inj.SeveridadeTicket || 'media').toLowerCase()}`;
+    const ticketBadge = ticket
+      ? `<span class="tag ${STATUS_CLS(ticket.status)}" title="Ticket Jira"
+              style="cursor:pointer;" onclick="event.stopPropagation();abrirTicketJira(${inj.Id})">
+           EB-${String(inj.Id).padStart(3,'0')} · ${STATUS_NAMES[ticket.status] || ticket.status}
+         </span>` : '';
+
+    return `
+      <div class="inj-card ${ativa ? 'is-active' : ''}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;flex-wrap:wrap;">
+          <div class="inj-id">#${inj.Id} ${ativa ? '[ATIVA]' : ''}</div>
+          <span class="tag ${sevCls}">${(inj.SeveridadeTicket || '').toUpperCase()}</span>
+        </div>
+        <div class="inj-title">${escapeHtml(inj.Titulo)}</div>
+        <div class="inj-detail">
+          <span class="tag tag-camada">Camada ${inj.CamadaFalha}</span>
+          ${ticketBadge}
+        </div>
+        <div class="inj-detail" style="margin-top:4px;">${escapeHtml(inj.AbendOuRC || '')}</div>
+
+        <button class="reveal-btn sintoma" onclick="toggleSibling(this,'sintoma')">👁 Revelar sintoma</button>
+        <div class="reveal-content sintoma">${escapeHtml(inj.SintomaTicket || '')}</div>
+
+        <button class="reveal-btn dica" onclick="toggleSibling(this,'dica')">💡 Revelar dica</button>
+        <div class="reveal-content dica"><span class="alvo-badge">Alvo: ${inj.TipoDataset}(${inj.Membro})</span>
+${escapeHtml(inj.Dica || '')}</div>
+
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+          ${ativa
+            ? `<button class="btn btn-sm btn-red" onclick="reverter(${inj.Id})">↩ Reverter</button>`
+            : `<button class="btn btn-sm btn-yellow" onclick="aplicar(${inj.Id})">⚡ Aplicar</button>`}
+        </div>
+      </div>`;
   }).join('');
 }
 
-function renderTicketCard(t) {
-  const icon = CAT_ICONS[t.categoria] || '📋';
-  const sevClass = 'tag-sev-' + (t.severidade || 'media');
-  return `
-    <div class="ticket-card" onclick="openTicket('${t.ticket_id}')">
-      <div class="ticket-id">${t.ticket_id}</div>
-      <div class="ticket-title">${icon} ${t.titulo}</div>
-      <div class="ticket-tags">
-        <span class="tag ${sevClass}">${(t.severidade||'media').toUpperCase()}</span>
-        <span class="tag tag-cat">${t.categoria}</span>
-        <span class="tag tag-dif">${t.dificuldade}</span>
-        ${t.inj ? '<span class="tag tag-inj">⚡'+t.inj+'</span>' : ''}
+function renderKanban() {
+  const board = document.getElementById('kanban');
+  const tickets = ESTADO.tickets || [];
+  const cols = STATUS_KEYS.map(key => {
+    const aqui = tickets.filter(t => t.status === key);
+    return { key, label: STATUS_NAMES[key], tickets: aqui };
+  });
+  board.innerHTML = cols.map(c => `
+    <div class="kan-col" data-status="${c.key}">
+      <div class="kan-header">
+        <span class="col-name">${c.label}</span>
+        <span class="count">${c.tickets.length}</span>
       </div>
-    </div>
-  `;
+      <div class="kan-body">
+        ${c.tickets.length === 0
+          ? '<div class="kan-empty">—</div>'
+          : c.tickets.map(renderTicketCard).join('')}
+      </div>
+    </div>`).join('');
 }
 
-let currentTicketId = null;
-function openTicket(id) {
-  const t = currentTickets.find(x => x.ticket_id === id);
-  if (!t) return;
-  currentTicketId = id;
-  document.getElementById('modal-ticket-title').textContent = t.titulo;
-  document.getElementById('md-id').textContent = t.ticket_id;
-  document.getElementById('md-dia').textContent = 'Dia #' + t.dia;
-  document.getElementById('md-cat').textContent = (CAT_ICONS[t.categoria]||'') + ' ' + t.categoria;
-  document.getElementById('md-sev').textContent = (t.severidade||'media').toUpperCase();
-  document.getElementById('md-dif').textContent = (t.dificuldade||'junior').toUpperCase();
-  document.getElementById('md-tempo').textContent = t.tempo || '-';
-  document.getElementById('md-fer').textContent = t.ferramenta || '-';
-  document.getElementById('md-inj').textContent = t.inj || '—';
-  document.getElementById('md-desc').textContent = t.descricao || '';
-  document.getElementById('md-status').value = t.status;
-  document.getElementById('md-notas').value = t.notas || '';
+function renderTicketCard(t) {
+  const inj = CATALOGO.find(i => Number(i.Id) === Number(t.Id));
+  if (!inj) return '';
+  const sevCls = `tag-sev-${(inj.SeveridadeTicket || 'media').toLowerCase()}`;
+  const idx = STATUS_KEYS.indexOf(t.status);
+  const prev = idx > 0 ? STATUS_KEYS[idx-1] : null;
+  const next = idx < STATUS_KEYS.length-1 ? STATUS_KEYS[idx+1] : null;
+  return `
+    <div class="kan-card" onclick="abrirTicketJira(${t.Id})">
+      <div class="kan-card-head">
+        <span class="kan-id">EB-${String(t.Id).padStart(3,'0')}</span>
+        <span class="tag ${sevCls}">${(inj.SeveridadeTicket || '').toUpperCase()}</span>
+      </div>
+      <div class="kan-title">${escapeHtml(inj.Titulo)}</div>
+      <div class="kan-card-actions" onclick="event.stopPropagation()">
+        ${prev ? `<button class="kan-move" onclick="moverTicket(${t.Id},'${prev}')" title="${STATUS_NAMES[prev]}">←</button>` : ''}
+        ${next ? `<button class="kan-move" onclick="moverTicket(${t.Id},'${next}')" title="${STATUS_NAMES[next]}">→</button>` : ''}
+      </div>
+    </div>`;
+}
+
+async function moverTicket(id, novoStatus) {
+  try {
+    await api(`/api/tickets/${id}/status`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({status: novoStatus})
+    });
+    await carregarTudo();
+    toast(`Ticket EB-${String(id).padStart(3,'0')} → ${STATUS_NAMES[novoStatus]}`);
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function abrirTicketJira(id) {
+  const t = (ESTADO.tickets || []).find(x => Number(x.Id) === Number(id));
+  const inj = CATALOGO.find(i => Number(i.Id) === Number(id));
+  if (!inj) { toast('Injeção não está no catálogo','err'); return; }
+  TICKET_ATUAL = id;
+
+  document.getElementById('tj-key').textContent = `EB-${String(id).padStart(3,'0')}`;
+  const sevCls = `tag-sev-${(inj.SeveridadeTicket || 'media').toLowerCase()}`;
+  document.getElementById('tj-sev').innerHTML =
+    `<span class="tag ${sevCls}">${(inj.SeveridadeTicket || '').toUpperCase()}</span>`;
+  document.getElementById('tj-camada').textContent = inj.CamadaFalha;
+  document.getElementById('tj-status').value = (t && t.status) || 'backlog';
+  document.getElementById('tj-criado').textContent = (t && t.criado_em) || '(sem ticket ainda)';
+  document.getElementById('tj-titulo').textContent = inj.Titulo;
+  document.getElementById('tj-sintoma').textContent = inj.SintomaTicket;
+  const dica = document.getElementById('tj-dica');
+  dica.textContent = inj.Dica;
+  dica.style.display = 'none';
+  document.querySelector('#modal-jira .reveal-btn.dica').textContent = '💡 Revelar dica';
+  document.getElementById('tj-notas').value = (t && t.notas) || '';
+
+  openModal('modal-jira');
+}
+
+async function mudarStatusTicketModal() {
+  if (TICKET_ATUAL == null) return;
+  const novo = document.getElementById('tj-status').value;
+  await moverTicket(TICKET_ATUAL, novo);
+}
+
+async function salvarNotasTicket() {
+  if (TICKET_ATUAL == null) return;
+  const notas = document.getElementById('tj-notas').value;
+  try {
+    await api(`/api/tickets/${TICKET_ATUAL}/notas`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({notas})
+    });
+    await carregarTudo();
+    toast('Notas salvas');
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+function renderAtivas() {
+  const div = document.getElementById('ativas-list');
+  const list = ESTADO.injecoes_ativas;
+  if (!list.length) { div.innerHTML = '<p style="color:var(--text2);">Nenhuma injeção ativa.</p>'; return; }
+  div.innerHTML = list.map(a => `
+    <div class="active-inj">
+      <div class="inj-info">
+        <div><strong style="color:var(--orange);">#${a.Id}</strong> — ${escapeHtml(a.Titulo)}</div>
+        <div style="font-size:calc(12px + var(--font-bump));color:var(--text2);margin-top:2px;">
+          Alvo: ${a.TipoDataset}(${a.Membro}) &nbsp;|&nbsp; Desde: ${a.Timestamp || '?'}
+        </div>
+        <div style="font-size:calc(12px + var(--font-bump));color:var(--text2);margin-top:2px;">
+          Causa: ${escapeHtml(a.Descricao || '')}
+        </div>
+      </div>
+      <button class="btn btn-sm btn-red" onclick="reverter(${a.Id})">↩ Reverter</button>
+    </div>`).join('');
+}
+
+function renderHistorico() {
+  const div = document.getElementById('hist-list');
+  const hist = ESTADO.historico;
+  if (!hist.length) { div.innerHTML = '<p style="color:var(--text2);">Nenhum registro.</p>'; return; }
+  div.innerHTML = '<table class="tbl"><thead><tr><th>ID</th><th>Título</th><th>Alvo</th><th>Revertido em</th></tr></thead><tbody>' +
+    hist.map(h => `
+      <tr>
+        <td style="color:var(--orange);font-weight:bold;">#${h.Id}</td>
+        <td>${escapeHtml(h.Titulo)}</td>
+        <td style="color:var(--text2);">${h.TipoDataset}(${h.Membro})</td>
+        <td style="color:var(--text2);">${h.RevertidoEm || '-'}</td>
+      </tr>`).join('') + '</tbody></table>';
+}
+
+// ---- Aplicar / Reverter -------------------------------------
+async function aplicar(id) {
+  setLoading(true, `Aplicando injeção #${id} via Zowe...`);
+  try {
+    const res = await api(`/api/injecoes/${id}/aplicar`, { method: 'POST' });
+    await carregarTudo();
+    abrirTicket(res);
+    toast(`Injeção #${id} aplicada — ticket EB-${String(id).padStart(3,'0')} criado em Backlog`);
+  } catch(e) { toast(e.message, 'err'); }
+  finally { setLoading(false); }
+}
+
+async function reverter(id) {
+  if (!confirm(`Reverter a injeção #${id}? O fonte original será restaurado no mainframe.`)) return;
+  setLoading(true, `Revertendo injeção #${id} via Zowe...`);
+  try {
+    const res = await api(`/api/injecoes/${id}/reverter`, { method: 'POST' });
+    await carregarTudo();
+    toast(`Injeção #${id} revertida — ticket → Concluído`);
+    if (res.precisa_compilar && confirm('Membro restaurado — recompilar agora (EBDEPLOY)?')) rodarJob('EBDEPLOY');
+  } catch(e) { toast(e.message, 'err'); }
+  finally { setLoading(false); }
+}
+
+function abrirTicket(res) {
+  const t = res.ticket_simulado || {};
+  document.getElementById('t-abertura').textContent = t.abertura || '';
+  const sevCls = `tag-sev-${(t.severidade || 'media').toLowerCase()}`;
+  document.getElementById('t-sev').innerHTML =
+    `<span class="tag ${sevCls}">${(t.severidade || '').toUpperCase()}</span>`;
+  document.getElementById('t-camada').textContent = t.camada;
+  document.getElementById('t-rc').textContent = t.rc_abend || '';
+  document.getElementById('t-sintoma').textContent = t.sintoma || '';
+  const dica = document.getElementById('t-dica');
+  dica.textContent = t.dica || '';
+  dica.style.display = 'none';
+  document.querySelector('#modal-ticket .reveal-btn.dica').textContent = '💡 Revelar dica';
+  document.getElementById('t-compilar-aviso').style.display = res.precisa_compilar ? 'block' : 'none';
   openModal('modal-ticket');
 }
 
-async function moveTicketFromModal() {
-  if (!currentTicketId) return;
-  const status = document.getElementById('md-status').value;
-  try {
-    await api('/api/tickets/move', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ticket_id: currentTicketId, status})
-    });
-    toast('Ticket movido para ' + STATUS_NAMES[status]);
-    loadTickets(); loadInfo();
-  } catch(e) {}
+// ---- Job streaming + progress -------------------------------
+const JOB_TAU_MS = {
+  'EBRESET': 15000, 'EBDEPLOY': 45000,
+  'EBJCHAIN': 180000, 'EBSETSTS': 10000,
+  'Backup': 60000,
+};
+
+let progressInterval = null;
+let progressStart = 0;
+let progressTau = 30000;
+
+function startProgress(tau) {
+  progressTau = tau || 30000;
+  progressStart = Date.now();
+  const wrap = document.getElementById('mj-progress');
+  const fill = document.getElementById('mj-progress-fill');
+  fill.classList.remove('done');
+  fill.style.background = 'linear-gradient(90deg, var(--green), var(--cyan))';
+  wrap.classList.add('active');
+  setProgress(0, 0);
+  if (progressInterval) clearInterval(progressInterval);
+  progressInterval = setInterval(() => {
+    const elapsed = Date.now() - progressStart;
+    const pct = (1 - Math.exp(-elapsed / progressTau)) * 95;
+    setProgress(pct, elapsed / 1000);
+  }, 200);
+}
+function setProgress(pct, elapsedS) {
+  document.getElementById('mj-progress-fill').style.width = pct.toFixed(1) + '%';
+  document.getElementById('mj-progress-pct').textContent = pct.toFixed(0) + '%';
+  document.getElementById('mj-progress-time').textContent = elapsedS.toFixed(1) + 's';
+}
+function finishProgress(ok) {
+  if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
+  setProgress(100, (Date.now() - progressStart) / 1000);
+  const fill = document.getElementById('mj-progress-fill');
+  fill.classList.add('done');
+  fill.style.background = ok
+    ? 'linear-gradient(90deg, var(--green), var(--cyan))'
+    : 'linear-gradient(90deg, var(--red), var(--yellow))';
 }
 
-async function salvarNotas() {
-  if (!currentTicketId) return;
-  const notas = document.getElementById('md-notas').value;
-  try {
-    await api('/api/tickets/notas', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ticket_id: currentTicketId, notas})
-    });
-    toast('Notas salvas');
-    closeModal('modal-ticket');
-  } catch(e) {}
+function rodarJob(nome) {
+  iniciarStreamSSE(`/api/jobs/${nome}/stream`, `Job ${nome}`,
+    `Submetendo ${nome} (--wfo)... aguardando conclusão.`,
+    JOB_TAU_MS[nome] || 30000);
+}
+function rodarBackup() {
+  if (!confirm('Baixar todos os datasets Z77948.EMUNAH.** para backup_emunah/ ?')) return;
+  iniciarStreamSSE('/api/backup/stream', 'Backup',
+    'Baixando datasets... pode levar minutos.', JOB_TAU_MS.Backup);
 }
 
-// ═══════════════════════════════════════════════════════
-// INJEÇÕES
-// ═══════════════════════════════════════════════════════
-async function loadCatalog() {
-  try {
-    const injs = await api('/api/injections');
-    const grid = document.getElementById('inj-catalog');
-    grid.innerHTML = injs.map(inj => {
-      const sevBadge = inj.sev
-        ? `<span class="tag tag-sev-${inj.sev}" style="font-size:calc(10px + var(--font-bump));">${inj.sev.toUpperCase()}</span>`
-        : '';
-      const camadaLine = (inj.camada || inj.rc_abend)
-        ? `<div class="inj-detail" style="color:var(--orange);margin-top:3px;">
-             ${inj.camada ? `Camada ${inj.camada}` : ''} ${inj.camada && inj.rc_abend ? '—' : ''} ${inj.rc_abend || ''}
-           </div>`
-        : '';
-      return `
-        <div class="inj-card">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:4px;">
-            <div class="inj-id">${inj.id}</div>
-            ${sevBadge}
-          </div>
-          <div class="inj-title">${inj.t}</div>
-          <div class="inj-detail">Arquivos: ${(inj.arqs||[]).join(', ')}</div>
-          ${camadaLine}
-          <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
-            <button class="sintoma-reveal-btn" onclick="toggleSintoma(this)">👁 Revelar sintoma</button>
-            <div class="inj-sintoma-hidden" style="white-space:pre-wrap;line-height:1.5;">${inj.sintoma}</div>
-            <button class="sintoma-reveal-btn" onclick="toggleDicaCatalog(this)">💡 Revelar dica</button>
-            <div class="inj-sintoma-hidden" style="color:var(--cyan);white-space:pre-wrap;line-height:1.5;">${inj.dica}</div>
-          </div>
-          <div style="margin-top:10px;">
-            <button class="btn btn-sm btn-yellow" onclick="injectDefect('${inj.id}')">⚡ Injetar</button>
-          </div>
-        </div>`;
-    }).join('');
-  } catch(e) {}
+function iniciarStreamSSE(url, titulo, msgInicial, tauMs) {
+  document.getElementById('mj-title').textContent = titulo;
+  document.getElementById('mj-running').classList.add('active');
+  document.getElementById('mj-running-msg').textContent = msgInicial;
+  const statusEl = document.getElementById('mj-status');
+  statusEl.style.display = 'none';
+  statusEl.textContent = '';
+
+  const logEl = document.getElementById('mj-log');
+  // Mensagem inicial PERMANENTE no log
+  logEl.innerHTML = `<span class="first">>>> ${escapeHtml(msgInicial)}</span>\n\n`;
+
+  document.getElementById('mj-close').textContent = 'Cancelar';
+  openModal('modal-job');
+  startProgress(tauMs);
+
+  if (JOB_ES) { try { JOB_ES.close(); } catch(e){} }
+
+  let recebeuDone = false;
+  const es = new EventSource(url);
+  JOB_ES = es;
+
+  es.onmessage = (e) => {
+    let line;
+    try { line = JSON.parse(e.data); } catch { line = e.data; }
+    logEl.appendChild(document.createTextNode(line + '\n'));
+    logEl.scrollTop = logEl.scrollHeight;
+  };
+
+  es.addEventListener('done', (e) => {
+    recebeuDone = true;
+    let data;
+    try { data = JSON.parse(e.data); } catch { data = {ok:false, rc:'?'}; }
+    es.close(); JOB_ES = null;
+    document.getElementById('mj-running').classList.remove('active');
+    finishProgress(data.ok);
+    statusEl.style.display = 'block';
+    statusEl.textContent = data.ok
+      ? `✓ Concluído (RC=${data.rc})`
+      : `✗ Falhou (RC=${data.rc})`;
+    statusEl.style.color = data.ok ? 'var(--green)' : 'var(--red)';
+    document.getElementById('mj-close').textContent = '✕ Fechar';
+    toast(data.ok ? `${titulo} concluído` : `${titulo} falhou`,
+          data.ok ? 'ok' : 'err');
+    if (titulo.toLowerCase().includes('job')) carregarTudo();
+  });
+
+  es.onerror = () => {
+    if (recebeuDone) return;
+    es.close(); JOB_ES = null;
+    document.getElementById('mj-running').classList.remove('active');
+    finishProgress(false);
+    statusEl.style.display = 'block';
+    statusEl.textContent = '✗ Conexão perdida com o servidor';
+    statusEl.style.color = 'var(--red)';
+    document.getElementById('mj-close').textContent = '✕ Fechar';
+    toast('Conexão perdida', 'err');
+  };
 }
 
-async function loadActiveInjections() {
-  try {
-    const active = await api('/api/injections/active');
-    const div = document.getElementById('active-inj-list');
-    if (active.length === 0) {
-      div.innerHTML = '<p style="color:var(--text2);font-size:calc(14px + var(--font-bump));">Nenhuma injeção ativa.</p>';
-      return;
-    }
-    div.innerHTML = active.map(a => {
-      const ts = a.timestamp ? a.timestamp.replace('T',' ').substring(0,16) : '—';
-      const sevBadge = a.sev
-        ? `<span class="tag tag-sev-${a.sev}" style="font-size:calc(10px + var(--font-bump));margin-left:6px;">${a.sev.toUpperCase()}</span>`
-        : '';
-      const camadaLine = (a.camada || a.rc_abend)
-        ? `<div style="font-size:calc(11px + var(--font-bump));color:var(--orange);margin-top:2px;">Camada ${a.camada||'?'} — ${a.rc_abend||''}</div>`
-        : '';
-      return `
-        <div class="active-inj">
-          <div class="inj-info">
-            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
-              <strong style="color:var(--orange);">${a.id}</strong>
-              <span>— ${a.titulo}</span>${sevBadge}
-            </div>
-            <div style="font-size:calc(11px + var(--font-bump));color:var(--text2);margin-top:2px;">
-              Arquivos: ${(a.arquivos||[]).join(', ')} &nbsp;|&nbsp; Desde: ${ts}
-            </div>
-            ${camadaLine}
-          </div>
-          <button class="btn btn-sm btn-red" onclick="revertInjection('${a.id}')">↩ Reverter</button>
-        </div>`;
-    }).join('') + `
-      <div style="margin-top:8px;">
-        <button class="btn btn-sm btn-red" onclick="revertInjection(null)">↩ Reverter Todas</button>
-      </div>
-    `;
-  } catch(e) {}
+function fecharJobModal() {
+  if (JOB_ES) { try { JOB_ES.close(); } catch(e){} JOB_ES = null; }
+  if (progressInterval) { clearInterval(progressInterval); progressInterval = null; }
+  document.getElementById('mj-progress').classList.remove('active');
+  closeModal('modal-job');
 }
 
-async function injectDefect(injId) {
+// ---- Diagnóstico --------------------------------------------
+async function rodarDiagnostico() {
+  setLoading(true, 'Inspecionando membros no mainframe... pode demorar.');
   try {
-    const res = await api('/api/inject', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({inj_id: injId})
-    });
-    document.getElementById('mir-id').textContent = res.inj_id;
-    document.getElementById('mir-title').textContent = res.titulo;
-    document.getElementById('mir-files').textContent = (res.arquivos||[]).join(', ');
-    document.getElementById('mir-sintoma').textContent = res.sintoma;
-
-    const camadaEl = document.getElementById('mir-camada');
-    camadaEl.textContent = res.camada ? `Camada ${res.camada}` : '—';
-
-    const rcEl = document.getElementById('mir-rc');
-    rcEl.textContent = res.rc_abend || '—';
-
-    const sevEl = document.getElementById('mir-sev');
-    if (res.sev) {
-      sevEl.innerHTML = `<span class="tag tag-sev-${res.sev}">${res.sev.toUpperCase()}</span>`;
-    } else {
-      sevEl.textContent = '—';
-    }
-
-    const dicaEl = document.getElementById('mir-dica');
-    dicaEl.textContent = res.dica;
-    dicaEl.style.display = 'none';
-    document.querySelector('.dica-reveal-btn').textContent = '💡 Revelar dica';
-    openModal('modal-inject-result');
-    loadActiveInjections(); loadInfo();
-  } catch(e) {}
-}
-
-async function revertInjection(injId) {
-  try {
-    await api('/api/revert', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({inj_id: injId})
-    });
-    toast(injId ? injId + ' revertida' : 'Todas revertidas');
-    loadActiveInjections(); loadInfo();
-  } catch(e) {}
-}
-
-// ═══════════════════════════════════════════════════════
-// HISTÓRICO
-// ═══════════════════════════════════════════════════════
-async function loadHistory() {
-  try {
-    const hist = await api('/api/history');
-    const div = document.getElementById('history-list');
-    if (hist.length === 0) {
-      div.innerHTML = '<p style="color:var(--text2);font-size:calc(14px + var(--font-bump));">Nenhum registro.</p>';
-      return;
-    }
-    div.innerHTML = '<table class="batch-table"><thead><tr><th>ID</th><th>Título</th><th>Arquivos</th><th>Timestamp</th></tr></thead><tbody>' +
-      hist.map(h => `
-        <tr>
-          <td style="color:var(--orange);font-weight:bold;">${h.id}</td>
-          <td>${h.titulo}</td>
-          <td style="color:var(--text2);">${(h.arquivos||[]).join(', ')}</td>
-          <td style="color:var(--text2);">${h.timestamp || '-'}</td>
-        </tr>
-      `).join('') + '</tbody></table>';
-  } catch(e) {}
-}
-
-// ═══════════════════════════════════════════════════════
-// GERAR DIA (com auto-injeção mediante confirmação)
-// ═══════════════════════════════════════════════════════
-async function gerarDia() {
-  try {
-    const res = await api('/api/dia', {method:'POST'});
-    const body = document.getElementById('modal-dia-body');
-    document.getElementById('modal-dia-title').textContent = `Dia #${res.dia} Gerado`;
-
-    // Tickets
-    let html = `<div style="margin-bottom:12px;">
-      <label style="font-size:calc(13px + var(--font-bump));color:var(--text2);text-transform:uppercase;">Tickets Gerados (${res.tickets.length})</label>
-      <div style="margin-top:4px;">`;
-    for (const t of res.tickets) {
-      const icon = CAT_ICONS[t.categoria] || '📋';
-      html += `<div style="background:var(--bg3);padding:8px;border-radius:4px;margin-bottom:4px;font-size:calc(14px + var(--font-bump));">
-        <span style="color:var(--cyan);">${t.ticket_id}</span> ${icon} ${t.titulo}
-        <span class="tag tag-sev-${t.severidade}" style="margin-left:4px;">${t.severidade.toUpperCase()}</span>
+    const res = await api('/api/diagnostico');
+    const div = document.getElementById('diag-result');
+    div.innerHTML = res.map(r => {
+      const status =
+        r.status === 'ignorado'      ? `<span style="color:var(--text2);">[ignorado]</span>` :
+        r.status === 'erro_download' ? `<span style="color:var(--red);">[erro download]</span>` :
+        r.original_ok ? `<span style="color:var(--green);">Original OK</span>`
+                      : `<span style="color:var(--red);">Original NÃO encontrada</span>`;
+      const inj = r.injetado_presente
+        ? `<span style="color:var(--yellow);margin-left:8px;">Injetado PRESENTE</span>` : '';
+      const preview = r.preview
+        ? `<div><div style="color:var(--yellow);margin-top:6px;">Buscada: '${escapeHtml(r.buscada || '')}'</div>
+             <div style="color:var(--text2);margin-top:4px;">Primeiras linhas do membro:</div>
+             <div class="diag-preview">${escapeHtml(r.preview.join('\n'))}</div></div>` : '';
+      return `<div class="diag-row">
+        <div><strong>#${r.Id}</strong> — ${escapeHtml(r.Titulo)}
+          <span style="color:var(--text2);margin-left:6px;">[${r.TipoDataset}(${r.Membro})]</span></div>
+        <div style="margin-top:4px;">${status} ${inj}</div>
+        ${preview}
       </div>`;
+    }).join('');
+  } catch(e) { toast(e.message, 'err'); }
+  finally { setLoading(false); }
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function importarInjecoesFromFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    let data;
+    try { data = JSON.parse(e.target.result); }
+    catch (err) { toast('JSON inválido: ' + err.message, 'err'); input.value=''; return; }
+
+    try {
+      const res = await api('/api/injecoes/importar', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+      const partes = [];
+      partes.push(`${res.adicionadas.length} adicionada(s)`);
+      if (res.ignoradas_duplicadas.length) partes.push(`${res.ignoradas_duplicadas.length} duplicada(s)`);
+      if (res.erros.length) partes.push(`${res.erros.length} erro(s)`);
+      toast(partes.join(' · '), res.erros.length ? 'err' : 'ok');
+      if (res.erros.length) console.warn('Erros na importação:', res.erros);
+      await carregarTudo();
+    } catch(err) { toast(err.message, 'err'); }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+async function executarGerarMassa() {
+  const dia = parseInt(document.getElementById('gm-dia').value, 10);
+  const qtd = parseInt(document.getElementById('gm-qtd').value, 10);
+  if (!dia || !qtd) { toast('Preencha dia e quantidade', 'err'); return; }
+  closeModal('modal-gerar-massa');
+  setLoading(true, `Gerando ${qtd} lançamento(s) para o dia ${dia}...`);
+  try {
+    const res = await api('/api/gerar-massa', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({dia, quantidade: qtd})
+    });
+    toast(`✓ ${res.linhas} lançamento(s) → ${res.arquivo}`);
+  } catch(e) { toast(e.message, 'err'); }
+  finally { setLoading(false); }
+}
+
+async function executarSeed() {
+  const dia = parseInt(document.getElementById('sd-dia').value, 10);
+  if (!dia) { toast('Preencha o dia', 'err'); return; }
+  closeModal('modal-seed');
+  setLoading(true, `Subindo carga do dia ${dia} para o mainframe...`);
+  try {
+    const res = await api('/api/seed', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({dia})
+    });
+    if (res.ok) toast(`✓ Seed em ${res.destino}`);
+    else        toast(`✗ Falha no upload (RC=${res.rc})`, 'err');
+  } catch(e) { toast(e.message, 'err'); }
+  finally { setLoading(false); }
+}
+
+
+// ============================================================
+//   BANCO
+// ============================================================
+const CANAIS_DEF = ['APP','ATM','PIX','INTERNET','BATCH','POS','TED','RH'];
+const HIST_DEF = ['DEPOSITO','PAGAMENTO BOLETO','TRANSFERENCIA','SAQUE',
+                  'COMPRA DEBITO','APORTE','TED RECEBIDA','PIX ENVIADO',
+                  'PIX RECEBIDO','AJUSTE FINANCEIRO'];
+
+function buildBkChecks(id, items) {
+  document.getElementById(id).innerHTML = items.map(i =>
+    `<label><input type="checkbox" data-val="${i}" checked> ${i}</label>`).join('');
+}
+function fmtBRL(c) {
+  return 'R$ ' + (c/100).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtDateBR(yyyymmdd) {
+  if (!yyyymmdd || String(yyyymmdd).length < 8) return yyyymmdd || '-';
+  const s = String(yyyymmdd);
+  return s.slice(6,8) + '/' + s.slice(4,6) + '/' + s.slice(0,4);
+}
+function todayYMD() {
+  const d = new Date();
+  return d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+}
+
+document.querySelectorAll('.sub-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.sub-btn').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.sub-section').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    const sub = b.dataset.sub;
+    document.getElementById('sub-' + sub).classList.add('active');
+    if (sub === 'clientes') loadBkClientes();
+    else if (sub === 'contas') loadBkContas();
+    else if (sub === 'lancamentos') loadBkLanc();
+    else if (sub === 'arquivos') loadBkArquivos();
+    else if (sub === 'gerar') loadBkArquivos();
+  });
+});
+
+async function loadBkStats() {
+  try {
+    const s = await api('/api/banco/stats');
+    document.getElementById('bk-clientes').textContent = s.clientes;
+    document.getElementById('bk-contas').textContent   = s.contas;
+    document.getElementById('bk-lanc').textContent     = s.lancamentos;
+    document.getElementById('bk-arq').textContent      = s.arquivos;
+  } catch(e) {}
+}
+
+async function loadBkClientes() {
+  loadBkStats();
+  try {
+    const rows = await api('/api/banco/clientes');
+    const tb = document.getElementById('bk-tbody-cli');
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text2);padding:20px;">Nenhum cliente.</td></tr>';
+      return;
     }
-    html += '</div></div>';
+    tb.innerHTML = rows.map(r => `
+      <tr>
+        <td style="color:var(--cyan);">${String(r.client_id).padStart(5,'0')}</td>
+        <td>${escapeHtml(r.nome)}</td>
+        <td style="color:var(--text2);">${r.cpf}</td>
+        <td>${fmtDateBR(r.data_nasc)}</td>
+        <td><span class="badge-cs badge-${r.status}">${r.status}</span></td>
+        <td style="text-align:center;">${r.qtd_contas}</td>
+        <td><button class="btn btn-sm btn-red" onclick="delCliente(${r.client_id})">✕</button></td>
+      </tr>`).join('');
+  } catch(e) { toast(e.message, 'err'); }
+}
 
-    // Batch summary
-    const batchFailed = res.batch && res.batch.some(j => j.status === 'error');
-    html += `<div style="margin-bottom:12px;">
-      <label style="font-size:calc(13px + var(--font-bump));color:var(--text2);text-transform:uppercase;">Batch</label>
-      <div style="font-size:calc(14px + var(--font-bump));margin-top:4px;color:${batchFailed?'var(--red)':'var(--green)'};">
-        ${batchFailed ? '⚠ Falha no batch — verifique a grade' : '✓ Batch concluído com sucesso'}
-      </div></div>`;
+async function addCliente() {
+  try {
+    const r = await api('/api/banco/clientes', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        nome: document.getElementById('bk-ncli-nome').value.trim(),
+        cpf:  document.getElementById('bk-ncli-cpf').value.trim(),
+        data_nasc: document.getElementById('bk-ncli-nasc').value.trim(),
+      })
+    });
+    toast(`Cliente ${r.client_id} cadastrado`);
+    closeModal('modal-bk-add-cli');
+    ['bk-ncli-nome','bk-ncli-cpf','bk-ncli-nasc'].forEach(id => document.getElementById(id).value='');
+    loadBkClientes();
+  } catch(e) { toast(e.message, 'err'); }
+}
 
-    // Injeções disponíveis — banner de confirmação automática
-    if (res.injectable && res.injectable.length > 0) {
-      const injList = res.injectable.map(i =>
-        `<div style="font-size:calc(13px + var(--font-bump));margin-bottom:2px;">
-          <span style="color:var(--orange);font-weight:bold;">${i.inj_id}</span> — ${i.ticket}
-        </div>`
-      ).join('');
+async function delCliente(id) {
+  if (!confirm(`Excluir cliente ${id} e suas contas/lançamentos?`)) return;
+  try { await api(`/api/banco/clientes/${id}`, {method:'DELETE'}); toast('Excluído'); loadBkClientes(); }
+  catch(e) { toast(e.message, 'err'); }
+}
 
-      html += `<div class="auto-inj-banner">
-        <p>⚡ Este dia tem injeções vinculadas a tickets:</p>
-        ${injList}
-        <div style="margin-top:10px;display:flex;gap:8px;">
-          <button class="btn btn-sm btn-yellow" onclick="confirmarAutoInjecao(${JSON.stringify(res.injectable).replace(/"/g,'&quot;')})">
-            Confirmar e Aplicar Injeções
-          </button>
-          <button class="btn btn-sm" onclick="this.closest('.auto-inj-banner').remove()">Pular</button>
+async function seedClientes() {
+  const qtd = parseInt(document.getElementById('bk-scli-qtd').value, 10);
+  const cpc = parseInt(document.getElementById('bk-scli-cpc').value, 10);
+  const sv = document.getElementById('bk-scli-seed').value;
+  closeModal('modal-bk-seed-cli');
+  setLoading(true, `Gerando ${qtd} clientes sintéticos...`);
+  try {
+    const r = await api('/api/banco/clientes/seed', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({quantidade: qtd, contas_por_cliente: cpc,
+                            seed: sv ? parseInt(sv,10) : null})
+    });
+    toast(`${r.clientes} clientes + ${r.contas} contas`);
+    loadBkClientes();
+  } catch(e) { toast(e.message, 'err'); }
+  finally { setLoading(false); }
+}
+
+async function loadBkContas() {
+  loadBkStats();
+  try {
+    const rows = await api('/api/banco/contas');
+    const tb = document.getElementById('bk-tbody-con');
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text2);padding:20px;">Nenhuma conta.</td></tr>';
+      return;
+    }
+    tb.innerHTML = rows.map(r => {
+      const cor = r.saldo_atual_centavos < 0 ? 'var(--red)' : 'var(--green)';
+      return `
+      <tr>
+        <td style="color:var(--cyan);">${String(r.numero).padStart(8,'0')}</td>
+        <td>${String(r.agencia).padStart(4,'0')}</td>
+        <td style="font-size:calc(12px + var(--font-bump));">${escapeHtml(r.cliente_nome)}</td>
+        <td>${r.tipo === 'C' ? 'Corrente' : 'Poupança'}</td>
+        <td><span class="badge-cs badge-${r.status}">${r.status}</span></td>
+        <td style="text-align:right;color:${cor};">${fmtBRL(r.saldo_atual_centavos)}</td>
+        <td style="text-align:right;color:var(--text2);">${fmtBRL(r.limite_centavos)}</td>
+        <td><button class="btn btn-sm btn-red" onclick="delConta(${r.numero})">✕</button></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function addConta() {
+  try {
+    const r = await api('/api/banco/contas', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        client_id: parseInt(document.getElementById('bk-ncon-cli').value,10),
+        tipo:      document.getElementById('bk-ncon-tipo').value,
+        agencia:   parseInt(document.getElementById('bk-ncon-ag').value,10),
+        saldo:     document.getElementById('bk-ncon-saldo').value,
+        limite:    document.getElementById('bk-ncon-lim').value,
+      })
+    });
+    toast(`Conta ${String(r.numero).padStart(8,'0')} criada`);
+    closeModal('modal-bk-add-conta');
+    loadBkContas();
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function delConta(n) {
+  if (!confirm(`Excluir conta ${n}?`)) return;
+  try { await api(`/api/banco/contas/${n}`, {method:'DELETE'}); loadBkContas(); }
+  catch(e) { toast(e.message, 'err'); }
+}
+
+async function loadBkLanc() {
+  loadBkStats();
+  const conta = document.getElementById('bk-filt-conta').value.trim();
+  const arq = document.getElementById('bk-filt-arq').value;
+  let url = '/api/banco/lancamentos?limit=300';
+  if (conta) url += `&conta=${encodeURIComponent(conta)}`;
+  if (arq)   url += `&arquivo=${encodeURIComponent(arq)}`;
+  try {
+    const rows = await api(url);
+    const tb = document.getElementById('bk-tbody-lanc');
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text2);padding:20px;">Nenhum lançamento.</td></tr>';
+      return;
+    }
+    tb.innerHTML = rows.map(r => {
+      const cor = r.tipo === 'C' ? 'var(--green)' : 'var(--red)';
+      return `
+      <tr>
+        <td style="color:var(--text2);">${r.id}</td>
+        <td>${String(r.conta_numero).padStart(8,'0')}</td>
+        <td>${fmtDateBR(r.data_movimento)}</td>
+        <td><span class="badge-cs badge-${r.tipo}">${r.tipo}</span></td>
+        <td style="text-align:right;color:${cor};">${fmtBRL(r.valor_centavos)}</td>
+        <td>${escapeHtml(r.historico)}</td>
+        <td>${r.canal}</td>
+        <td style="color:var(--text2);font-size:calc(11px + var(--font-bump));">${r.arquivo || '-'}</td>
+        <td><button class="btn btn-sm btn-red" onclick="delLanc(${r.id})">✕</button></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function delLanc(id) {
+  if (!confirm(`Excluir lançamento #${id}?`)) return;
+  try { await api(`/api/banco/lancamentos/${id}`, {method:'DELETE'}); loadBkLanc(); }
+  catch(e) { toast(e.message, 'err'); }
+}
+
+async function loadBkArquivos() {
+  loadBkStats();
+  try {
+    const rows = await api('/api/banco/arquivos');
+    const tb = document.getElementById('bk-tbody-arq');
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:20px;">Nenhum arquivo.</td></tr>';
+    } else {
+      tb.innerHTML = rows.map(r => `
+        <tr>
+          <td style="color:var(--cyan);">${escapeHtml(r.nome)}</td>
+          <td>${(r.data_geracao||'').replace('T',' ')}</td>
+          <td style="text-align:center;">${r.quantidade}</td>
+          <td>
+            ${r.existe ? `<a class="btn btn-sm btn-blue" href="/api/banco/arquivos/${encodeURIComponent(r.nome)}">⬇</a>` : '<span style="color:var(--text2);">ausente</span>'}
+            <button class="btn btn-sm btn-red" onclick="delArquivo('${r.nome}')">✕</button>
+          </td>
+        </tr>`).join('');
+    }
+    // filtros + select de Seed
+    const fa = document.getElementById('bk-filt-arq');
+    const cur = fa.value;
+    fa.innerHTML = '<option value="">Todos os arquivos</option>' +
+      rows.map(r => `<option value="${escapeHtml(r.nome)}">${escapeHtml(r.nome)}</option>`).join('');
+    fa.value = cur;
+    const sa = document.getElementById('bk-seed-arq');
+    if (sa) sa.innerHTML = rows.filter(r => r.existe)
+      .map(r => `<option value="${escapeHtml(r.nome)}">${escapeHtml(r.nome)} (${r.quantidade})</option>`).join('');
+  } catch(e) { toast(e.message, 'err'); }
+}
+
+async function delArquivo(nome) {
+  if (!confirm(`Excluir ${nome} e seus lançamentos?`)) return;
+  try { await api(`/api/banco/arquivos/${encodeURIComponent(nome)}`, {method:'DELETE'}); loadBkArquivos(); }
+  catch(e) { toast(e.message, 'err'); }
+}
+
+async function gerarLancamentos() {
+  const fd = new FormData(document.getElementById('bk-form-gerar'));
+  const tipos = [];
+  if (fd.get('tipo_C')) tipos.push('C');
+  if (fd.get('tipo_D')) tipos.push('D');
+  if (!tipos.length) { toast('Selecione ao menos um tipo', 'err'); return; }
+  const canais = [...document.querySelectorAll('#bk-canais input:checked')].map(c => c.dataset.val);
+  if (!canais.length) { toast('Selecione ao menos um canal', 'err'); return; }
+  const historicos = [...document.querySelectorAll('#bk-hist input:checked')].map(c => c.dataset.val);
+  if (!historicos.length) { toast('Selecione ao menos um histórico', 'err'); return; }
+
+  const cli_raw = (fd.get('clientes') || '').trim();
+  const clientes = cli_raw ? cli_raw.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const sr = (fd.get('seed') || '').trim();
+
+  const body = {
+    quantidade: parseInt(fd.get('quantidade'), 10),
+    data: (fd.get('data') || '').trim() || null,
+    valor_min: fd.get('valor_min'),
+    valor_max: fd.get('valor_max'),
+    status: fd.get('status'),
+    lote_inicial: parseInt(fd.get('lote_inicial'), 10),
+    seed: sr ? parseInt(sr, 10) : null,
+    tipos, canais, historicos, clientes,
+  };
+
+  setLoading(true, `Gerando ${body.quantidade} lançamentos...`);
+  try {
+    const r = await api('/api/banco/lancamentos/gerar', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    document.getElementById('bk-gerar-result').innerHTML = `
+      <div style="background:rgba(63,185,80,.08);border:1px solid var(--green);border-radius:6px;padding:12px;">
+        <div style="color:var(--green);font-weight:bold;margin-bottom:8px;">✓ Arquivo gerado</div>
+        <div style="font-size:calc(13px + var(--font-bump));">
+          Arquivo: <code style="color:var(--cyan);">${escapeHtml(r.arquivo)}</code><br>
+          Registros: <b>${r.quantidade}</b> · Contas elegíveis: ${r.contas}
+        </div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+          <a class="btn btn-sm btn-blue" href="/api/banco/arquivos/${encodeURIComponent(r.arquivo)}">⬇ Download</a>
+          <button class="btn btn-sm" onclick="document.querySelector('.sub-btn[data-sub=arquivos]').click()">Ver Arquivos</button>
         </div>
       </div>`;
-    }
-
-    body.innerHTML = html;
-    openModal('modal-dia');
-    loadInfo();
-  } catch(e) {}
+    toast(`${r.arquivo} gerado`);
+  } catch(e) {
+    document.getElementById('bk-gerar-result').innerHTML =
+      `<div style="background:rgba(248,81,73,.08);border:1px solid var(--red);border-radius:6px;padding:12px;color:var(--red);">✗ ${escapeHtml(e.message)}</div>`;
+    toast(e.message, 'err');
+  } finally { setLoading(false); }
 }
 
-async function confirmarAutoInjecao(injecoes) {
-  const lista = injecoes.map(i => `• ${i.inj_id} — ${i.ticket}`).join('\n');
-  if (!confirm(`Aplicar as seguintes injeções automaticamente?\n\n${lista}`)) return;
-
-  for (const inj of injecoes) {
-    try {
-      await api('/api/inject', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({inj_id: inj.inj_id})
-      });
-      toast(`${inj.inj_id} injetada`, 'info');
-    } catch(e) {}
-  }
-  loadActiveInjections();
-  loadInfo();
-  // Remove o banner
-  const banner = document.querySelector('.auto-inj-banner');
-  if (banner) banner.remove();
-}
-
-// ═══════════════════════════════════════════════════════
-// EXPORTAR / IMPORTAR
-// ═══════════════════════════════════════════════════════
-async function exportar() {
+async function seedMainframe() {
+  const arq = document.getElementById('bk-seed-arq').value;
+  if (!arq) { toast('Selecione um arquivo', 'err'); return; }
+  if (!confirm(`Upload de ${arq} para Z77948.EMUNAH.STAGE.ENTRADA.SEQ ?`)) return;
+  setLoading(true, `Subindo ${arq} para o mainframe...`);
   try {
-    const tickets = await api('/api/export');
-    const blob = new Blob([JSON.stringify(tickets, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'ebops_tickets_export.json';
-    a.click();
-    URL.revokeObjectURL(url);
-    toast('Exportação concluída');
-  } catch(e) {}
+    const r = await api('/api/banco/seed-mainframe', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({arquivo: arq})
+    });
+    if (r.ok) toast(`✓ Upload em ${r.destino}`);
+    else      toast(`✗ Falha RC=${r.rc}`, 'err');
+  } catch(e) { toast(e.message, 'err'); }
+  finally { setLoading(false); }
 }
 
-function importarTickets(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    try {
-      const data = JSON.parse(e.target.result);
-      const res = await api('/api/import/tickets', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(data)
-      });
-      toast(`${res.imported} ticket(s) importado(s)`);
-      loadTickets(); loadInfo();
-    } catch(err) {
-      toast('Erro ao importar tickets: ' + err.message, 'err');
-    }
-    input.value = '';
-  };
-  reader.readAsText(file);
-}
+function exportarBanco(tipo) { window.location.href = `/api/banco/export/${tipo}`; }
 
-function importarInjecoes(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    try {
-      const data = JSON.parse(e.target.result);
-      const res = await api('/api/import/injections', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(data)
-      });
-      toast(`${res.imported} injeção(ões) importada(s)`);
-      loadCatalog();
-    } catch(err) {
-      toast('Erro ao importar injeções: ' + err.message, 'err');
-    }
-    input.value = '';
-  };
-  reader.readAsText(file);
-}
+// init do banco
+buildBkChecks('bk-canais', CANAIS_DEF);
+buildBkChecks('bk-hist', HIST_DEF);
+document.getElementById('bk-data').value = todayYMD();
 
-// ═══════════════════════════════════════════════════════
-// IMPORTAR — modais de modelo
-// ═══════════════════════════════════════════════════════
-function showImportModal(tipo) {
-  openModal(tipo === 'tickets' ? 'modal-import-tickets' : 'modal-import-injecoes');
-}
 
-// ═══════════════════════════════════════════════════════
-// REVERTER DIA
-// ═══════════════════════════════════════════════════════
-async function revertarDia() {
-  try {
-    const info = await api('/api/info');
-    const dia = info.day;
-    if (dia <= 1) { toast('Já está no dia 1, nada a reverter.', 'err'); return; }
-    if (!confirm(`Reverter o Dia #${dia - 1}? Os tickets desse dia serão removidos.`)) return;
-    const res = await api('/api/revert_day', { method: 'POST' });
-    if (!res.ok) { toast(res.msg, 'err'); return; }
-    toast(`Dia #${res.reverted_day} revertido — ${res.tickets_removed} ticket(s) removido(s).`);
-    loadInfo();
-    loadTickets();
-  } catch(e) {}
-}
-
-// ═══════════════════════════════════════════════════════
-// RESET
-// ═══════════════════════════════════════════════════════
-async function resetar() {
-  if (!confirm('Resetar todo o estado do EBOPS? Tickets, injeções e histórico serão perdidos.')) return;
-  try {
-    await api('/api/reset', {method:'POST'});
-    toast('Estado resetado');
-    loadInfo(); loadTickets(); loadActiveInjections(); loadHistory();
-  } catch(e) {}
-}
-
-// ═══════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════
 initTheme();
-loadInfo();
-loadBatch(false);
+carregarTudo();
+renderBatch();
 </script>
 </body>
 </html>

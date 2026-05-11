@@ -1,0 +1,45 @@
+Regras obrigatórias:
+
+| Campo              | Valores válidos                                                                              |
+|--------------------|----------------------------------------------------------------------------------------------|
+| `Id`               | inteiro único (não repetir os 30 existentes)                                                 |
+| `Titulo`           | string curta — aparece como título do card                                                   |
+| `Descricao`        | string curta — descreve o que a alteração faz                                                |
+| `TipoDataset`      | `"COBOL"`, `"COPY"` ou `"JCL"`                                                               |
+| `Membro`           | tem que estar na allowlist do server e do CLI                                                |
+| `Original`         | string que existe **exatamente** no fonte real do mainframe — copie via opção de Diagnóstico |
+| `Injetado`         | a string que substitui a `Original`                                                          |
+| `CamadaFalha`      | número inteiro                                                                               |
+| `AbendOuRC`        | string — descreve o RC ou abend esperado (ex.: `"RC=0 silencioso"`, `"S0C7"`)                |
+| `SeveridadeTicket` | `"critica"`, `"alta"`, `"media"` ou `"baixa"` (minúsculo)                                    |
+| `SintomaTicket`    | string longa — o que a área de negócio reporta no ticket                                     |
+| `Dica`             | string — pista de diagnóstico (não entrega a resposta)                                       |
+
+
+Allowlist de membros (em ebops_server.py e ebops-cli.ps1):
+
+COBOL: EBCTL01, EBVALI01, EBPOST01, EBACCR01, EBSNAP01, EBCONC01, EBEXTR01, EBJEOD01
+COPY : CPLCT001, CPCNT001, CPAUD001, CPREJ001, CPSNP001, CPCNC001, CPEXT001, CPSTS001
+JCL  : EBJPRECK, EBJSOD, EBJBCKPD, EBJWAIT, EBJLOAD, EBJVALD, EBJRPOST,
+       EBJCUTE, EBJCUTF, EBJACCR, EBJSNAP, EBJCONC, EBJEXTR, EBJEOD
+
+
+
+exemplo de injeção válida:
+
+[
+  {
+    "Id": 31,
+    "Titulo": "Validação aceita conta com saldo negativo",
+    "Descricao": "Comparador de saldo invertido permite débito além do limite",
+    "TipoDataset": "COBOL",
+    "Membro": "EBVALI01",
+    "Original": "IF WS-SALDO-DISP < WS-VALOR",
+    "Injetado": "IF WS-SALDO-DISP > WS-VALOR",
+    "CamadaFalha": 7,
+    "AbendOuRC": "RC=0 silencioso — débitos passam mesmo sem saldo",
+    "SeveridadeTicket": "critica",
+    "SintomaTicket": "Múltiplas contas correntes fecharam o dia com saldo negativo bem abaixo do limite contratado. A regra de bloqueio por saldo insuficiente deveria barrar a operação, mas o validador deixou passar todos os débitos do ciclo.",
+    "Dica": "Compare a quantidade de rejeitos por motivo 'SALDO INSUFICIENTE' do dia com a média histórica. Se caiu para zero, suspeite da condição de saldo na 2100-VALIDAR-SALDO do EBVALI01 — operador relacional pode estar invertido."
+  }
+]
