@@ -614,6 +614,20 @@ a { color: var(--blue); text-decoration: none; }
       </a>
     </div>
 
+    <div class="card" style="border-color:var(--yellow);">
+      <h3 style="color:var(--yellow);">🎲 Demandas do Dia</h3>
+    <p style="color:var(--text2);font-size:calc(13px + var(--font-bump));margin-bottom:12px;line-height:1.5;">
+      Sorteia 1 a 5 injeções do catálogo (apenas as não-ativas), aplica cada uma no mainframe via Zowe e
+      abre tickets em <b style="color:var(--text);">Backlog</b>. Os tickets podem ser movidos no Kanban
+      e revertidos a qualquer momento.
+    </p>
+    <button class="btn btn-yellow" onclick="abrirGerarDemandas()" style="font-size:calc(14px + var(--font-bump));padding:10px 22px;">
+      🎲 Gerar Demandas do Dia
+    </button>
+    </div>
+
+
+
     <div class="card">
       <h3>Jobs no Mainframe (Zowe)</h3>
       <div class="jobs-grid">
@@ -840,6 +854,27 @@ a { color: var(--blue); text-decoration: none; }
 </div>
 
 
+<!-- Modal: Confirmar Geração de Demandas -->
+<div class="modal-overlay" id="modal-gerar-demandas">
+  <div class="modal">
+    <h2 style="color:var(--yellow);">🎲 Gerar Demandas do Dia</h2>
+    <p style="color:var(--text);font-size:calc(13px + var(--font-bump));margin-bottom:12px;line-height:1.5;">
+      O sistema vai sortear injeções aleatórias do catálogo (apenas as não-ativas) e aplicar cada uma
+      no mainframe via Zowe. Para cada injeção bem-sucedida, um ticket é criado em <b>Backlog</b>.
+    </p>
+    <label>Quantidade de demandas (1 a 5)</label>
+    <input class="bk-input" type="number" id="gd-qtd" min="1" max="5" value="1">
+    <div style="margin-top:12px;padding:10px;background:rgba(240,136,62,.10);border:1px solid var(--orange);border-radius:6px;font-size:calc(12px + var(--font-bump));color:var(--orange);">
+      ⚠ Cada injeção leva ~5-10s (download → modify → upload via Zowe). O progresso aparece no log em tempo real.
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('modal-gerar-demandas')">✕ Cancelar</button>
+      <button class="btn btn-yellow" onclick="executarGerarDemandas()">▶ Confirmar e Aplicar</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- Modal: Novo Cliente -->
 <div class="modal-overlay" id="modal-bk-add-cli">
   <div class="modal">
@@ -928,6 +963,24 @@ function applyTheme(t) {
   document.body.setAttribute('data-theme', t);
   const btn = document.getElementById('theme-toggle');
   if (btn) btn.textContent = t === 'light' ? '🌞 Claro' : '🌙 Escuro';
+
+function abrirGerarDemandas() {
+  document.getElementById('gd-qtd').value = 1;
+  openModal('modal-gerar-demandas');
+}
+
+function executarGerarDemandas() {
+  let qtd = parseInt(document.getElementById('gd-qtd').value, 10) || 1;
+  qtd = Math.max(1, Math.min(5, qtd));
+  closeModal('modal-gerar-demandas');
+  iniciarStreamSSE(
+    `/api/demandas/gerar/stream?quantidade=${qtd}`,
+    `🎲 Demandas do Dia (${qtd})`,
+    `Aplicando ${qtd} demanda(s) aleatória(s)... cada uma leva alguns segundos.`,
+    qtd * 12000   // estimativa: ~12s por injeção
+  );
+}
+
 }
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
@@ -1157,6 +1210,7 @@ function renderTicketCard(t) {
   const idx = STATUS_KEYS.indexOf(t.status);
   const prev = idx > 0 ? STATUS_KEYS[idx-1] : null;
   const next = idx < STATUS_KEYS.length-1 ? STATUS_KEYS[idx+1] : null;
+  const ativa = ESTADO.injecoes_ativas.some(a => Number(a.Id) === Number(t.Id));
   return `
     <div class="kan-card" onclick="abrirTicketJira(${t.Id})">
       <div class="kan-card-head">
@@ -1167,6 +1221,7 @@ function renderTicketCard(t) {
       <div class="kan-card-actions" onclick="event.stopPropagation()">
         ${prev ? `<button class="kan-move" onclick="moverTicket(${t.Id},'${prev}')" title="${STATUS_NAMES[prev]}">←</button>` : ''}
         ${next ? `<button class="kan-move" onclick="moverTicket(${t.Id},'${next}')" title="${STATUS_NAMES[next]}">→</button>` : ''}
+        ${ativa ? `<button class="kan-move" style="border-color:var(--red);color:var(--red);" onclick="reverter(${t.Id})" title="Reverter injeção no mainframe">↩</button>` : ''}
       </div>
     </div>`;
 }
@@ -1398,7 +1453,7 @@ function iniciarStreamSSE(url, titulo, msgInicial, tauMs) {
     document.getElementById('mj-close').textContent = '✕ Fechar';
     toast(data.ok ? `${titulo} concluído` : `${titulo} falhou`,
           data.ok ? 'ok' : 'err');
-    if (titulo.toLowerCase().includes('job')) carregarTudo();
+    if (/job|demanda/i.test(titulo)) carregarTudo();
   });
 
   es.onerror = () => {
