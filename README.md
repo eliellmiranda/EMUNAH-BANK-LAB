@@ -19,9 +19,9 @@
 
 ## Sobre o laboratório
 
-O **Emunah Bank Lab** replica, de forma controlada, os padrões operacionais de instituições financeiras que sustentam seus sistemas críticos em mainframe. A cadeia foi redesenhada (branch `refactor/cadeia-batch`) para refletir o ciclo canônico de core-banking — inspirado em FLEXCUBE — e cobre o dia inteiro do processamento bancário batch: Start of Day, backup, file-watcher, carga, validação, postagem, accrual, cutoff financeiro (`EOTI`), snapshot de saldo em GDG, cutoff contábil (`EOFI`), conciliação three-way bloqueante, extrato e fechamento (`CLOSED`), com cadeia de housekeeping mantendo o ambiente estável entre dias e ciclo de reprocessamento de rejeitos fora da janela oficial.
+O **Emunah Bank Lab** replica, de forma controlada, os padrões operacionais de instituições financeiras que sustentam seus sistemas críticos em mainframe. A cadeia foi redesenhada (branch `refactor/cadeia-batch-ver-04`) para refletir o ciclo canônico de core-banking — inspirado em FLEXCUBE — e cobre o dia inteiro do processamento bancário batch.
 
-O dataset `ARQ.CTL.STATUS` é a *source of truth* da cadeia — horários são apenas sugestão de janela.
+O ciclo passa por Start of Day, backup, file-watcher, carga, validação, postagem, accrual, cutoff financeiro (`EOTI`), snapshot de saldo em GDG, cutoff contábil (`EOFI`), conciliação three-way bloqueante, extrato e fechamento (`CLOSED`). Em paralelo, mantém uma cadeia de housekeeping que estabiliza o ambiente entre dias e um ciclo off-cycle para reprocessar rejeitos fora da janela oficial.
 
 O nome *Emunah* (אֱמוּנָה) remete ao conceito hebraico de fidelidade e confiança — qualidades centrais tanto no setor bancário quanto nos sistemas mainframe, conhecidos por décadas de disponibilidade ininterrupta.
 
@@ -141,7 +141,7 @@ OFF-CYCLE (fora da cadeia oficial)
   EBJRPOST  ── reinjeta recuperados em EBPOST01 (exige STATUS=EOTI)
 ```
 
-Detalhes de dependência, transições de status, critérios de bloqueio e datasets envolvidos estão em [`docs/05-grade-batch.md`](docs/05-grade-batch.md).
+Detalhes de dependência, transições de status, critérios de bloqueio e datasets envolvidos estão em [docs/05-grade-batch.md](docs/05-grade-batch.md).
 
 ### Utilitários de Resiliência
 
@@ -169,7 +169,7 @@ emunah-bank-lab/
 │   │   ├── EBCONC01.cbl    # Conciliação three-way
 │   │   ├── EBEXTR01.cbl    # Geração de extrato (GDG)
 │   │   ├── EBREPR01.cbl    # Revalidação de rejeitos corrigidos
-│   │   └── EBJEOD01.cbl    # Fechamento diário
+│   │   └── EBJEOD01.cbl    # Fechamento diário (ver nota na tabela de Módulos)
 │   │
 │   ├── common/
 │   │   └── EBCOMM01.cbl    # Rotinas comuns
@@ -308,12 +308,15 @@ cd emunah-bank-lab
 ### 2. Configure o perfil Zowe
 
 ```bash
-zowe config init
+# Inicializa a configuração de forma interativa (a senha fica em zowe.config.secure.json, criptografada)
+zowe config init --prompt
+
+# Alternativa não-interativa — NÃO grave a senha em texto plano:
 zowe config set profiles.zosmf.properties.host <host-zxplore>
 zowe config set profiles.zosmf.properties.port 443
 zowe config set profiles.zosmf.properties.user <seu-userid>
-zowe config set profiles.zosmf.properties.password <sua-senha>
 zowe config set profiles.zosmf.properties.rejectUnauthorized false
+zowe config secure   # solicita e armazena a senha de forma segura
 ```
 
 ### 3. Aloque o ambiente
@@ -361,12 +364,13 @@ zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJCLLD)"
 zowe files upload file-to-data-set ./data/normalized/lancamentos_simulados.txt \
   "<HLQ>.EMUNAH.STAGE.ENTRADA.SEQ" --record-length 120
 
-# Dispare a cadeia, do precheck ao fechamento
-zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJPRECK)"
-# depois, na ordem das fases:
-#   EBJCLOSE → EBJSOD  → EBJBCKPD → EBJWAIT → EBJLOAD →
-#   EBJVALD  → EBJPOST → EBJACCR  → EBJCUTF →
-#   EBJSNAP  → EBJCUTE → EBJCONC  → EBJEXTR → EBJEOD → EBJOPEN
+# Dispare a cadeia respeitando a ordem das fases.
+# EBJCLOSE precede EBJPRECK porque desconecta os VSAMs do CICS antes do batch.
+zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJCLOSE)"
+# em sequência:
+#   EBJPRECK → EBJSOD   → EBJBCKPD → EBJWAIT → EBJLOAD →
+#   EBJVALD  → EBJPOST  → EBJACCR  → EBJCUTF →
+#   EBJSNAP  → EBJCUTE  → EBJCONC  → EBJEXTR → EBJEOD → EBJOPEN
 #
 # Cada job lê e/ou grava ARQ.CTL.STATUS — execuções fora de ordem
 # abortam por inconsistência de status.
@@ -403,6 +407,7 @@ zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJPRECK)"
 | Módulo | Programa(s) | Job(s) |
 |---|---|---|
 | CICS Control | — | `EBJCLOSE`, `EBJOPEN` |
+| CICS online (telas 3270) | `EBCSEXT`, `EBCSSLD`, `EBCSTRF` | — (transações CICS) |
 | Precheck | `EBPCHK01` | `EBJPRECK` |
 | Cliente / Conta (seed) | `EBCLLOAD` | `EBJCLLD` |
 | Controle (CTL.STATUS / CTL.PROCDATE) | `EBCTL01` | `EBJSOD`, `EBJCUTF`, `EBJCUTE`, `EBJEOD` |
@@ -413,10 +418,12 @@ zowe jobs submit data-set "<HLQ>.EMUNAH.DEV.JCL(EBJPRECK)"
 | Saldo (snapshot) | `EBSNAP01` | `EBJSNAP` |
 | Conciliação three-way | `EBCONC01` | `EBJCONC` |
 | Extrato | `EBEXTR01` | `EBJEXTR` |
-| Fechamento | `EBJEOD01` | `EBJEOD` |
+| Fechamento | `EBJEOD01` ¹ | `EBJEOD` |
 | Reprocessamento | `EBREPR01`, `EBPOST01` | `EBJREPR`, `EBJRPOST` |
 | Housekeeping | — | `EBJHKGDG`, `EBJHKAUD`, `EBJHKREJ` |
 | Utilitário (consulta de saldo) | `EBSALD01` (em `cobol/util/`) | — |
+
+> ¹ `EBJEOD01` é a única exceção à convenção `EB<função><nn>` para programas COBOL — o prefixo `EBJ`, normalmente reservado a JCLs, foi mantido por motivos históricos.
 
 ---
 
@@ -477,4 +484,4 @@ O laboratório inclui massa seed completa carregada via job `EBJCLLD` (executa `
 
 ---
 
-> *"Emunah (אֱמוּנָה) — fidelidade, confiança. A mesma qualidade que sustenta décadas de operação ininterrupta no mainframe"*
+> *"Emunah (אֱמוּנָה) — fidelidade, confiança. A mesma qualidade que sustenta décadas de operação ininterrupta no mainframe."*
