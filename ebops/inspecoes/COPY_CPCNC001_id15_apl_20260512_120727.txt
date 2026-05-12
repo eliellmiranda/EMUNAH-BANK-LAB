@@ -1,0 +1,13 @@
+      *===============================================================*
+      * COPYBOOK: CPCNC001                                            *
+      * FUNCAO  : LAYOUT ESTRUTURADO DO ARQUIVO DE CONCILIACAO        *
+      * REGISTRO: 132 BYTES                                           *
+      *===============================================================*
+           05 CC-TIPO-REG              PIC X(02).
+           05 FILLER                   PIC X(01).
+           05 CC-DESCRICAO             PIC X(50).
+           05 FILLER                   PIC X(01).
+           05 CC-VALOR                 PIC -Z(10)9,99.
+           05 FILLER                   PIC X(05).
+           05 CC-STATUS                PIC X(50).
+           05 FILLER                   PIC X(07).

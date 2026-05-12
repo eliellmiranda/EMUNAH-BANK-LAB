@@ -1,0 +1,77 @@
+{
+  "injecoes_ativas": [],
+  "historico": [
+    {
+      "Id": 20,
+      "Titulo": "Backup diario de contas falha por GDG invalido",
+      "Membro": "EBJBCKPD",
+      "TipoDataset": "JCL",
+      "Descricao": "Geracao GDG do backup de contas trocada de +1 para +9",
+      "RevertidoEm": "2026-05-12T10:18:38"
+    },
+    {
+      "Id": 20,
+      "Titulo": "Backup diario de contas falha por GDG invalido",
+      "Membro": "EBJBCKPD",
+      "TipoDataset": "JCL",
+      "Descricao": "Geracao GDG do backup de contas trocada de +1 para +9",
+      "RevertidoEm": "2026-05-12T11:03:10"
+    },
+    {
+      "Id": 20,
+      "Titulo": "Backup diario de contas falha por GDG invalido",
+      "Membro": "EBJBCKPD",
+      "TipoDataset": "JCL",
+      "Descricao": "Geracao GDG do backup de contas trocada de +1 para +9",
+      "RevertidoEm": "2026-05-12T11:37:38"
+    },
+    {
+      "Id": 21,
+      "Titulo": "File-watcher do STAGE aborta com dataset inexistente",
+      "Membro": "EBJWAIT",
+      "TipoDataset": "JCL",
+      "Descricao": "Nome do dataset de entrada do watcher alterado",
+      "RevertidoEm": "2026-05-12T11:37:56"
+    },
+    {
+      "Id": 24,
+      "Titulo": "Cutoff contabil grava estado errado no CTL.STATUS",
+      "Membro": "EBJCUTE",
+      "TipoDataset": "JCL",
+      "Descricao": "Status destino do EBJCUTE alterado de EOFI para EOTI",
+      "RevertidoEm": "2026-05-12T11:38:50"
+    },
+    {
+      "Id": 25,
+      "Titulo": "Cutoff financeiro nao avanca o status do dia",
+      "Membro": "EBJCUTF",
+      "TipoDataset": "JCL",
+      "Descricao": "Acao do EBJCUTF trocada de UPD (update) para CHK (check)",
+      "RevertidoEm": "2026-05-12T11:39:32"
+    },
+    {
+      "Id": 21,
+      "Titulo": "File-watcher do STAGE aborta com dataset inexistente",
+      "Membro": "EBJWAIT",
+      "TipoDataset": "JCL",
+      "Descricao": "Nome do dataset de entrada do watcher alterado",
+      "RevertidoEm": "2026-05-12T12:37:20"
+    },
+    {
+      "Id": 15,
+      "Titulo": "EOD para de detectar divergencias da conciliacao",
+      "Membro": "CPCNC001",
+      "TipoDataset": "COPY",
+      "Descricao": "Campo TIPO-REG do CONCIL encurtado de 3 para 2 bytes",
+      "RevertidoEm": "2026-05-12T12:37:35"
+    },
+    {
+      "Id": 28,
+      "Titulo": "Conciliacao usa snapshot do dia anterior por engano",
+      "Membro": "EBJCONC",
+      "TipoDataset": "JCL",
+      "Descricao": "DD SALDOIN do EBJCONC trocada de GDG(0) para GDG(-1)",
+      "RevertidoEm": "2026-05-12T12:39:39"
+    }
+  ]
+}

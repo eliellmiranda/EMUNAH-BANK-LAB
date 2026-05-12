@@ -297,6 +297,14 @@ def _processar_injecao(inj_id, reverter):
 
     novo = conteudo.replace(busca, troca)
     ARQUIVO_LOCAL_TEMP.write_text(novo, encoding="utf-8")
+
+    snap_dir = HERE / "inspecoes"
+    snap_dir.mkdir(parents=True, exist_ok=True)
+    acao = "rev" if reverter else "apl"
+    ts_snap = datetime.now().strftime("%Y%m%d_%H%M%S")
+    snap = snap_dir / f"{inj['TipoDataset']}_{inj['Membro']}_id{inj_id}_{acao}_{ts_snap}.txt"
+    snap.write_text(novo, encoding="utf-8")
+
     rc, out = run_zowe(["zos-files", "upload", "file-to-data-set",
                         str(ARQUIVO_LOCAL_TEMP), dsn])
     try: ARQUIVO_LOCAL_TEMP.unlink()
@@ -1038,6 +1046,99 @@ def _gerar_demandas_stream(qtd_pedida):
         "aplicadas": [{"Id": int(a["Id"]), "Titulo": a["Titulo"]} for a in aplicadas],
         "falhas": falhas,
     })
+
+
+# ============================================================
+#   INSPECAO - baixa membro sem modificar, mantem copia local
+# ============================================================
+INSPECOES_DIR = HERE / "inspecoes"
+
+@app.route('/api/inspecionar/<tipo>/<membro>')
+def api_inspecionar(tipo, membro):
+    """Baixa um membro do mainframe (read-only) e devolve conteudo + diff
+    contra injecoes catalogadas. Mantem copia em ebops/inspecoes/."""
+    tipo = tipo.upper()
+    membro = membro.upper()
+    if tipo not in ("COBOL", "COPY", "JCL"):
+        return jsonify({"ok": False, "erro": "TipoDataset invalido"}), 400
+    if not membro_permitido(tipo, membro):
+        return jsonify({"ok": False, "erro": "Membro fora da allowlist"}), 403
+
+    dsn = f"{get_hlq(tipo)}({membro})"
+    INSPECOES_DIR.mkdir(parents=True, exist_ok=True)
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    caminho = INSPECOES_DIR / f"{tipo}_{membro}_{ts}.txt"
+
+    rc, log = run_zowe(["zos-files", "download", "data-set", dsn,
+                        "-f", str(caminho)])
+    if rc != 0 or not caminho.exists():
+        return jsonify({"ok": False, "erro": "Falha no download Zowe",
+                        "dsn": dsn, "log": log}), 502
+
+    conteudo = caminho.read_text(encoding="utf-8", errors="replace")
+    injecoes = load_injecoes()
+    relacionadas = []
+    for inj in injecoes:
+        if inj["TipoDataset"] == tipo and inj["Membro"] == membro:
+            relacionadas.append({
+                "Id": int(inj["Id"]),
+                "Titulo": inj["Titulo"],
+                "Original": inj["Original"],
+                "Injetado": inj["Injetado"],
+                "original_presente": inj["Original"] in conteudo,
+                "injetado_presente": inj["Injetado"] in conteudo,
+            })
+
+    return jsonify({
+        "ok": True,
+        "dsn": dsn,
+        "arquivo_local": str(caminho),
+        "tamanho_bytes": len(conteudo),
+        "total_linhas": conteudo.count("\n") + 1,
+        "conteudo": conteudo,
+        "injecoes_relacionadas": relacionadas,
+    })
+
+
+@app.route('/api/inspecoes')
+def api_inspecoes_list():
+    """Lista copias mantidas em ebops/inspecoes/."""
+    if not INSPECOES_DIR.exists():
+        return jsonify([])
+    items = []
+    for p in sorted(INSPECOES_DIR.glob("*.txt"),
+                    key=lambda x: x.stat().st_mtime, reverse=True):
+        st = p.stat()
+        items.append({
+            "nome": p.name,
+            "tamanho": st.st_size,
+            "modificado": datetime.fromtimestamp(st.st_mtime)
+                                  .strftime("%Y-%m-%d %H:%M:%S"),
+        })
+    return jsonify(items)
+
+
+@app.route('/api/inspecoes/<nome>')
+def api_inspecao_get(nome):
+    nome = os.path.basename(nome)
+    p = INSPECOES_DIR / nome
+    if not p.exists():
+        return jsonify({"ok": False, "erro": "Inspecao nao encontrada"}), 404
+    return jsonify({
+        "ok": True, "nome": nome, "caminho": str(p),
+        "conteudo": p.read_text(encoding="utf-8", errors="replace"),
+    })
+
+
+@app.route('/api/inspecoes/<nome>', methods=['DELETE'])
+def api_inspecao_del(nome):
+    nome = os.path.basename(nome)
+    p = INSPECOES_DIR / nome
+    if p.exists():
+        try: p.unlink()
+        except Exception as ex:
+            return jsonify({"ok": False, "erro": str(ex)}), 500
+    return jsonify({"ok": True})
 
 
 if __name__ == '__main__':
