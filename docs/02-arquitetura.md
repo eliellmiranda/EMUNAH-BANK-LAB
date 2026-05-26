@@ -10,21 +10,32 @@ A camada remota armazena os datasets separados em categorias funcionais — `ARQ
 
 ### Camada Local — Estação de Desenvolvimento
 - **Ambiente:** Computador pessoal
-- **Ferramentas:** VS Code, Zowe CLI, Zowe Explorer, Git
+- **Ferramentas:** VS Code, Zowe CLI, Zowe Explorer, Git, Python (EBOPS)
 - **Responsabilidade:** edição de código-fonte, documentação,
-  controle de versão e preparação de automações e cenários
+  controle de versão, preparação de automações e cenários,
+  e injeção de incidentes simulados via EBOPS
 - **O que reside aqui:** arquivos .cbl, .jcl, copybooks, scripts
-  REXX, arquivos de massa, documentação Markdown
+  REXX, arquivos de massa, documentação Markdown, scripts Python
+  do simulador operacional (EBOPS)
+
+> **EBOPS — Emunah Bank Operations Simulator:** componente Python
+> que simula o lado "humano" e caótico de um dia operacional bancário.
+> Injeta incidentes reais (mutações de código, corrupção de JCL,
+> dados truncados) e emula ferramentas corporativas como Control-M,
+> Jira e Fault Analyzer, criando pressão de cenário *live* para
+> a prática de troubleshooting.
 
 ### Camada Remota — Mainframe IBM zXplore
 - **Ambiente:** IBM zXplore (z/OS compartilhado)
-- **Ferramentas:** VS Codee, JES2, IDCAMS, compilador COBOL,
-  link-editor
+- **Ferramentas:** VS Code, JES2, IDCAMS, compilador COBOL,
+  link-editor, CICS TS, DB2
 - **Responsabilidade:** armazenamento de datasets e membros,
   compilação, execução de jobs batch, manutenção dos arquivos
-  de negócio
+  de negócio, processamento transacional online (CICS) e
+  persistência relacional (DB2)
 - **O que reside aqui:** bibliotecas PDS (DEV/HML/PRD), arquivos
-  VSAM, GDG, sequenciais, spool de jobs
+  VSAM (KSDS/ESDS), GDG, sequenciais, spool de jobs,
+  tabelas DB2, regiões CICS
 
 ### Camada de Operação — Terminal 3270
 - **Ambiente:** Emulador TN3270
@@ -50,19 +61,31 @@ O Zowe atua como a integração entre o ambiente local e o mainframe:
 
 ## Fluxo Resumido
 ```
-[Local: VS Code]
+[EBOPS — Simulador Python]
+      |
+      | injeta incidentes / sorteia cenários
+      v
+[Local: VS Code + Git]
       |
       | upload via Zowe CLI/Explorer
       v
 [Remoto: z/OS - zXplore]
-      |
-      | execução de jobs / operação
-      v
+   |          |
+   |          | CICS (Online) / DB2
+   |          v
+   |    [Transações em tempo real]
+   |
+   | execução de jobs batch
+   v
 [3270: ISPF / SDSF]
       |
-      | diagnóstico / investigação
+      | diagnóstico / investigação de abends
       v
-[Local: análise de spool / correção]
+[Local: análise de spool / correção / commit]
+      |
+      | (loop: nova correção republica via Zowe)
+      v
+[Remoto: z/OS - recompilação e re-execução]
 ```
 
 ## Limites e Regras
