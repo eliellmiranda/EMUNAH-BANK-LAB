@@ -4,6 +4,22 @@ description: >-
   Define locais especificos de copybooks, JCLs e PROCs para evitar busca global ineficiente.
 author: Eliel
 propertyGroups:
+  - name: emunah-mvs-remote-cobol
+    language: cobol
+    libraries:
+      - name: syslib
+        type: mvs
+        locations:
+          - ELIEL.EMUNAH.DEV.COPY
+          - Z77948.EMUNAH.DEV.COPY
+  - name: emunah-mvs-remote-jcl
+    language: jcl
+    libraries:
+      - name: proclib
+        type: mvs
+        locations:
+          - IGY.V6R4M0.SIGYPROC
+          - SYS1.PROCLIB
   - name: emunah-local
     libraries:
       - name: syslib
