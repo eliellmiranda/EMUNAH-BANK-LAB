@@ -25,7 +25,7 @@ Uso:
   python ebops-cli.py logs
 
 Variaveis de ambiente:
-  EBOPS_HLQ              HLQ remoto (default: Z77948.EMUNAH)
+  EBOPS_HLQ              HLQ remoto (default: ELIEL.EMUNAH)
   EBOPS_POLL_INTERVAL    segundos entre polls (default: 5)
   EBOPS_MAX_WAIT         timeout maximo por job em segundos (default: 1800)
 """
