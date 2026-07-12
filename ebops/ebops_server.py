@@ -32,14 +32,14 @@ ARQUIVO_LOCAL_TEMP = HERE / "temp_injecao.txt"
 BASE_DIR = HERE.parent
 SCRIPT_PYTHON = BASE_DIR / "automation" / "geracao" / "gerar_lancamentos.py"
 DATA_ENTRADA_DIR = BASE_DIR / "data" / "entrada"
-HLQ_ENTRADA = "Z77948.EMUNAH.STAGE.ENTRADA.SEQ"
+HLQ_ENTRADA = "ELIEL.EMUNAH.STAGE.ENTRADA.SEQ"
 BANCO_DB = DATA_DIR / "banco.db"
 ARQUIVOS_GERADOS_DIR = BASE_DIR / "data" / "arquivos_gerados"
 
 # --- Config mainframe ----------------------------------------
-HLQ_JCL = "Z77948.EMUNAH.DEV.JCL"
-HLQ_COBOL = "Z77948.EMUNAH.DEV.COBOL"
-HLQ_COPY = "Z77948.EMUNAH.DEV.COPY"
+HLQ_JCL = "ELIEL.EMUNAH.DEV.JCL"
+HLQ_COBOL = "ELIEL.EMUNAH.DEV.COBOL"
+HLQ_COPY = "ELIEL.EMUNAH.DEV.COPY"
 
 ALLOWED = {
     "COBOL": {"EBCTL01","EBVALI01","EBPOST01","EBACCR01","EBSNAP01",
@@ -305,7 +305,7 @@ def _processar_injecao(inj_id, reverter):
     snap = snap_dir / f"{inj['TipoDataset']}_{inj['Membro']}_id{inj_id}_{acao}_{ts_snap}.txt"
     snap.write_text(novo, encoding="utf-8")
 
-    rc, out = run_zowe(["zos-files", "upload", "file-to-data-set",
+    rc, out = run_zowe(["zos-files", "", "file-to-data-set",
                         str(ARQUIVO_LOCAL_TEMP), dsn])
     try: ARQUIVO_LOCAL_TEMP.unlink()
     except Exception: pass
@@ -438,7 +438,7 @@ def api_backup_stream():
     base.mkdir(parents=True, exist_ok=True)
     return sse_response(stream_zowe([
         "zos-files", "download", "data-sets-matching",
-        "Z77948.EMUNAH.**",
+        "ELIEL.EMUNAH.**",
         "--directory", str(base),
         "--fail-fast", "false",
     ]))

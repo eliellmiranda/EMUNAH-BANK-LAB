@@ -580,7 +580,7 @@ a { color: var(--blue); text-decoration: none; }
     <div class="card">
       <h3>📤 Seed — Upload ao Mainframe</h3>
       <p style="color:var(--text2);font-size:calc(12px + var(--font-bump));margin-bottom:14px;">
-        Envia um arquivo gerado para <code style="color:var(--cyan);">Z77948.EMUNAH.STAGE.ENTRADA.SEQ</code>.
+        Envia um arquivo gerado para <code style="color:var(--cyan);">ELIEL.EMUNAH.STAGE.ENTRADA.SEQ</code>.
       </p>
       <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;">
         <div style="flex:1;min-width:200px;">
@@ -635,7 +635,7 @@ a { color: var(--blue); text-decoration: none; }
         <button class="job-btn" onclick="rodarJob('EBDEPLOY')"><span class="job-name">🔨 EBDEPLOY</span><span class="job-desc">Compilar fontes</span></button>
         <button class="job-btn" onclick="rodarJob('EBJCHAIN')"><span class="job-name">⛓ EBJCHAIN</span><span class="job-desc">Rodar cadeia diária</span></button>
         <button class="job-btn" onclick="rodarJob('EBSETSTS')"><span class="job-name">📋 EBSETSTS</span><span class="job-desc">Set status</span></button>
-        <button class="job-btn" onclick="rodarBackup()"><span class="job-name">💾 Backup</span><span class="job-desc">Z77948.EMUNAH.** → local</span></button>
+        <button class="job-btn" onclick="rodarBackup()"><span class="job-name">💾 Backup</span><span class="job-desc">ELIEL.EMUNAH.** → local</span></button>
       </div>
     </div>
 
@@ -844,7 +844,7 @@ a { color: var(--blue); text-decoration: none; }
     <input type="number" id="sd-dia" min="1" max="31" value="15">
     <p style="color:var(--text2);font-size:calc(12px + var(--font-bump));margin-top:10px;">
       Origem: <code style="color:var(--cyan);">data/entrada/lancamentos-d&lt;DIA&gt;.txt</code><br>
-      Destino: <code style="color:var(--cyan);">Z77948.EMUNAH.STAGE.ENTRADA.SEQ(LANCD&lt;DIA&gt;)</code>
+      Destino: <code style="color:var(--cyan);">ELIEL.EMUNAH.STAGE.ENTRADA.SEQ(LANCD&lt;DIA&gt;)</code>
     </p>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('modal-seed')">✕ Cancelar</button>
@@ -1404,7 +1404,7 @@ function rodarJob(nome) {
     JOB_TAU_MS[nome] || 30000);
 }
 function rodarBackup() {
-  if (!confirm('Baixar todos os datasets Z77948.EMUNAH.** para backup_emunah/ ?')) return;
+  if (!confirm('Baixar todos os datasets ELIEL.EMUNAH.** para backup_emunah/ ?')) return;
   iniciarStreamSSE('/api/backup/stream', 'Backup',
     'Baixando datasets... pode levar minutos.', JOB_TAU_MS.Backup);
 }
@@ -1867,7 +1867,7 @@ async function gerarLancamentos() {
 async function seedMainframe() {
   const arq = document.getElementById('bk-seed-arq').value;
   if (!arq) { toast('Selecione um arquivo', 'err'); return; }
-  if (!confirm(`Upload de ${arq} para Z77948.EMUNAH.STAGE.ENTRADA.SEQ ?`)) return;
+  if (!confirm(`Upload de ${arq} para ELIEL.EMUNAH.STAGE.ENTRADA.SEQ ?`)) return;
   setLoading(true, `Subindo ${arq} para o mainframe...`);
   try {
     const r = await api('/api/banco/seed-mainframe', {

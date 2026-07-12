@@ -288,7 +288,7 @@ def _expected_path(proj, filename):
 # ═════════════════════════════════════════════════════════════
 # MAPA LOCAL → DATASET REMOTO
 # ═════════════════════════════════════════════════════════════
-HLQ = os.environ.get("EBOPS_HLQ", "Z77948.EMUNAH")
+HLQ = os.environ.get("EBOPS_HLQ", "ELIEL.EMUNAH")
 
 DS_MAP = {
     "EBVALI01.cbl": f"{HLQ}.DEV.SOURCE(EBVALI01)",
@@ -603,12 +603,12 @@ def _(d):
 def _(d):
     s = _read_local(d, "EBJCLLD.jcl")
     s = s.replace(
-        "//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ",
-        "//CLIENTIN DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ"
+        "//CLIENTIN DD DSN=ELIEL.EMUNAH.SEED.CLIENTES.SEQ",
+        "//CLIENTIN DD DSN=ELIEL.EMUNAH.SEED.CONTAS.SEQ"
     )
     s = s.replace(
-        "//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ",
-        "//CONTAIN  DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ"
+        "//CONTAIN  DD DSN=ELIEL.EMUNAH.SEED.CONTAS.SEQ",
+        "//CONTAIN  DD DSN=ELIEL.EMUNAH.SEED.CLIENTES.SEQ"
     )
     return {"EBJCLLD.jcl": s}
 
@@ -1246,7 +1246,7 @@ def main():
     python ebops.py reset           Reseta tudo
 
   Variáveis de ambiente:
-    EBOPS_HLQ                       HLQ dos datasets (default: Z77948.EMUNAH)
+    EBOPS_HLQ                       HLQ dos datasets (default: ELIEL.EMUNAH)
 """)
 
 if __name__ == "__main__":

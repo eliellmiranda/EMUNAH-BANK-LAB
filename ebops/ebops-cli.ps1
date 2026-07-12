@@ -3,10 +3,10 @@
 # Versao 2.3 - job streaming direto, diagnostico B, sem spoilers
 # ==============================================================================
 
-$HLQ_JCL     = "Z77948.EMUNAH.DEV.JCL"
-$HLQ_COBOL   = "Z77948.EMUNAH.DEV.COBOL"
-$HLQ_COPY    = "Z77948.EMUNAH.DEV.COPY"
-$HLQ_ENTRADA = "Z77948.EMUNAH.STAGE.ENTRADA.SEQ"
+$HLQ_JCL     = "ELIEL.EMUNAH.DEV.JCL"
+$HLQ_COBOL   = "ELIEL.EMUNAH.DEV.COBOL"
+$HLQ_COPY    = "ELIEL.EMUNAH.DEV.COPY"
+$HLQ_ENTRADA = "ELIEL.EMUNAH.STAGE.ENTRADA.SEQ"
 $ARQUIVO_LOCAL_TEMP = "temp_injecao.txt"
 
 $BASE_DIR         = Split-Path $PSScriptRoot -Parent
@@ -75,7 +75,7 @@ function Executar-Job {
 function Realizar-Backup {
     Write-Host "`n[EBOPS] --- INICIANDO BACKUP ---" -ForegroundColor Yellow
     Write-Host "[EBOPS] Baixando datasets para $BACKUP_DIR..."
-    & zowe zos-files download data-sets-matching "Z77948.EMUNAH.**" --directory "$BACKUP_DIR" --fail-fast false
+    & zowe zos-files download data-sets-matching "ELIEL.EMUNAH.**" --directory "$BACKUP_DIR" --fail-fast false
     Write-Host "[EBOPS] Backup concluido!" -ForegroundColor Green
 }
 
@@ -422,7 +422,7 @@ do {
     Write-Host "1. Reset (EBRESET)"
     Write-Host "2. Gerar Massa (Python)"
     Write-Host "3. Seed (Upload Lancamentos)"
-    Write-Host "4. Backup (Z77948.EMUNAH.**)"
+    Write-Host "4. Backup (ELIEL.EMUNAH.**)"
     Write-Host "5. Aplicar Demanda"
     Write-Host "6. Reverter Demanda"
     Write-Host "7. Compilar (EBDEPLOY)"
