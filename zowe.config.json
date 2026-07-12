@@ -37,7 +37,7 @@
         "project_base": {
             "type": "base",
             "properties": {
-                "host": "204.90.115.200",
+                "host": "192.168.100.150",
                 "rejectUnauthorized": false
             },
             "secure": [
