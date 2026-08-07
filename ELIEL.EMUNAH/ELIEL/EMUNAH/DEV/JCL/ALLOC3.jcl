@@ -1,0 +1,81 @@
+//* ------------------------------------------------------------
+//* ARQUIVO      : EBFIXBKP.jcl
+//* CAMINHO LOCAL: jcl/deploy/EBFIXBKP.jcl
+//* HOST / PDS   : ELIEL.EMUNAH.DEV.JCL(EBFIXBKP)
+//* FINALIDADE:
+//* Corrigir o naming das bases GDG de backup: remover o
+//* prefixo ARQ. indevido criado por EBDEFGDG e recriar as
+//* bases sob o HLQ BKP.* (irmao de ARQ.*, nao filho).
+//*
+//* ACAO:
+//* 1. DELETE GDG FORCE das 4 bases com nome errado
+//*    (ELIEL.EMUNAH.ARQ.BKP.*.GDG).
+//* 2. DEFINE GENERATIONDATAGROUP das 4 bases com nome certo
+//*    (ELIEL.EMUNAH.BKP.*.GDG).
+//* 3. LISTCAT de evidencia.
+//*
+//* Executar uma unica vez. Apos este job, EBDEFGDG corrigido
+//* nao precisa rodar de novo (mas pode, e idempotente).
+//* ------------------------------------------------------------
+//EBFIXBKP JOB ,'EMUNAH FIXBKP',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//*
+//* === STEP 1: DELETA BASES GDG COM NOME ERRADO ===
+//*
+//DELOLD   EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE 'ELIEL.EMUNAH.ARQ.BKP.CLIENTE.GDG'  GDG FORCE
+  DELETE 'ELIEL.EMUNAH.ARQ.BKP.CONTA.GDG'    GDG FORCE
+  DELETE 'ELIEL.EMUNAH.ARQ.BKP.AUDIT.GDG'    GDG FORCE
+  DELETE 'ELIEL.EMUNAH.ARQ.BKP.REJEITOS.GDG' GDG FORCE
+  SET MAXCC = 0
+/*
+//*
+//* === STEP 2: DEFINE BASES GDG COM NOME CORRETO ===
+//*
+//DEFNEW   EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE 'ELIEL.EMUNAH.BKP.CLIENTE.GDG' GDG FORCE
+  SET MAXCC = 0
+  DEFINE GENERATIONDATAGROUP -
+    (NAME('ELIEL.EMUNAH.BKP.CLIENTE.GDG') -
+     LIMIT(7) -
+     NOEMPTY -
+     SCRATCH)
+
+  DELETE 'ELIEL.EMUNAH.BKP.CONTA.GDG' GDG FORCE
+  SET MAXCC = 0
+  DEFINE GENERATIONDATAGROUP -
+    (NAME('ELIEL.EMUNAH.BKP.CONTA.GDG') -
+     LIMIT(7) -
+     NOEMPTY -
+     SCRATCH)
+
+  DELETE 'ELIEL.EMUNAH.BKP.AUDIT.GDG' GDG FORCE
+  SET MAXCC = 0
+  DEFINE GENERATIONDATAGROUP -
+    (NAME('ELIEL.EMUNAH.BKP.AUDIT.GDG') -
+     LIMIT(14) -
+     NOEMPTY -
+     SCRATCH)
+
+  DELETE 'ELIEL.EMUNAH.BKP.REJEITOS.GDG' GDG FORCE
+  SET MAXCC = 0
+  DEFINE GENERATIONDATAGROUP -
+    (NAME('ELIEL.EMUNAH.BKP.REJEITOS.GDG') -
+     LIMIT(14) -
+     NOEMPTY -
+     SCRATCH)
+/*
+//*
+//* === STEP 3: VERIFICA ===
+//*
+//VERIFY   EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('ELIEL.EMUNAH.BKP.CLIENTE.GDG')  ALL
+  LISTCAT ENT('ELIEL.EMUNAH.BKP.CONTA.GDG')    ALL
+  LISTCAT ENT('ELIEL.EMUNAH.BKP.AUDIT.GDG')    ALL
+  LISTCAT ENT('ELIEL.EMUNAH.BKP.REJEITOS.GDG') ALL
+/*

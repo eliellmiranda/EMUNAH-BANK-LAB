@@ -1,0 +1,16 @@
+//SMFCLEAR JOB (EMUNAH),'ELIEL',CLASS=A,MSGCLASS=X,
+//             MSGLEVEL=(1,1),NOTIFY=&SYSUID,REGION=0M
+//*-------------------------------------------------------------------*
+//* ESVAZIAR O LOGSTREAM DO SMF JOGANDO OS DADOS NO LIXO (DUMMY)
+//* ISSO APAGARÁ OS ARQUIVOS VSAM DE OFFLOAD ANTIGOS
+//*-------------------------------------------------------------------*
+//STEP01   EXEC PGM=IFASMFDL
+//SYSPRINT DD  SYSOUT=*
+//*
+//* -> JOGA A SAIDA NO BURACO NEGRO, NAO GASTANDO NENHUM ESPACO EM DISCO
+//DUMMYOUT DD  DUMMY
+//*
+//SYSIN    DD  *
+  LSNAME(IFASMF.VS01.DATA,OPTIONS(DUMP))
+  OUTDD(DUMMYOUT,TYPE(0:255))
+/*

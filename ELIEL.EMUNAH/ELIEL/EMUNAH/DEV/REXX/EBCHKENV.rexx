@@ -1,0 +1,58 @@
+/* REXX ----------------------------------------------------------- */
+/* PROGRAMA : EBCHKENV                                              */
+/* FUNCAO   : CHECKLIST OPERACIONAL - EMUNAH BANK LAB               */
+/* LOCAL    : RECURSO DE OPERADOR                                   */
+/*----------------------------------------------------------------- */
+HLQ     = 'ELIEL.EMUNAH'
+ERROS   = 0
+TOTAL   = 0
+
+SAY CENTER(' EMUNAH BANK - STATUS DO AMBIENTE ',65,'-')
+SAY 'DATA: ' DATE() ' HORA: ' TIME() ' USER: ' USERID()
+SAY COPIES('=',65)
+SAY LEFT('DATASET',45) LEFT('ORG',6) LEFT('STATUS',8) 'LRECL'
+SAY COPIES('-',65)
+
+/* Lista de datasets vitais para a operacao diaria */
+DS.1  = HLQ'.DEV.LOADLIB'
+DS.2  = HLQ'.DEV.COBOL'
+DS.3  = HLQ'.DEV.COPY'
+DS.4  = HLQ'.DEV.JCL'
+DS.5  = HLQ'.ARQ.CLIENTE.KSDS'
+DS.6  = HLQ'.ARQ.CONTA.KSDS'
+DS.7  = HLQ'.ARQ.ENTRADA.SEQ'
+DS.8  = HLQ'.ARQ.LANCTO.ESDS'
+DS.9  = HLQ'.ARQ.REJEITO.SEQ'
+DS.10 = HLQ'.ARQ.AUDIT.SEQ'
+DS.11 = HLQ'.ARQ.SALDO.SEQ'
+DS.12 = HLQ'.ARQ.CONCIL.SEQ'
+DS.13 = HLQ'.SEED.CLIENTES.SEQ'
+DS.14 = HLQ'.SEED.CONTAS.SEQ'
+DS.0  = 14
+
+DO I = 1 TO DS.0
+  DSN   = DS.I
+  TOTAL = TOTAL + 1
+
+  X = LISTDSI("'"DSN"'")
+
+  IF X = 0 THEN DO
+    ORG = SYSDSORG
+    IF ORG = 'VS' THEN ORG = 'VSAM'
+    SAY LEFT(DSN,45) LEFT(ORG,6) LEFT('ONLINE',8) SYSLRECL
+  END
+  ELSE DO
+    SAY LEFT(DSN,45) LEFT('????',6) LEFT('MISSING',8) 'RC='X
+    ERROS = ERROS + 1
+  END
+END
+
+SAY COPIES('=',65)
+IF ERROS = 0 THEN DO
+  SAY 'OPERACIONAL: AMBIENTE OK PARA PROCESSAMENTO BATCH.'
+  EXIT 0
+END
+ELSE DO
+  SAY 'ALERTA: OPERACAO COMPROMETIDA.' ERROS 'ARQUIVO(S) NAO ENCONTRADO(S).'
+  EXIT 8
+END

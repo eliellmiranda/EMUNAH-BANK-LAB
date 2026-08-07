@@ -1,0 +1,93 @@
+      *===============================================================*
+      * COPYBOOK: EBMTRF                                              *
+      * FUNCAO  : MAPA BMS - TELA DE TRANSFERENCIA ENTRE CONTAS      *
+      * TRANSACAO CICS: ETRF                                          *
+      * PROGRAMA ASSOCIADO: EBCSTRF                                   *
+      *                                                               *
+      * ESTE COPYBOOK SIMULA O LAYOUT GERADO PELO BMS ASSEMBLER      *
+      * para a tela de transferencia entre contas.                   *
+      *                                                               *
+      * CONVENCAO DE SUFIXOS (padrao BMS):                            *
+      *   xxxxxL = length field (PIC S9(4) COMP)                     *
+      *   xxxxxF = flag/attribute byte (PIC X)                       *
+      *   xxxxxA = alias do attribute via REDEFINES                   *
+      *   xxxxxI = dado de input (digitado pelo operador)             *
+      *   xxxxxO = dado de output (exibido na tela)                   *
+      *===============================================================*
+
+      *---------------------------------------------------------------*
+      * AREA DE ENTRADA (EBMTRFI) - populada por EXEC CICS RECEIVE MAP*
+      * 5 grupos de campos: agencia/conta origem, agencia/conta       *
+      * destino e valor da transferencia                              *
+      *---------------------------------------------------------------*
+       01  EBMTRFI.
+      *-- 12 bytes de controle interno BMS -------------------------*
+           05 FILLER                  PIC X(12).
+
+      *-- AGENCIA DE ORIGEM (4 digitos) ---------------------------*
+           05 AGORIGL                 PIC S9(4) COMP.
+           05 AGORIGF                 PIC X.
+           05 FILLER REDEFINES AGORIGF.
+              10 AGORIGA              PIC X.
+           05 AGORIGI                 PIC X(4).          *> agencia origem
+
+      *-- CONTA DE ORIGEM (8 digitos) -----------------------------*
+           05 CTORIGL                 PIC S9(4) COMP.
+           05 CTORIGF                 PIC X.
+           05 FILLER REDEFINES CTORIGF.
+              10 CTORIGA              PIC X.
+           05 CTORIGI                 PIC X(8).          *> conta origem
+
+      *-- AGENCIA DE DESTINO (4 digitos) --------------------------*
+           05 AGDESTL                 PIC S9(4) COMP.
+           05 AGDESTF                 PIC X.
+           05 FILLER REDEFINES AGDESTF.
+              10 AGDESTA              PIC X.
+           05 AGDESTI                 PIC X(4).          *> agencia destino
+
+      *-- CONTA DE DESTINO (8 digitos) ----------------------------*
+           05 CTDESTL                 PIC S9(4) COMP.
+           05 CTDESTF                 PIC X.
+           05 FILLER REDEFINES CTDESTF.
+              10 CTDESTA              PIC X.
+           05 CTDESTI                 PIC X(8).          *> conta destino
+
+      *-- VALOR DA TRANSFERENCIA (13 bytes) -----------------------*
+      *   Corresponde ao layout S9(11)V99 do lancamento             *
+      *   O operador digita sem virgula: ex '0000000100000' = 1000,00*
+           05 VALORL                  PIC S9(4) COMP.
+           05 VALORF                  PIC X.
+           05 FILLER REDEFINES VALORF.
+              10 VALORA               PIC X.
+           05 VALORI                  PIC X(13).         *> valor input
+
+      *---------------------------------------------------------------*
+      * AREA DE SAIDA (EBMTRFO) - preenchida antes de EXEC CICS SEND  *
+      * Exibe eco dos dados da transferencia e saldos pos-operacao    *
+      *---------------------------------------------------------------*
+       01  EBMTRFO.
+      *-- 12 bytes de controle interno BMS -------------------------*
+           05 FILLER                  PIC X(12).
+
+      *-- Eco das contas envolvidas na transferencia ---------------*
+           05 AGORIGO                 PIC X(4).   *> agencia origem
+           05 CTORIGO                 PIC X(8).   *> conta origem
+           05 AGDESTO                 PIC X(4).   *> agencia destino
+           05 CTDESTO                 PIC X(8).   *> conta destino
+
+      *-- Valor da transferencia editado ---------------------------*
+           05 VALORO                  PIC X(16).
+
+      *-- Saldo da conta origem apos a transferencia ---------------*
+      *   PIC X(18) comporta sinal negativo na edicao               *
+      *   Editado em EBCSTRF via PIC -ZZZ.ZZZ.ZZ9,99                *
+           05 SLDORIGO                PIC X(18).
+
+      *-- Saldo da conta destino apos a transferencia --------------*
+           05 SLDDESTO                PIC X(18).
+
+      *-- Mensagem de retorno (maior que EBMSLD - cabe mais texto) -*
+      *   Ex: 'TRANSFERENCIA REALIZADA COM SUCESSO'                   *
+      *       'SALDO INSUFICIENTE PARA TRANSFERENCIA'                 *
+      *       'CONTA DESTINO NAO ENCONTRADA'                          *
+           05 MSGO                    PIC X(60).

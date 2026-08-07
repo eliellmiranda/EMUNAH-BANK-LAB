@@ -1,0 +1,349 @@
+//EBJCHAIN JOB (EMUNAH),'EOD CHAIN',CLASS=A,MSGCLASS=X,
+//             MSGLEVEL=(1,1),NOTIFY=&SYSUID,REGION=0M
+//*===================================================================*
+//* JOB      : EBJCHAIN                                               *
+//* CAMINHO  : jcl/batch/EBJCHAIN.jcl                                 *
+//* HOST PDS : ELIEL.EMUNAH.DEV.JCL(EBJCHAIN)                        *
+//*                                                                   *
+//* FUNCAO   : secuta toda a cadeia batch EOD inline em um JOB unico *
+//* ORDEM    : PRECK -> SOD -> BCKPD -> WAIT -> LOAD -> VALD -> POST  *
+//*            -> CUTF -> ACCR -> CUTE -> SNAP -> CONC -> EXTR -> EOD *
+//*                                                                   *
+//* CONTROLE : COND=(4,LT) em todos os steps - se algum prior teve    *
+//*            RC > 4, o step e pulado (fail-stop semantica).         *
+//*                                                                   *
+//* PREFIXO  : Cada step e prefixado com 2 letras da fase para evitar *
+//*            colisao de nomes:                                      *
+//*              PR=PRECK  SO=SOD    BK=BCKPD  WT=WAIT  LD=LOAD       *
+//*              VL=VALD   PO=POST   CF=CUTF   AC=ACCR  CE=CUTE       *
+//*              SN=SNAP   CC=CONC   EX=EXTR   EO=EOD                 *
+//*                                                                   *
+//* GDG NOTE : SNAP cria SALDO.GDG(+1); CONC e EOD referenciam (+1)   *
+//*            para usar a MESMA geracao recem-criada neste job.      *
+//*===================================================================*
+//*
+//*==================================================================*
+//* FASE 1: EBJPRECK - PRE-CHECK DE INFRAESTRUTURA                    *
+//*==================================================================*
+//PRCHKLD  EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('ELIEL.EMUNAH.DEV.LOADLIB') ALL
+  IF LASTCC > 0 THEN -
+     SET MAXCC = 12
+/*
+//PRCHKCP  EXEC PGM=IDCAMS,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('ELIEL.EMUNAH.DEV.COPY') ALL
+  IF LASTCC > 0 THEN -
+     SET MAXCC = 12
+/*
+//PRCHKCL  EXEC PGM=IDCAMS,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('ELIEL.EMUNAH.ARQ.CLIENTE.KSDS') ALL
+  IF LASTCC > 0 THEN -
+     SET MAXCC = 12
+/*
+//PRCHKCN  EXEC PGM=IDCAMS,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('ELIEL.EMUNAH.ARQ.CONTA.KSDS') ALL
+  IF LASTCC > 0 THEN -
+     SET MAXCC = 12
+/*
+//PRCHKLN  EXEC PGM=IDCAMS,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('ELIEL.EMUNAH.ARQ.LANCTO.ESDS') ALL
+  IF LASTCC > 0 THEN -
+     SET MAXCC = 12
+/*
+//PRCHKCT  EXEC PGM=EBCTL01,PARM='CHK,CLOSED',COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=ELIEL.EMUNAH.ARQ.CTL.STATUS,DISP=SHR
+//*
+//*==================================================================*
+//* FASE 2: EBJSOD - START OF DAY (CLOSED -> OPEN)                    *
+//*==================================================================*
+//SOWRTST  EXEC PGM=EBCTL01,PARM='UPD,OPEN',COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=ELIEL.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
+//*
+//*==================================================================*
+//* FASE 3: EBJBCKPD - BACKUP DIARIO (KSDS/SEQ -> GDGs)               *
+//*==================================================================*
+//BKBKPCL  EXEC PGM=IDCAMS,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//INFILE   DD DSN=ELIEL.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
+//OUTFILE  DD DSN=ELIEL.EMUNAH.BKP.CLIENTE.GDG(+1),
+//            DISP=(NEW,CATLG,DELETE),
+//            UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
+//SYSIN    DD *
+  REPRO INFILE(INFILE) OUTFILE(OUTFILE)
+/*
+//BKBKPCN  EXEC PGM=IDCAMS,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//INFILE   DD DSN=ELIEL.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//OUTFILE  DD DSN=ELIEL.EMUNAH.BKP.CONTA.GDG(+1),
+//            DISP=(NEW,CATLG,DELETE),
+//            UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//            DCB=(RECFM=FB,LRECL=100,BLKSIZE=0)
+//SYSIN    DD *
+  REPRO INFILE(INFILE) OUTFILE(OUTFILE)
+/*
+//BKBKPAU  EXEC PGM=IDCAMS,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//INFILE   DD DSN=ELIEL.EMUNAH.ARQ.AUDIT.SEQ,DISP=SHR
+//OUTFILE  DD DSN=ELIEL.EMUNAH.BKP.AUDIT.GDG(+1),
+//            DISP=(NEW,CATLG,DELETE),
+//            UNIT=SYSDA,SPACE=(TRK,(10,5)),
+//            LIKE=ELIEL.EMUNAH.ARQ.AUDIT.SEQ
+//SYSIN    DD *
+  REPRO INFILE(INFILE) OUTFILE(OUTFILE)
+/*
+//BKBKPRJ  EXEC PGM=IDCAMS,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//INFILE   DD DSN=ELIEL.EMUNAH.ARQ.REJEITOS.SEQ,DISP=SHR
+//OUTFILE  DD DSN=ELIEL.EMUNAH.BKP.REJEITOS.GDG(+1),
+//            DISP=(NEW,CATLG,DELETE),
+//            UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//            LIKE=ELIEL.EMUNAH.ARQ.REJEITOS.SEQ
+//SYSIN    DD *
+  REPRO INFILE(INFILE) OUTFILE(OUTFILE)
+  IF LASTCC = 4 THEN -
+     SET MAXCC = 0
+/*
+//BKBKPCC  EXEC PGM=IDCAMS,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//INFILE   DD DSN=ELIEL.EMUNAH.ARQ.CONCIL.SEQ,DISP=SHR
+//OUTFILE  DD DSN=ELIEL.EMUNAH.BKP.CONCIL.GDG(+1),
+//            DISP=(NEW,CATLG,DELETE),
+//            UNIT=SYSDA,SPACE=(TRK,(10,5)),
+//            LIKE=ELIEL.EMUNAH.ARQ.CONCIL.SEQ
+//SYSIN    DD *
+  REPRO INFILE(INFILE) OUTFILE(OUTFILE)
+/*
+//*
+//*==================================================================*
+//* FASE 4: EBJWAIT - FILE-WATCHER DE STAGE.ENTRADA.SEQ               *
+//*==================================================================*
+//WTCHKEX  EXEC PGM=IDCAMS,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('ELIEL.EMUNAH.STAGE.ENTRADA.SEQ') ALL
+/*
+//WTCHKCN  EXEC PGM=ICETOOL,COND=(4,LT)
+//TOOLMSG  DD SYSOUT=*
+//DFSMSG   DD SYSOUT=*
+//STAGE    DD DSN=ELIEL.EMUNAH.STAGE.ENTRADA.SEQ,DISP=SHR
+//TOOLIN   DD *
+  COUNT FROM(STAGE) EMPTY
+/*
+//*
+//*==================================================================*
+//* FASE 5: EBJLOAD - PROMOVE STAGE -> ARQ.ENTRADA.SEQ                *
+//*==================================================================*
+//LDCHKST  EXEC PGM=EBCTL01,PARM='CHK,OPEN',COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=ELIEL.EMUNAH.ARQ.CTL.STATUS,DISP=SHR
+//*
+//LDDELPR  EXEC PGM=IDCAMS,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE 'ELIEL.EMUNAH.ARQ.ENTRADA.SEQ' NONVSAM
+  SET MAXCC = 0
+/*
+//LDCOPY   EXEC PGM=IEBGENER,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//SYSUT1   DD DSN=ELIEL.EMUNAH.STAGE.ENTRADA.SEQ,DISP=SHR
+//SYSUT2   DD DSN=ELIEL.EMUNAH.ARQ.ENTRADA.SEQ,
+//            DISP=(NEW,CATLG,DELETE),
+//            UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//SYSIN    DD DUMMY
+//*
+//LDVERIF  EXEC PGM=IDCAMS,COND=(4,LT)
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  LISTCAT ENT('ELIEL.EMUNAH.ARQ.ENTRADA.SEQ') ALL
+  IF LASTCC > 0 THEN -
+     SET MAXCC = 12
+/*
+//*
+//*==================================================================*
+//* FASE 6: EBJVALD - VALIDA LANCAMENTOS (EBVALI01)                   *
+//*==================================================================*
+//VLCHKST  EXEC PGM=EBCTL01,PARM='CHK,OPEN',COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=ELIEL.EMUNAH.ARQ.CTL.STATUS,DISP=SHR
+//*
+//VLVALID  EXEC PGM=EBVALI01,COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//ENTRADA  DD DSN=ELIEL.EMUNAH.ARQ.ENTRADA.SEQ,DISP=SHR
+//VALIDOS  DD DSN=ELIEL.EMUNAH.ARQ.LANCTO.ESDS,DISP=OLD
+//CONTA    DD DSN=ELIEL.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//REJEITOS DD DSN=ELIEL.EMUNAH.ARQ.REJEITOS.SEQ,
+//             DISP=(MOD,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=156,BLKSIZE=0)
+//AUDIT    DD DSN=ELIEL.EMUNAH.ARQ.AUDIT.SEQ,
+//             DISP=(MOD,CATLG,CATLG),
+//             UNIT=SYSDA,SPACE=(TRK,(10,5)),
+//             DCB=(RECFM=FB,LRECL=128,BLKSIZE=0)
+//SYSOUT   DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+//*
+//*==================================================================*
+//* FASE 7: EBJPOST - POSTAGEM DE LANCAMENTOS (EBPOST01)              *
+//*==================================================================*
+//POCHKST  EXEC PGM=EBCTL01,PARM='CHK,OPEN',COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=ELIEL.EMUNAH.ARQ.CTL.STATUS,DISP=SHR
+//*
+//POPOSTA  EXEC PGM=EBPOST01,COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//MOVTIN   DD DSN=ELIEL.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//CLIENTE  DD DSN=ELIEL.EMUNAH.ARQ.CLIENTE.KSDS,DISP=SHR
+//CONTA    DD DSN=ELIEL.EMUNAH.ARQ.CONTA.KSDS,DISP=OLD
+//AUDIT    DD DSN=ELIEL.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//REJEITOS DD DSN=ELIEL.EMUNAH.ARQ.REJEITOS.SEQ,DISP=MOD
+//SYSOUT   DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+//*
+//*==================================================================*
+//* FASE 8: EBJCUTF - CUTOFF FINANCEIRO (OPEN -> EOTI)                *
+//*==================================================================*
+//CFWRTST  EXEC PGM=EBCTL01,PARM='UPD,EOTI',COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=ELIEL.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
+//*
+//*==================================================================*
+//* FASE 9: EBJACCR - ACCRUALS (EBACCR01)                             *
+//*==================================================================*
+//ACCHKST  EXEC PGM=EBCTL01,PARM='CHK,EOTI',COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=ELIEL.EMUNAH.ARQ.CTL.STATUS,DISP=SHR
+//*
+//ACACCR   EXEC PGM=EBACCR01,COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//PARMLIB  DD DSN=ELIEL.EMUNAH.PARM.JUROS.CONFIG(EBJUROSP),DISP=SHR
+//CONTA    DD DSN=ELIEL.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//ACCROUT  DD DSN=ELIEL.EMUNAH.ARQ.ACCR.MOV.SEQ,DISP=OLD
+//LANCTO   DD DSN=ELIEL.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//AUDIT    DD DSN=ELIEL.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//SYSOUT   DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+//*
+//*==================================================================*
+//* FASE 10: EBJCUTE - CUTOFF CONTABIL (EOTI -> EOFI)                 *
+//*==================================================================*
+//CEWRTST  EXEC PGM=EBCTL01,PARM='UPD,EOFI',COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=ELIEL.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
+//*
+//*==================================================================*
+//* FASE 11: EBJSNAP - SNAPSHOT DE SALDO (EBSNAP01) -> SALDO.GDG(+1)  *
+//*==================================================================*
+//SNCHKST  EXEC PGM=EBCTL01,PARM='CHK,EOFI',COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=ELIEL.EMUNAH.ARQ.CTL.STATUS,DISP=SHR
+//*
+//SNSNAP   EXEC PGM=EBSNAP01,COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//CONTA    DD DSN=ELIEL.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//SALDOUT  DD DSN=ELIEL.EMUNAH.ARQ.SALDO.GDG(+1),
+//            DISP=(NEW,CATLG,DELETE),
+//            UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//AUDIT    DD DSN=ELIEL.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//SYSOUT   DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+//*
+//*==================================================================*
+//* FASE 12: EBJCONC - CONCILIACAO TRES-VIAS (EBCONC01)               *
+//* IMPORTANTE: SALDOIN/SNAPIN usam (+1) - mesma geracao criada acima *
+//*==================================================================*
+//CCCHKST  EXEC PGM=EBCTL01,PARM='CHK,EOFI',COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=ELIEL.EMUNAH.ARQ.CTL.STATUS,DISP=SHR
+//*
+//CCCONCL  EXEC PGM=EBCONC01,COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//ENTRIN   DD DSN=ELIEL.EMUNAH.ARQ.ENTRADA.SEQ,DISP=SHR
+//MOVTIN   DD DSN=ELIEL.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//REJEIT   DD DSN=ELIEL.EMUNAH.ARQ.REJEITOS.SEQ,DISP=SHR
+//CONTA    DD DSN=ELIEL.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//SALDOIN  DD DSN=ELIEL.EMUNAH.ARQ.SALDO.GDG(+1),DISP=SHR
+//SNAPIN   DD DSN=ELIEL.EMUNAH.ARQ.SALDO.GDG(+1),DISP=SHR
+//CONCOUT  DD DSN=ELIEL.EMUNAH.ARQ.CONCIL.SEQ,DISP=SHR
+//AUDIT    DD DSN=ELIEL.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//SYSOUT   DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+//*
+//*==================================================================*
+//* FASE 13: EBJEXTR - GERAR EXTRATO (EBEXTR01) -> EXTRATO.GDG(+1)    *
+//*==================================================================*
+//EXSTEP1  EXEC PGM=EBEXTR01,COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//MOVTIN   DD DSN=ELIEL.EMUNAH.ARQ.LANCTO.ESDS,DISP=SHR
+//CONTA    DD DSN=ELIEL.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//EXTROUT  DD DSN=ELIEL.EMUNAH.ARQ.EXTRATO.GDG(+1),
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(10,5)),
+//             DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)
+//AUDIT    DD DSN=ELIEL.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//SYSOUT   DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+//*
+//*==================================================================*
+//* FASE 14: EBJEOD - FECHAMENTO DIARIO (EBJEOD01 + UPD CLOSED)       *
+//* IMPORTANTE: SALDOIN usa (+1) - mesma geracao da FASE 11           *
+//*==================================================================*
+//EOCHKST  EXEC PGM=EBCTL01,PARM='CHK,EOFI',COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=ELIEL.EMUNAH.ARQ.CTL.STATUS,DISP=SHR
+//*
+//EOFECHT  EXEC PGM=EBJEOD01,COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//CONCIN   DD DSN=ELIEL.EMUNAH.ARQ.CONCIL.SEQ,DISP=SHR
+//CONTA    DD DSN=ELIEL.EMUNAH.ARQ.CONTA.KSDS,DISP=SHR
+//SALDOIN  DD DSN=ELIEL.EMUNAH.ARQ.SALDO.GDG(+1),DISP=SHR
+//FECHOUT  DD DSN=ELIEL.EMUNAH.ARQ.FECHTO.SEQ,DISP=OLD
+//AUDIT    DD DSN=ELIEL.EMUNAH.ARQ.AUDIT.SEQ,DISP=MOD
+//SYSOUT   DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+//*
+//EOCLOSE  EXEC PGM=EBCTL01,PARM='UPD,CLOSED',COND=(4,LT)
+//STEPLIB  DD DSN=ELIEL.EMUNAH.DEV.LOADLIB,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSOUT   DD SYSOUT=*
+//CTLSTAT  DD DSN=ELIEL.EMUNAH.ARQ.CTL.STATUS,DISP=OLD
+//*
+//*==================================================================*
+//* FIM DA CADEIA EBJCHAIN                                            *
+//*==================================================================*

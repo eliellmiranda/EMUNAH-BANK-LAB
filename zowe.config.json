@@ -44,6 +44,12 @@
                 "user",
                 "password"
             ]
+        },
+        "base": {
+            "properties": {
+                "host": "192.168.100.150",
+                "port": 10443
+            }
         }
     },
     "defaults": {
@@ -53,5 +59,8 @@
         "rse": "rse",
         "base": "project_base"
     },
-    "autoStore": true
+    "autoStore": true,
+    "defaultProfiles": {
+        "zosmf": "emunah_bank"
+    }
 }

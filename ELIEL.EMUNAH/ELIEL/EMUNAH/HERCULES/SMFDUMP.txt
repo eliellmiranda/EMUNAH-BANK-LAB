@@ -1,0 +1,22 @@
+//SMFDUMP  JOB (EMUNAH),'ELIEL',CLASS=A,MSGCLASS=X,
+//             MSGLEVEL=(1,1),NOTIFY=&SYSUID,REGION=0M
+//*-------------------------------------------------------------------*
+//* EXTRAIR DADOS SMF DO LOGSTREAM E APAGAR DATASETS ANTIGOS DE OFFLOAD
+//*-------------------------------------------------------------------*
+//STEP01   EXEC PGM=IFASMFDL
+//SYSPRINT DD  SYSOUT=*
+//*
+//* -> SMFDP É O DATASET DE BACKUP QUE SERÁ CRIADO NESTE PASSO
+//SMFDP    DD  DSN=ELIEL.EMUNAH.BKP.SMF.DADOS,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,
+//             SPACE=(CYL,(200,50),RLSE),
+//             DCB=(RECFM=VBS,LRECL=32760,BLKSIZE=0)
+//*
+//* -> CARTAO SYSIN: REGRAS QUE O PROGRAMA VAI EXECUTAR
+//SYSIN    DD  *
+  LSNAME(IFASMF.VS01.DATA,OPTIONS(DUMP))
+  OUTDD(SMFDP,TYPE(0:255))
+  RELATIVEDATE(BYDAY,1,5)
+/*
+//

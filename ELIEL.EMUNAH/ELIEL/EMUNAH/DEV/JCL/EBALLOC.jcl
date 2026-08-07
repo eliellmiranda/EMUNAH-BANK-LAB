@@ -1,0 +1,195 @@
+//* ============================================================
+//* ARQUIVO      : EBALLOC.jcl
+//* CAMINHO LOCAL: jcl/deploy/EBALLOC.jcl
+//* HOST / PDS   : Z77948.EMUNAH.DEV.JCL(EBALLOC)
+//*
+//* FINALIDADE:
+//* Alocar TODOS os datasets necessarios para o laboratorio.
+//* Executar UMA UNICA VEZ na preparacao inicial do ambiente,
+//* na seguinte ordem:
+//* 1. EBALLOC  (este job)
+//* 2. EBDEFGDG (define bases GDG)
+//* 3. EBSEED   (carga inicial dos KSDS)
+//*
+//* DATASETS NAO ALOCADOS AQUI (criados dinamicamente pelos jobs):
+//* - ARQ.ACCR.MOV.SEQ  (NEW em EBJACCR a cada ciclo)
+//* - ARQ.FECHTO.SEQ    (NEW em EBJEOD  a cada ciclo)
+//* - GDGs: bases definidas em EBDEFGDG; geracoes (+1) criadas
+//* pelos jobs EBJEXTR, EBJSNAP, EBJBCKPD, EBJHKAUD, EBJHKREJ
+//*
+//* ESTRUTURA DOS 8 STEPS:
+//* ALOCPDS  - PDS de desenvolvimento (COBOL/COPY/JCL/LOADLIB/PARM)
+//* VSAMCLI  - VSAM KSDS de clientes
+//* VSAMCNT  - VSAM KSDS de contas
+//* VSAMLCT  - VSAM ESDS de lancamentos
+//* ALOCSEQ  - Arquivos sequenciais de apoio e controle
+//* ALOCCTL  - Datasets de controle de ciclo e parametros
+//* INITSTS  - Aloca e inicializa o status do banco com CLOSED
+//* ALOCSEED - Arquivos seed (entrada para EBSEED)
+//* ============================================================
+//EBALLOC  JOB ,'EMUNAH ALLOC',CLASS=A,MSGCLASS=X,MSGLEVEL=(1,1)
+//*
+//* === STEP ALOCPDS: PDS DE DESENVOLVIMENTO E PARAMETROS =======
+//* Aloca as bibliotecas particionadas (PO).
+//* Ajustado conforme gabarito do catalogo (BLKSIZE e LRECL).
+//* O PARM.JUROS.CONFIG tambem e alocado aqui, pois e um PDS.
+//*
+//ALOCPDS  EXEC PGM=IEFBR14
+//COBOL    DD DSN=Z77948.EMUNAH.DEV.COBOL,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(15,5,10)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=32720,DSORG=PO)
+//COPY     DD DSN=Z77948.EMUNAH.DEV.COPY,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(10,5,10)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=32720,DSORG=PO)
+//JCL      DD DSN=Z77948.EMUNAH.DEV.JCL,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(20,10,10)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=32720,DSORG=PO)
+//LOADLIB  DD DSN=Z77948.EMUNAH.DEV.LOADLIB,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(30,5,20)),
+//             DCB=(RECFM=U,LRECL=0,BLKSIZE=4096,DSORG=PO)
+//REXX     DD DSN=Z77948.EMUNAH.DEV.REXX,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(10,5,10)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=32720,DSORG=PO)
+//PARMJUR  DD DSN=Z77948.EMUNAH.PARM.JUROS.CONFIG,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,2,5)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=27920,DSORG=PO)
+//*
+//* === STEP VSAMCLI: VSAM KSDS DE CLIENTES ====================
+//*
+//VSAMCLI  EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE 'Z77948.EMUNAH.ARQ.CLIENTE.KSDS' CLUSTER PURGE
+  SET MAXCC = 0
+  DEFINE CLUSTER -
+    (NAME('Z77948.EMUNAH.ARQ.CLIENTE.KSDS') -
+     INDEXED -
+     RECORDS(500 100) -
+     RECORDSIZE(80 80) -
+     KEYS(5 0) -
+     SHAREOPTIONS(2 3)) -
+    DATA -
+    (NAME('Z77948.EMUNAH.ARQ.CLIENTE.KSDS.DATA')) -
+    INDEX -
+    (NAME('Z77948.EMUNAH.ARQ.CLIENTE.KSDS.INDEX'))
+/*
+//*
+//* === STEP VSAMCNT: VSAM KSDS DE CONTAS =======================
+//*
+//VSAMCNT  EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE 'Z77948.EMUNAH.ARQ.CONTA.KSDS' CLUSTER PURGE
+  SET MAXCC = 0
+  DEFINE CLUSTER -
+    (NAME('Z77948.EMUNAH.ARQ.CONTA.KSDS') -
+     INDEXED -
+     RECORDS(1000 200) -
+     RECORDSIZE(100 100) -
+     KEYS(12 0) -
+     SHAREOPTIONS(2 3)) -
+    DATA -
+    (NAME('Z77948.EMUNAH.ARQ.CONTA.KSDS.DATA')) -
+    INDEX -
+    (NAME('Z77948.EMUNAH.ARQ.CONTA.KSDS.INDEX'))
+/*
+//*
+//* === STEP VSAMLCT: VSAM ESDS DE LANCAMENTOS ==================
+//*
+//VSAMLCT  EXEC PGM=IDCAMS
+//SYSPRINT DD SYSOUT=*
+//SYSIN    DD *
+  DELETE 'Z77948.EMUNAH.ARQ.LANCTO.ESDS' CLUSTER PURGE
+  SET MAXCC = 0
+  DEFINE CLUSTER -
+    (NAME('Z77948.EMUNAH.ARQ.LANCTO.ESDS') -
+     NONINDEXED -
+     RECORDS(5000 1000) -
+     RECORDSIZE(120 120) -
+     SHAREOPTIONS(2 3)) -
+    DATA -
+    (NAME('Z77948.EMUNAH.ARQ.LANCTO.ESDS.DATA'))
+/*
+//*
+//* === STEP ALOCSEQ: SEQUENCIAIS DE APOIO E RELATORIOS =========
+//* Ajustado LRECL de todos os arquivos conforme realidade fisica
+//* do catalogo (REJEITOS=120, AUDIT=128, RPOST.REJEITO=156).
+//*
+//ALOCSEQ  EXEC PGM=IEFBR14
+//ENTRADA  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//TRAILER  DD DSN=Z77948.EMUNAH.ARQ.ENTRADA.TRAILER.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(1,1)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
+//REJEITOS DD DSN=Z77948.EMUNAH.ARQ.REJEITOS.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//RPSTREJ  DD DSN=Z77948.EMUNAH.ARQ.RPOST.REJEITO.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=156,BLKSIZE=0)
+//AUDIT    DD DSN=Z77948.EMUNAH.ARQ.AUDIT.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(10,5)),
+//             DCB=(RECFM=FB,LRECL=128,BLKSIZE=0)
+//CONCIL   DD DSN=Z77948.EMUNAH.ARQ.CONCIL.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(10,5)),
+//             DCB=(RECFM=FB,LRECL=132,BLKSIZE=0)
+//REPRLCT  DD DSN=Z77948.EMUNAH.ARQ.REPR.LANCTO.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)
+//REPRREJ  DD DSN=Z77948.EMUNAH.ARQ.REPR.REJPERM.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=150,BLKSIZE=0)
+//*
+//* === STEP ALOCCTL: CONTROLE DE CICLO =========================
+//* PROCDATE alocado com 80 bytes conforme catalogo z/OS.
+//*
+//ALOCCTL  EXEC PGM=IEFBR14
+//CTLDATE  DD DSN=Z77948.EMUNAH.ARQ.CTL.PROCDATE,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(1,1)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
+//*
+//* === STEP INITSTS: INICIALIZA O STATUS DO BANCO ==============
+//* Aloca o dataset dinamicamente e ja grava a palavra CLOSED.
+//* STATUS alocado com 8 bytes.
+//*
+//INITSTS  EXEC PGM=SORT
+//SYSOUT   DD SYSOUT=*
+//SORTIN   DD *
+CLOSED
+/*
+//SORTOUT  DD DSN=Z77948.EMUNAH.ARQ.CTL.STATUS,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(1,1)),
+//             DCB=(RECFM=F,LRECL=8,BLKSIZE=8)
+//SYSIN    DD *
+  SORT FIELDS=COPY
+  OUTREC FIELDS=(1,8)
+/*
+//*
+//* === STEP ALOCSEED: ARQUIVOS DE MASSA INICIAL (SEED) =========
+//*
+//ALOCSEED EXEC PGM=IEFBR14
+//SEEDCLI  DD DSN=Z77948.EMUNAH.SEED.CLIENTES.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)
+//SEEDCNT  DD DSN=Z77948.EMUNAH.SEED.CONTAS.SEQ,
+//             DISP=(NEW,CATLG,DELETE),
+//             UNIT=SYSDA,SPACE=(TRK,(5,5)),
+//             DCB=(RECFM=FB,LRECL=100,BLKSIZE=0)
