@@ -8,6 +8,7 @@
       * O QUE ESTE PROGRAMA FAZ:                                      *
       * - Recebe agencia e conta via tela BMS (mapa EBMSLD)           *
       * - Faz leitura direta (EXEC CICS READ) no KSDS EMCONTA         *
+      * - Enriquece saldo com SELECT em EMUNAH.CDCNT (DB2)            *
       * - Exibe na tela: saldo atual, limite e saldo disponivel       *
       *   Saldo disponivel = CNT-SALDO + CNT-LIMITE                   *
       * - Trata conta nao encontrada (NOTFND) e outros erros I/O      *
@@ -15,6 +16,7 @@
       * TRANSACAO CICS: ESLD                                          *
       * MAPA BMS: EBMSLD (copybook EBMSLD.cpy)                        *
       * ARQUIVO CICS: EMCONTA (VSAM KSDS de contas)                   *
+      * DB2 PLAN: EBCSSLD (BIND PLAN PKLIST EMUNAH.*)                 *
       *===============================================================*
 
        ENVIRONMENT DIVISION.
@@ -76,6 +78,23 @@
       *---------------------------------------------------------------*
        01  WS-MSG-FIM                  PIC X(24)
            VALUE 'TRANSACAO ESLD ENCERRADA'.
+
+      *---------------------------------------------------------------*
+      * DB2 - SQLCA e variaveis de hospedagem                         *
+      * HV-AGENCIA / HV-NUM-CONTA : chave de busca em CDCNT           *
+      * HV-CNT-SALDO / HV-CNT-LIMITE : valores retornados pelo SELECT *
+      *---------------------------------------------------------------*
+           EXEC SQL INCLUDE SQLCA END-EXEC.
+
+           EXEC SQL BEGIN DECLARE SECTION END-EXEC.
+       01  WS-DB2-VARS.
+           05  HV-AGENCIA        PIC 9(4).
+           05  HV-NUM-CONTA      PIC 9(8).
+           05  HV-CNT-SALDO      PIC S9(11)V99 COMP-3.
+           05  HV-CNT-LIMITE     PIC S9(11)V99 COMP-3.
+           EXEC SQL END DECLARE SECTION END-EXEC.
+
+       01  WS-SQLCODE-ED         PIC -9(9).
 
        PROCEDURE DIVISION.
       *===============================================================*
@@ -141,6 +160,7 @@
 
            EVALUATE WS-RESP
                WHEN DFHRESP(NORMAL)
+                   PERFORM 2500-CONSULTAR-SALDO-DB2
                    PERFORM 3000-MONTAR-RESPOSTA
                WHEN DFHRESP(NOTFND)
                    MOVE 'CONTA NAO ENCONTRADA' TO WS-MSG-RETORNO
@@ -148,6 +168,45 @@
                WHEN OTHER
                    MOVE 'ERRO DE LEITURA NO VSAM' TO WS-MSG-RETORNO
                    PERFORM 8000-ENVIAR-ERRO
+           END-EVALUATE.
+
+      *===============================================================*
+      * 2500-CONSULTAR-SALDO-DB2                                      *
+      * SELECT saldo e limite direto do DB2 (EMUNAH.CDCNT).           *
+      * Chamado apos VSAM READ OK — enriquece com dado autoritativo.  *
+      * SQLCODE  0  : OK, sobrescreve VSAM com valor DB2              *
+      * SQLCODE 100 : conta nao existe no DB2 (usa dado VSAM mesmo)   *
+      * OTHER       : erro DB2 — loga no CSSL, continua com VSAM      *
+      *===============================================================*
+       2500-CONSULTAR-SALDO-DB2.
+           MOVE WS-AGENCIA   TO HV-AGENCIA
+           MOVE WS-NUM-CONTA TO HV-NUM-CONTA
+
+           EXEC SQL
+               SELECT CNT_SALDO,
+                      CNT_LIMITE
+               INTO  :HV-CNT-SALDO,
+                     :HV-CNT-LIMITE
+               FROM   EMUNAH.CDCNT
+               WHERE  CNT_AGENCIA   = :HV-AGENCIA
+               AND    CNT_NUM_CONTA = :HV-NUM-CONTA
+           END-EXEC
+
+           EVALUATE SQLCODE
+               WHEN 0
+                   MOVE HV-CNT-SALDO  TO CNT-SALDO  OF WS-CONTA-REG
+                   MOVE HV-CNT-LIMITE TO CNT-LIMITE OF WS-CONTA-REG
+               WHEN 100
+      *            Conta nao existe no DB2: dado VSAM permanece
+                   CONTINUE
+               WHEN OTHER
+      *            Erro DB2: loga no CSSL, dado VSAM permanece
+                   MOVE SQLCODE TO WS-SQLCODE-ED
+                   EXEC CICS WRITEQ TD
+                       QUEUE('CSSL')
+                       FROM(WS-SQLCODE-ED)
+                       LENGTH(9)
+                   END-EXEC
            END-EVALUATE.
 
       *===============================================================*
@@ -193,11 +252,6 @@
                ERASE
            END-EXEC.
 
-      *===============================================================*
-      * 9000-ENCERRAR                                                 *
-      * Acionado por PF3 ou CLEAR. Exibe texto de encerramento e      *
-      * retorna ao CICS sem manter transid.                           *
-      *===============================================================*
       *===============================================================*
       * 9000-ENCERRAR                                                 *
       * Acionado por PF3 ou CLEAR. Exibe texto de encerramento e      *

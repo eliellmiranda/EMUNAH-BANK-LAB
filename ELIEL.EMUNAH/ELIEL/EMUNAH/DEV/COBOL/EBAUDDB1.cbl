@@ -20,19 +20,39 @@
       *   4. AU-HORA-EVENTO PIC 9(6) -> CHAR(6) via MOVE direto    *
       *   5. AUD_TIMESTAMP nullable — preenchido pelo programa      *
       *      com CURRENT TIMESTAMP via SQL scalar function          *
+      *                                                            *
+      * CORRECOES APLICADAS (pos-run em z/OS):                     *
+      *   FIX-1  ASSIGN AS-AUDSEQ -> AUDSEQ (PS/QSAM, nao ESDS)   *
+      *          RESOLUCAO: FILE STATUS 37 (wrong organization)     *
+      *   FIX-2  FD: BLOCK CONTAINS 0, RECORDING MODE IS F,        *
+      *          RECORD 128, AUDIT-BUFFER PIC X(128)                *
+      *          RESOLUCAO: FILE STATUS 39 (record length mismatch) *
+      *   FIX-3  Data validation/fallback '1900-01-01'              *
+      *          RESOLUCAO: SQLCODE -180 (invalid date)             *
+      *   FIX-4  DISPLAY de registro invalido comentado             *
+      *          RESOLUCAO: spool flooding (ESTIMATED LINES EXCEEDED)*
+      *   FIX-5  WHEN -545 na EVALUATE (check constraint violation)  *
+      *          RESOLUCAO: carga continua sem ROLLBACK global       *
       *----------------------------------------------------------*
 
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
-           SELECT AUDIT-FILE ASSIGN TO AS-AUDSEQ
+           SELECT AUDIT-FILE ASSIGN TO AUDSEQ
                ORGANIZATION IS SEQUENTIAL
                ACCESS MODE IS SEQUENTIAL
                FILE STATUS IS WS-AUD-FILE-STATUS.
 
        DATA DIVISION.
        FILE SECTION.
-       FD  AUDIT-FILE.
+       FD  AUDIT-FILE
+           BLOCK CONTAINS 0 RECORDS
+           RECORDING MODE IS F
+           RECORD CONTAINS 128 CHARACTERS.
+      *----------------------------------------------------------------*
+      * BUFFER DE 128 BYTES PARA BATER COM O LRECL FISICO DO ARQUIVO   *
+      *----------------------------------------------------------------*
+       01  AUDIT-BUFFER         PIC X(128).
        01  AUDIT-REG.
            COPY CPAUD001.
 
@@ -101,7 +121,9 @@
 
       *    Valida o registro antes de processar
            IF AU-PROGRAMA = SPACES
-               DISPLAY 'REGISTRO INVALIDO IGNORADO.'
+      *        DISPLAY COMENTADO PARA NAO INUNDAR O SPOOL!
+      *        DISPLAY 'REGISTRO INVALIDO IGNORADO.'
+               CONTINUE
            ELSE
                PERFORM 2200-CONVERTER-CAMPOS
                PERFORM 2300-INSERIR-AUDIT-DB2
@@ -128,13 +150,18 @@
            MOVE AU-TIPO-EVENTO      TO HV-AU-TIPO-EVENTO
            MOVE AU-PROGRAMA         TO HV-AU-PROGRAMA
 
-      *    CONVERTE AAAAMMDD (PIC 9(8)) -> AAAA-MM-DD (DATE)
-           STRING AU-DATA-EVENTO(1:4) '-'
-                  AU-DATA-EVENTO(5:2) '-'
-                  AU-DATA-EVENTO(7:2)
-               DELIMITED BY SIZE
-               INTO HV-AU-DATA-EVENTO
-           END-STRING
+      *    PREVENCAO DO SQLCODE -180 (Datas Vazias ou Zeradas)
+           IF AU-DATA-EVENTO = ZEROS OR AU-DATA-EVENTO = SPACES
+              OR AU-DATA-EVENTO NOT NUMERIC
+               MOVE '1900-01-01' TO HV-AU-DATA-EVENTO
+           ELSE
+               STRING AU-DATA-EVENTO(1:4) '-'
+                      AU-DATA-EVENTO(5:2) '-'
+                      AU-DATA-EVENTO(7:2)
+                   DELIMITED BY SIZE
+                   INTO HV-AU-DATA-EVENTO
+               END-STRING
+           END-IF
 
       *    HORA: PIC 9(6) DISPLAY -> PIC X(06) CHAR — MOVE direto
            MOVE AU-HORA-EVENTO      TO HV-AU-HORA-EVENTO
@@ -164,6 +191,12 @@
                WHEN 0
                    ADD 1 TO WS-QT-INSERIDOS
                    PERFORM 2400-CONTROLAR-COMMIT
+               WHEN -545
+      *            CHECK CONSTRAINT VIOLATION: IGNORA E CONTINUA A CARGA
+                   ADD 1 TO WS-QT-ERROS
+                   MOVE SQLCODE TO WS-SQLCODE-ED
+                   DISPLAY 'AVISO: CHECK CONSTRAINT -545 IGNORADA. PROG='
+                           HV-AU-PROGRAMA
                WHEN OTHER
                    ADD 1 TO WS-QT-ERROS
                    MOVE SQLCODE TO WS-SQLCODE-ED
