@@ -1,0 +1,11 @@
+//ADDSPOOL JOB (JES2),'ALLOC SPOOL',CLASS=A,MSGCLASS=X
+//ALLOC    EXEC PGM=IEFBR14
+//SPOOL    DD DSN=VSPROV.VS01.HASPACE,
+//            DISP=(NEW,KEEP),
+//            UNIT=3390,
+//            VOL=SER=JSPVS2,
+//            SPACE=(CYL,(3000)),
+//            DSORG=PS,
+//            STORCLAS=NONE,
+//            MGMTCLAS=NONE
+//

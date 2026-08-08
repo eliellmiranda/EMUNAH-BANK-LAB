@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Emunah Bank Lab — Architecture Review &amp; Roadmap</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.65;
+    color: #1f2328;
+    background: #ffffff;
+    padding: 32px 16px 48px;
+  }
+  .page { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; color: #1f2328; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #57606a; margin-bottom: 32px; }
+  h2 {
+    font-size: 15px; font-weight: 700; color: #1f2328;
+    border-bottom: 2px solid #3b82d4;
+    padding-bottom: 4px; margin: 36px 0 14px;
+  }
+  h3 { font-size: 13px; font-weight: 700; color: #1f2328; margin: 20px 0 8px; }
+  p { margin-bottom: 10px; color: #1f2328; }
+  ul, ol { padding-left: 18px; margin-bottom: 10px; }
+  li { margin-bottom: 4px; }
+  code {
+    font-family: "SFMono-Regular", Consolas, monospace;
+    font-size: 12px;
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 3px;
+    padding: 1px 4px;
+    color: #7c5cd8;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 600;
+    padding: 2px 7px; border-radius: 10px;
+    margin-left: 6px; vertical-align: middle;
+  }
+  .tag-done   { background: #dcfce7; color: #166534; }
+  .tag-active { background: #dbeafe; color: #1e40af; }
+  .tag-next   { background: #fef9c3; color: #854d0e; }
+  .tag-later  { background: #f3f4f6; color: #374151; }
+  .card {
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-left: 4px solid #3b82d4;
+    border-radius: 4px; padding: 14px 16px; margin-bottom: 14px;
+  }
+  .card-warn   { border-left-color: #f59e0b; }
+  .card-risk   { border-left-color: #ef4444; }
+  .card-ok     { border-left-color: #22c55e; }
+  .card-purple { border-left-color: #7c5cd8; }
+  .card-title  { font-weight: 700; font-size: 13px; margin-bottom: 6px; }
+  table {
+    width: 100%; border-collapse: collapse;
+    margin-bottom: 16px; font-size: 13px;
+  }
+  th {
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    padding: 6px 10px; text-align: left; font-weight: 600;
+    color: #57606a; font-size: 12px; text-transform: uppercase;
+  }
+  td { border: 1px solid #e5e7eb; padding: 6px 10px; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+  .rows-loaded  { color: #166534; font-weight: 700; }
+  .rows-pending { color: #854d0e; }
+  .priority-box { margin-bottom: 8px; }
+  .pstep {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 6px; padding: 14px 16px; margin-bottom: 12px;
+  }
+  .pnum {
+    flex-shrink: 0; width: 32px; height: 32px;
+    background: #3b82d4; color: #fff;
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-weight: 700; font-size: 16px;
+  }
+  .pnum.p2     { background: #7c5cd8; }
+  .pnum.p3     { background: #0ea5e9; }
+  .pnum.p4     { background: #22c55e; }
+  .pnum.p5     { background: #f59e0b; }
+  .pnum.done   { background: #22c55e; }
+  .pnum.active { background: #3b82d4; }
+  .pcontent { flex: 1; }
+  .pcontent strong { display: block; font-size: 14px; margin-bottom: 4px; }
+  .divider { border: none; border-top: 1px solid #e5e7eb; margin: 28px 0; }
+  .muted { color: #57606a; font-size: 12px; }
+  .progress-bar-wrap {
+    background: #e5e7eb; border-radius: 6px; height: 10px;
+    margin: 6px 0 12px; overflow: hidden;
+  }
+  .progress-bar { height: 100%; border-radius: 6px; background: #3b82d4; }
+  .progress-bar.green { background: #22c55e; }
+  .status-badge {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px; margin-bottom: 6px;
+  }
+  .badge-done   { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+  .badge-active { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+  .badge-next   { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
+  .badge-later  { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+  footer {
+    margin-top: 40px; padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center; color: #57606a; font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Emunah Bank Lab — Architecture Review &amp; Roadmap</h1>
+  <p class="subtitle">Branch: <code>refactor/cadeia-batch-ver-04</code> &nbsp;·&nbsp; z/OS 3.1 / Hercules Hyperion &nbsp;·&nbsp; FlexCube-inspired core banking simulation &nbsp;·&nbsp; <strong>Status updated: Phase 2 in progress</strong></p>
+
+  <!-- ═══════════════════════════════════ LIVE PROGRESS ═══ -->
+  <h2>Live Implementation Progress</h2>
+
+  <div class="card card-ok">
+    <div class="card-title">Phase 1 — Consolidation &amp; Inventory &nbsp;<span class="badge-done status-badge">COMPLETE ✓</span></div>
+    <div class="progress-bar-wrap"><div class="progress-bar green" style="width:100%"></div></div>
+    <ul>
+      <li><strong>1.1</strong> Live tables identified: <code>EMUNAH.CDCLI</code> (6 cols), <code>EMUNAH.CDCNT</code> (8 cols)</li>
+      <li><strong>1.2</strong> <code>EMUNAH-DDL.sql</code> rewritten from COBOL sources; DCLGEN copybooks <code>DCLCLI</code>, <code>DCLCNT</code>, <code>DCLLCT</code> created</li>
+      <li><strong>1.3</strong> Live catalog verified — <code>CLI_NOME</code> confirmed <code>VARCHAR(30)</code></li>
+      <li><strong>1.4</strong> Tables <code>CDLCT</code>, <code>CDEXT</code>, <code>CDREJ</code>, <code>CDAUD</code> created on DBD1 — all RC=0</li>
+      <li><strong>1.5</strong> Row count verified: 6 tables confirmed</li>
+      <li><strong>1.6</strong> <code>EBCLDB01</code> regression: RC=0, 20 clients, 0 errors</li>
+      <li><strong>1.7</strong> Program/table linkage map documented</li>
+    </ul>
+  </div>
+
+  <div class="card" style="border-left-color:#3b82d4;">
+    <div class="card-title">Phase 2 — DB2 Schema Evolution &nbsp;<span class="badge-active status-badge">IN PROGRESS</span></div>
+    <div class="progress-bar-wrap"><div class="progress-bar" style="width:62%"></div></div>
+    <table style="margin-bottom:6px;">
+      <tr><th>Step</th><th>Program</th><th>Target Table</th><th>Rows</th><th>Status</th></tr>
+      <tr><td>2.1</td><td><code>EBCNTDB1</code></td><td><code>CDCNT</code></td><td class="rows-loaded">40</td><td class="rows-loaded">✓ COMPLETE</td></tr>
+      <tr><td>2.2</td><td>Verify CDCNT</td><td><code>CDCNT → CDCLI</code> FK JOIN</td><td class="rows-loaded">40</td><td class="rows-loaded">✓ COMPLETE</td></tr>
+      <tr><td>2.3</td><td><code>EBLCTDB1</code></td><td><code>CDLCT</code></td><td class="rows-loaded">100</td><td class="rows-loaded">✓ COMPLETE</td></tr>
+      <tr><td>2.4</td><td>Verify CDLCT</td><td>3-table JOIN confirmed</td><td class="rows-loaded">100</td><td class="rows-loaded">✓ COMPLETE</td></tr>
+      <tr><td>2.5</td><td><code>EBREJDB1</code> + <code>EBAUDDB1</code></td><td><code>CDREJ</code>, <code>CDAUD</code></td><td class="rows-pending">pending</td><td class="rows-pending">⚡ ACTIVE — fixing compile errors</td></tr>
+      <tr><td>2.6</td><td>Verify CDREJ + CDAUD</td><td>Final row count check</td><td class="rows-pending">—</td><td class="rows-pending">Pending 2.5</td></tr>
+    </table>
+    <p class="muted">Current blocker: <code>EBREJDB1</code> — <strong>IGYDS1064-E</strong> (<code>REDEFINES</code> on 01-level in FILE SECTION) and <strong>IGYCB7309-W</strong> (recursive PERFORM) — both fixed in local source. Upload and resubmit pending.</p>
+  </div>
+
+  <div class="card card-warn">
+    <div class="card-title">DB2 Table Status at Step 2.5</div>
+    <table>
+      <tr><th>Table</th><th>Rows</th><th>Source VSAM</th><th>Loader</th><th>State</th></tr>
+      <tr><td><code>CDCLI</code></td><td class="rows-loaded">20</td><td><code>CLIENTE.KSDS</code></td><td><code>EBCLDB01</code></td><td class="rows-loaded">✓ Loaded</td></tr>
+      <tr><td><code>CDCNT</code></td><td class="rows-loaded">40</td><td><code>CONTA.KSDS</code></td><td><code>EBCNTDB1</code></td><td class="rows-loaded">✓ Loaded</td></tr>
+      <tr><td><code>CDLCT</code></td><td class="rows-loaded">100</td><td><code>LANCTO.ESDS</code></td><td><code>EBLCTDB1</code></td><td class="rows-loaded">✓ Loaded</td></tr>
+      <tr><td><code>CDEXT</code></td><td class="rows-pending">0</td><td><code>EXTRATO.GDG</code></td><td>—</td><td class="rows-pending">Deferred</td></tr>
+      <tr><td><code>CDREJ</code></td><td class="rows-pending">0</td><td><code>REJEITOS.SEQ</code></td><td><code>EBREJDB1</code></td><td class="rows-pending">⚡ Recompile pending</td></tr>
+      <tr><td><code>CDAUD</code></td><td class="rows-pending">0</td><td><code>AUDIT.SEQ</code></td><td><code>EBAUDDB1</code></td><td class="rows-pending">⚡ Fix pending (IGYCB7309-W)</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Compile Fixes Applied — <code>EBREJDB1</code></div>
+    <ul>
+      <li><strong>IGYDS1064-E fixed:</strong> Removed <code>REDEFINES REJEITO-REG</code> from <code>01 LANCTO-ORIG</code> in FILE SECTION. Multiple <code>01</code>s under the same <code>FD</code> share the I/O buffer implicitly — the <code>REDEFINES</code> clause is syntactically illegal at level-01 in FILE SECTION.</li>
+      <li><strong>IGYCB7309/7310-W fixed:</strong> Moved blank-record guard (<code>REJ-COD-MOTIVO = SPACES</code>) out of <code>2100-LER-REJEITO</code> and into <code>2000-PROCESSAR-REJEITOS</code> as an <code>IF/ELSE</code>. Eliminated the self-recursive <code>PERFORM 2100-LER-REJEITO</code> inside the same paragraph.</li>
+      <li><strong>EBAUDDB1:</strong> Same recursive PERFORM pattern present — identical fix needed before upload.</li>
+    </ul>
+  </div>
+
+  <div class="card card-warn">
+    <div class="card-title">Discovered COBOL Rules (permanent lab knowledge)</div>
+    <ul>
+      <li><code>REDEFINES</code> on a level-01 item in the FILE SECTION is illegal — use implicit co-location (multiple <code>01</code>s under same <code>FD</code>).</li>
+      <li>A paragraph cannot <code>PERFORM</code> itself — recursion corrupts the return stack; move validation into the calling loop.</li>
+      <li><code>WITH DEFAULT ''</code> invalid in DB2 for z/OS DDL — use bare <code>WITH DEFAULT</code>.</li>
+      <li><code>CURRENT_TIMESTAMP</code> → SQLCODE=-104 on Hercules DBD1 — make column nullable instead.</li>
+      <li>COND named-step trap: always bare <code>COND=(4,LT)</code>, never <code>COND=(4,LT,stepname)</code>.</li>
+      <li>ESDS files: <code>ASSIGN TO AS-ddname</code> prefix required; <code>ORGANIZATION IS SEQUENTIAL</code>; no RECORD KEY.</li>
+      <li>COMPILE PARM: <code>'APOST,MAP'</code> — no <code>LIB</code> (generates harmless <code>IGYOS4090-I</code>).</li>
+      <li><code>SYSOUT=*,OUTLIM=500000</code> on RUN step — prevents S722 on large duplicate runs.</li>
+    </ul>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ═══════════════════════════════════ EXECUTIVE ASSESSMENT ═══ -->
+  <h2>Executive Assessment</h2>
+  <p>The lab is architecturally coherent and well above hobbyist level. The 14-phase <code>EBJCHAIN</code>, the CTL.STATUS state machine, the VSAM enqueue discipline, three-way reconciliation, GDG immutability, and the DEV/HML/PRD promotion model all reflect genuine enterprise patterns. The DB2 layer is now being activated: three tables are loaded (CDCLI, CDCNT, CDLCT), two more (CDREJ, CDAUD) are in flight. Phase 2 close-out will complete the full 6-table VSAM→DB2 loader chain — the first concrete step of the roadmap.</p>
+
+  <div class="card card-ok">
+    <div class="card-title">✓ Confirmed Strengths</div>
+    <ul>
+      <li>State-machine-guarded batch lifecycle (<code>EBCTL01</code>, <code>CTL.STATUS</code>) mirrors production discipline correctly.</li>
+      <li>CICS window management (EBJCLOSE / EBJOPEN) around the batch chain — correct pattern for VSAM shared-access.</li>
+      <li>GDG-based immutable checkpointing on every output that matters (SALDO, EXTRATO, BKP sets).</li>
+      <li>Reconciliation gate before <code>EBJEOD01</code> closes the day — a hard business control, not cosmetic.</li>
+      <li>Copybook-driven record layouts throughout — made the DB2 bulk-load chain straightforward to implement.</li>
+      <li>Multi-environment dataset segregation (DEV / HML / PRD) with promotion rules in docs.</li>
+      <li>EBOPS operational simulator — genuinely unique for a study lab and directly marketable on a CV.</li>
+      <li><strong>New:</strong> Full VSAM→DB2 loader chain nearing completion: 3 of 6 tables loaded, FK chain verified end-to-end.</li>
+    </ul>
+  </div>
+
+  <div class="card card-warn">
+    <div class="card-title">⚠ Remaining Gaps</div>
+    <ul>
+      <li>CDREJ and CDAUD loaders not yet submitted — compile fixes applied, awaiting re-upload.</li>
+      <li>No embedded SQL in the CICS online programs (<code>EBCSSLD</code>, <code>EBCSTRF</code>) yet — DB2 integration is batch-only.</li>
+      <li>No HLASM at all — Assembly topic completely unexplored.</li>
+      <li>REXX has health-check/job-submission scripts but no RXSQL or JES2 SDSF API patterns.</li>
+      <li>EBOPS runs locally on Python/Flask — USS migration not yet started.</li>
+      <li>No IMS integration despite IMS V15 in the stack.</li>
+      <li>No ISO 8583 or CNAB file simulation for ATM/file-exchange channels.</li>
+      <li>MQ is in the stack but no MQPUT wired in any program yet.</li>
+    </ul>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ═══════════════════════════════════ ROADMAP ═══ -->
+  <h2>Prioritized Roadmap — Next Steps</h2>
+  <p>Steps are ordered by leverage: each one fixes a gap, unlocks a downstream capability, or is directly visible on a CV.</p>
+
+  <div class="priority-box">
+
+    <div class="pstep">
+      <div class="pnum done">✓</div>
+      <div class="pcontent">
+        <strong>Phase 1 — VSAM inventory, DDL reconciliation, EBCLDB01 regression <span class="tag tag-done">DONE</span></strong>
+        <p>All 6 tables created on DBD1. Copybook/DDL alignment verified. EBCLDB01 loads 20 clients cleanly. FK chain from CDLCT → CDCNT → CDCLI confirmed.</p>
+      </div>
+    </div>
+
+    <div class="pstep" style="border-color:#3b82d4;">
+      <div class="pnum active">2</div>
+      <div class="pcontent">
+        <strong>Phase 2 — Complete the VSAM→DB2 loader chain <span class="tag tag-active">IN PROGRESS</span></strong>
+        <p>Submit fixed <code>EBREJDB1</code> (REDEFINES + recursive PERFORM resolved) and <code>EBAUDDB1</code> (recursive PERFORM to fix). Run Step 2.6 verification queries. When CDREJ and CDAUD row counts confirm, Phase 2 is closed and all 6 tables are live on DBD1.</p>
+      </div>
+    </div>
+
+    <div class="pstep">
+      <div class="pnum p2">3</div>
+      <div class="pcontent">
+        <strong>Phase 3 — CICS Online Layer: DB2 SELECT in EBCSSLD + MQPUT in EBCSTRF <span class="tag tag-next">NEXT</span></strong>
+        <p>Add a <code>SELECT CNT_SALDO INTO :WS-SALDO FROM EMUNAH.CDCNT WHERE CNT_AGENCIA = :HV-AG AND CNT_NUM_CONTA = :HV-CNT</code> to <code>EBCSSLD</code>. This single SQL statement — with SQLCODE handling — teaches CICS–DB2 threading, cursor stability, and PLAN binding. Then add <code>MQPUT</code> to <code>EMUNAH.TRF.EVENTS</code> in <code>EBCSTRF</code> on successful transfer confirmation.</p>
+        <span class="tag tag-next">Unlocks: CICS+DB2, MQ, Topics 2/6/7</span>
+      </div>
+    </div>
+
+    <div class="pstep">
+      <div class="pnum p3">4</div>
+      <div class="pcontent">
+        <strong>Phase 4 — REXX SDSF API + RXSQL operator scripts <span class="tag tag-later">LATER</span></strong>
+        <p>Write <code>EBSPOOLQ</code> using the SDSF REXX API (<code>ISFEXEC ST</code>) to list all EMUNAH jobs, extract RCs, and flag failures. Write <code>EBDBQRY</code> using RXSQL to query <code>EMUNAH.CDLCT</code> for today's movement count. Both are the most marketable daily-use REXX patterns in production shops.</p>
+        <span class="tag tag-later">Completes: Topic 3 (REXX)</span>
+      </div>
+    </div>
+
+    <div class="pstep">
+      <div class="pnum p4">5</div>
+      <div class="pcontent">
+        <strong>Phase 5 — EBOPS USS migration: Node.js REST API on z/OS <span class="tag tag-later">LATER</span></strong>
+        <p>Deploy Node.js LTS under <code>/u/emunah/ebops/</code> on USS. Expose <code>/api/status</code>, <code>/api/chain/submit</code>, <code>/api/inject</code>, <code>/api/tickets</code>, <code>/api/spool/{jobid}</code> backed by Zowe CLI calls. Serve the existing <code>web/index.html</code> from USS. Accessible from any browser at <code>http://192.168.100.150:3000</code>.</p>
+        <span class="tag tag-later">Unlocks: Topics 5, 7, 8</span>
+      </div>
+    </div>
+
+    <div class="pstep">
+      <div class="pnum p5">6</div>
+      <div class="pcontent">
+        <strong>Phase 6 — HLASM: EBASMSUM + EBCOREDP <span class="tag tag-later">LATER</span></strong>
+        <p>Write <code>EBASMSUM</code>: an HLASM subprogram callable from COBOL via OS/370 linkage — teaches register conventions, save area discipline, and what COBOL generates invisibly. Follow with <code>EBCOREDP</code>: a hex+EBCDIC storage formatter — a real debugging utility and the conceptual core of what Fault Analyzer does.</p>
+        <span class="tag tag-later">Completes: Topic 4 (Assembly)</span>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider" />
+
+  <!-- ═══════════════════════════════════ TOPIC ADVISORIES ═══ -->
+  <h2>Topic 1 — DB2 Schema &amp; Core Banking Data Model</h2>
+
+  <h3>Current State</h3>
+  <p>Schema has 6 tables: <code>CDCLI</code> (CIF), <code>CDCNT</code> (accounts), <code>CDLCT</code> (movements), <code>CDEXT</code> (extract), <code>CDREJ</code> (rejects), <code>CDAUD</code> (audit). Full FK chain: <code>CDLCT → CDCNT → CDCLI</code>. Identity columns on <code>CDREJ.REJ_ID</code> and <code>CDAUD.AUD_ID</code>. Three tables loaded (160 total rows). Loader chain for CDREJ and CDAUD in flight.</p>
+
+  <h3>DB2 V13 Features to Add Next</h3>
+  <div class="card">
+    <div class="card-title">Triggers for GL</div>
+    <p>Write an <code>AFTER INSERT ON CDLCT FOR EACH ROW</code> trigger that inserts two rows into a new <code>CDGL</code> table (debit leg, credit leg). Simulates the double-entry accounting engine that FlexCube's GL module performs implicitly — and teaches trigger syntax, transition variables, and compound statements.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Stored Procedure: SP_CONSULTA_SALDO</div>
+    <p>A stored procedure callable from both COBOL batch and CICS. Add a <code>TRUSTED CONTEXT</code> + <code>ROW PERMISSION</code> on <code>CDCNT</code> that restricts access by <code>CURRENT SQLID</code> to simulate branch-level data segregation — the FlexCube CIF restriction model.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Partitioned Tablespace on CDLCT</div>
+    <p>Rebuild <code>CDLCT</code> in a Partition-by-Range UTS on <code>LCT_DATA</code>. Run RUNSTATS + REORG on a single partition. Teaches the operational lifecycle of a high-volume movement table at lab scale.</p>
+  </div>
+
+  <hr class="divider" />
+
+  <h2>Topic 2 — CICS Online Transactions &amp; BMS Maps</h2>
+
+  <h3>Current State</h3>
+  <p>Three transactions: <code>ESLD</code> (balance, <code>EBCSSLD</code>), <code>EEXT</code> (statement, <code>EBCSEXT</code>), <code>ETRF</code> (transfer, <code>EBCSTRF</code>). All read <code>CONTA.KSDS</code> via VSAM only. No DB2 cursor or MQ call in any CICS program. BMS map <code>MSBSLD</code> is structurally correct (TIOAPFX, CTRL, 24×80).</p>
+
+  <h3>Immediate Next Actions (Phase 3)</h3>
+  <ul>
+    <li>Add <code>EXEC SQL SELECT</code> to <code>EBCSSLD</code> — CICS–DB2 thread, cursor stability, PLAN bind.</li>
+    <li>Add <code>MQPUT</code> to <code>EMUNAH.TRF.EVENTS</code> in <code>EBCSTRF</code> on transfer confirmation.</li>
+    <li>Upgrade <code>ETRF</code> to pseudo-conversational two-screen flow using channels/containers for state (not COMMAREA — transfer needs source acct + dest acct + auth token as named containers).</li>
+    <li>Add <code>DFHBMPROT</code> on all BMS output fields to prevent operator overwrite.</li>
+  </ul>
+
+  <hr class="divider" />
+
+  <h2>Topic 3 — REXX Automations</h2>
+  <h3>Current State</h3>
+  <p>Solid operator scripts exist: <code>EBCHKLAB</code> (LISTDSI validation), <code>EBSUBJCL</code> (parametrized JCL submitter), <code>EBRESET</code> (cycle reset). Missing: DB2 interaction, JES2 spool parsing, USS shell scripting.</p>
+  <h3>To Add (Phase 4)</h3>
+  <ul>
+    <li><code>EBSPOOLQ</code> — SDSF REXX API (<code>ISFEXEC ST/DA</code>): list EMUNAH jobs, extract RCs, flag RC &gt; 4.</li>
+    <li><code>EBDBQRY</code> — RXSQL: <code>SELECT COUNT(*) FROM EMUNAH.CDLCT WHERE LCT_DATA = CURRENT DATE</code>.</li>
+    <li><code>/u/emunah/rexx/ebhealthz.rexx</code> — USS REXX under <code>oerexx</code> with <code>syscalls('ON')</code> to verify EBOPS server process and SQLite DB.</li>
+    <li>ISPF dialog: REXX exec calling <code>ISPEXEC DISPLAY PANEL(EBMENU)</code> dispatching to chain submit / status / DB2 query.</li>
+  </ul>
+
+  <hr class="divider" />
+
+  <h2>Topic 4 — Assembly Language (HLASM)</h2>
+  <h3>Recommended Path (Phase 6)</h3>
+  <ol>
+    <li><strong>Register linkage:</strong> <code>EBASMSUM</code> — receives two PIC 9(8) COMP-4 params via OS CALL (R1→param list, R14=return, R13=save area), returns sum in R0. Call from COBOL. Teaches the full linkage your COBOL hides.</li>
+    <li><strong>Macro expansion:</strong> Write macro <code>EBALOG</code> expanding to a QSAM WRITE sequence. Compare the expansion listing to what COBOL generates for a WRITE.</li>
+    <li><strong>SVC 99 (DYNALLOC):</strong> Dynamically allocate a dataset from Assembly — the underpinning of JCL, Zowe, and REXX ALLOCATE.</li>
+    <li><strong>Storage display:</strong> <code>EBCOREDP</code> — receive address + length, format hex+EBCDIC to SYSOUT. Callable from COBOL via <code>CALL 'EBCOREDP'</code>.</li>
+  </ol>
+
+  <hr class="divider" />
+
+  <h2>Topic 5 — EBOPS on USS &amp; Web Application</h2>
+  <h3>Current State</h3>
+  <p>EBOPS runs as Python/Flask + SQLite on Windows localhost:5000. USS migration planned, not started.</p>
+  <div class="card card-purple">
+    <div class="card-title">Recommended: Node.js on USS (Phase 5)</div>
+    <p>Deploy Node.js LTS under <code>/u/emunah/ebops/</code>. Serve static HTML from <code>/u/emunah/ebops/web/</code>. Expose REST endpoints backed by Zowe CLI or TSO REXX via USS system calls. Access from any browser at <code>192.168.100.150:3000</code>.</p>
+  </div>
+  <table>
+    <tr><th>Endpoint</th><th>Method</th><th>Action</th></tr>
+    <tr><td><code>/api/status</code></td><td>GET</td><td>Read CTL.STATUS from z/OS via Zowe CLI</td></tr>
+    <tr><td><code>/api/chain/submit</code></td><td>POST</td><td>Submit EBJCHAIN via Zowe Jobs API</td></tr>
+    <tr><td><code>/api/inject</code></td><td>POST</td><td>Apply an EBOPS incident pack mutation</td></tr>
+    <tr><td><code>/api/tickets</code></td><td>GET/POST</td><td>CRUD on the Jira-like ticket board</td></tr>
+    <tr><td><code>/api/spool/{jobid}</code></td><td>GET</td><td>Retrieve job spool output via Zowe Jobs API</td></tr>
+    <tr><td><code>/api/filemanager</code></td><td>GET</td><td>Read VSAM dataset content via Zowe Files API</td></tr>
+  </table>
+
+  <hr class="divider" />
+
+  <h2>Topic 6 — Java and Python API Integration</h2>
+  <h3>Java</h3>
+  <table>
+    <tr><th>API</th><th>Use Case</th><th>Priority</th></tr>
+    <tr><td>IBM JZOS Toolkit</td><td>Read VSAM KSDS from Java; write JSON to USS filesystem</td><td>High</td></tr>
+    <tr><td>DB2 JDBC (T4 driver)</td><td>Connect from Windows Java to DB2 V13 via DRDA port 446; query CDLCT; produce balance report</td><td>High</td></tr>
+    <tr><td>IBM MQ JMS client</td><td>Publish to <code>EMUNAH.TRF.EVENTS</code> from Java; CICS trigger program consumes — simulates digital channel payment request</td><td>Medium</td></tr>
+    <tr><td>Liberty on z/OS</td><td>JAX-RS WAR on USS: <code>/emunah/api/saldo/{conta}</code> backed by DB2 JDBC — the modernization pattern every bank uses</td><td>Medium</td></tr>
+  </table>
+  <h3>Python (Off-Platform)</h3>
+  <table>
+    <tr><th>Library</th><th>Use Case</th></tr>
+    <tr><td><code>pymqi</code></td><td>Python MQ producer generating synthetic transaction events to <code>EMUNAH.INPUT.QUEUE</code></td></tr>
+    <tr><td><code>ibm_db</code></td><td>IBM official DB2 driver — query CDLCT via DRDA from Python; pandas DataFrames of daily movements</td></tr>
+    <tr><td>Zowe CLI subprocess</td><td>Submit JCL, retrieve spool, read datasets — already in <code>automation/</code>; formalize as Python SDK module</td></tr>
+  </table>
+  <p><strong>Integration pattern:</strong> Python/Java client → MQ → CICS trigger → COBOL business logic → DB2 + VSAM → MQ reply queue → client. This is the request-reply messaging pattern used in real hybrid mainframe architectures.</p>
+
+  <hr class="divider" />
+
+  <h2>Topic 7 — Modern Channel Simulation</h2>
+  <p>Standard pattern: <strong>Browser/Mobile → REST API Gateway (Node.js/Liberty on USS) → MQ → CICS/Batch → DB2 + VSAM</strong>. Host <code>192.168.100.150</code> already exposes CICS and MQ; only the API Gateway layer on USS is missing.</p>
+  <table>
+    <tr><th>Flow</th><th>Channel</th><th>Backend Path</th><th>Format</th></tr>
+    <tr><td>Balance inquiry</td><td>Web/Mobile</td><td>REST → Node.js → CICS ESLD (LINK) → CDCNT (DB2)</td><td>JSON → COMMAREA</td></tr>
+    <tr><td>Fund transfer</td><td>Web/Mobile</td><td>REST → Node.js → MQ PUT → CICS ETRF trigger → VSAM + DB2</td><td>JSON → MQ body</td></tr>
+    <tr><td>ATM withdrawal</td><td>ATM sim</td><td>ISO 8583 → Python parser → MQ → CICS EATM → CONTA.KSDS</td><td>ISO 8583 fields 2,3,4,7,11,41,42</td></tr>
+    <tr><td>CNAB 240 batch</td><td>File exchange</td><td>CNAB 240 file → STAGE.ENTRADA.SEQ → EBJCHAIN</td><td>CNAB 240 fixed-width</td></tr>
+    <tr><td>New onboarding</td><td>Web form</td><td>REST → Node.js → DB2 INSERT CDCLI → VSAM WRITE CLIENTE.KSDS</td><td>JSON → COBOL copybook</td></tr>
+  </table>
+
+  <hr class="divider" />
+
+  <h2>Topic 8 — Mainframe Developer Toolchain Simulation</h2>
+  <table>
+    <tr><th>Tool</th><th>Lab Equivalent</th><th>Gap / Enhancement</th></tr>
+    <tr><td>Endevor / ChangeMan</td><td>EBOPS Change Management module (DEV→HML→PRD)</td><td>Add promotion approval workflow in EBOPS tickets; require ticket number on every EBDEPLOY job card</td></tr>
+    <tr><td>SyncSort / DFSORT</td><td>ICETOOL in EBJWAIT</td><td>Add DFSORT JOINKEYS for a multi-file merge job — teach SORT/MERGE/JOIN verbs that appear in every production shop</td></tr>
+    <tr><td>Control-M</td><td>EBOPS Control-M simulation panel</td><td>Add dependency graph: show phase 6 (EBJVALD) blocked until phase 5 (EBJLOAD). Add HOLD/FORCE-OK/RERUN actions.</td></tr>
+    <tr><td>IBM File Manager</td><td>EBOPS File Manager with copybook overlay</td><td>Add VSAM key-range browse: enter AGENCIA+CONTA, browse LANCTO.ESDS records by key range</td></tr>
+    <tr><td>IBM MQ</td><td>MQ V9 in stack (referenced, unused)</td><td>Create at minimum: <code>EMUNAH.TRF.EVENTS</code>, <code>EMUNAH.INPUT.QUEUE</code>, <code>EMUNAH.DLQ</code>. Wire ETRF to MQPUT.</td></tr>
+    <tr><td>Jira</td><td>EBOPS ticket board (tickets.json + banco.db)</td><td>Add sprint board: group tickets by sprint, add story points, add Definition of Done checklist per ticket</td></tr>
+  </table>
+
+  <hr class="divider" />
+
+  <h2>Topic 9 — Agile Methodology in a Mainframe Context</h2>
+  <h3>Sample Sprint Structure</h3>
+  <table>
+    <tr><th>Day</th><th>Activity</th><th>Lab Equivalent</th></tr>
+    <tr><td>1</td><td>Sprint planning — select stories, estimate SP</td><td>Pick 2 EBOPS tickets, assign SP, write COBOL acceptance criteria</td></tr>
+    <tr><td>2–4</td><td>Development — code in DEV, unit test with smoke job</td><td>Code on branch, submit EBJSMKH, fix failures</td></tr>
+    <tr><td>5–6</td><td>HML deploy + regression</td><td>Run full EBJCHAIN in HML, validate CONCIL.SEQ TODOS OK</td></tr>
+    <tr><td>7</td><td>CCB + PRD deploy</td><td>Approve EBOPS change ticket, promote to PRD JCL library, run EBJEODP</td></tr>
+    <tr><td>8</td><td>Sprint review + retrospective</td><td>Update case-study in docs/change-log/; note what broke and why</td></tr>
+  </table>
+  <h3>Definition of Done for a COBOL Story</h3>
+  <ul>
+    <li>Program compiles cleanly — zero MNOTE/E-level diagnostics; RC ≤ 4 with no flow-analysis warnings.</li>
+    <li>EBJSMKH smoke test passes in DEV.</li>
+    <li>Full EBJCHAIN completes RC=0 in HML.</li>
+    <li>CONCIL.SEQ shows no DIVERGENTE rows.</li>
+    <li>Copybook changes are backward-compatible (or migration JCL is written).</li>
+    <li>Change-log case study written in <code>docs/change-log/</code>.</li>
+    <li>EBOPS ticket closed with resolution notes.</li>
+  </ul>
+
+  <hr class="divider" />
+
+  <h2>Target Architecture (After Roadmap)</h2>
+  <div style="background:#f7f8fa;border:1px solid #e5e7eb;border-radius:6px;padding:20px;font-family:'SFMono-Regular',Consolas,monospace;font-size:12px;line-height:1.9;overflow-x:auto">
+<pre style="margin:0;color:#1f2328">
+&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;
+&#x2502;                        BROWSER / MOBILE CLIENT                      &#x2502;
+&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;
+                               &#x2502; HTTP/REST (JSON)
+&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x25BC;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;
+&#x2502;         EBOPS Node.js - USS 192.168.100.150:3000           [Phase 5]&#x2502;
+&#x2502;   /api/status . /api/chain/submit . /api/inject . /api/tickets      &#x2502;
+&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;
+             &#x2502; Zowe CLI                         &#x2502; MQPUT/MQGET
+&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x25BC;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;  &#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x25BC;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;
+&#x2502;  JES2 / z/OS Batch          &#x2502;  &#x2502;  IBM MQ - EMUNAH.* Queues [Ph.3]  &#x2502;
+&#x2502;  EBJCHAIN (14-phase EOD)    &#x2502;  &#x2502;  TRF.EVENTS . INPUT.QUEUE . DLQ   &#x2502;
+&#x2502;  Loaders: EBCLDB01..EBAUDDB1&#x2502;  &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;
+&#x2502;  [Phase 2 - in progress]    &#x2502;               &#x2502; CICS Trigger
+&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;  &#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x25BC;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;
+             &#x2502; VSAM I/O          &#x2502;  CICS TS 6.1                      &#x2502;
+&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x25BC;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;  &#x2502;  ESLD . EEXT . ETRF  [Phase 3]   &#x2502;
+&#x2502;  VSAM                       &#x2502;&#x25C4;&#x25BA;&#x2502;  DB2 SELECT + MQPUT pending       &#x2502;
+&#x2502;  CLIENTE.KSDS  (checkmark)  &#x2502;  &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x252C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;
+&#x2502;  CONTA.KSDS    (checkmark)  &#x2502;           &#x2502; Embedded SQL
+&#x2502;  LANCTO.ESDS   (checkmark)  &#x2502;  &#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x25BC;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2510;
+&#x2502;  REJEITOS.SEQ  (loading)   &#x2502;  &#x2502;  DB2 V13 - DBD1 / EMUNAH schema   &#x2502;
+&#x2502;  AUDIT.SEQ     (loading)   &#x2502;  &#x2502;  CDCLI   20 rows  (checkmark)     &#x2502;
+&#x2502;  GDG(SALDO,EXTRATO,BKP)    &#x2502;  &#x2502;  CDCNT   40 rows  (checkmark)     &#x2502;
+&#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;  &#x2502;  CDLCT  100 rows  (checkmark)     &#x2502;
+                                  &#x2502;  CDREJ    0 rows  (loading)      &#x2502;
+                                  &#x2502;  CDAUD    0 rows  (loading)      &#x2502;
+                                  &#x2502;  CDEXT    -       deferred       &#x2502;
+                                  &#x2514;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2518;
+</pre>
+  </div>
+
+  <hr class="divider" />
+  <p class="muted">Branch: <code>refactor/cadeia-batch-ver-04</code> &nbsp;·&nbsp; All program/dataset/JCL names reflect the current lab state. Status last updated: Phase 2 Step 2.5 active — EBREJDB1 compile fixes applied, EBAUDDB1 pending same fix.</p>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

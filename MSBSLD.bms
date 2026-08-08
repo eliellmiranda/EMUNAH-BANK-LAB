@@ -1,0 +1,59 @@
+MSBSLD   DFHMSD TYPE=&SYSPARM,MODE=INOUT,LANG=COBOL,                   X
+               STORAGE=AUTO,TIOAPFX=YES,CTRL=(FREEKB,FRSET)
+
+EBMSLD   DFHMDI SIZE=(24,80)
+
+* =================================================================== *
+* CABECALHO DA TELA
+* =================================================================== *
+         DFHMDF POS=(01,30),LENGTH=17,ATTRB=(BRT,PROT),                X
+               INITIAL='CONSULTA DE SALDO'
+         DFHMDF POS=(01,70),LENGTH=08,ATTRB=(BRT,PROT),                X
+               INITIAL='TRN:ESLD'
+
+* =================================================================== *
+* AREA DE ENTRADA (DIGITACAO DO OPERADOR)
+* =================================================================== *
+         DFHMDF POS=(04,05),LENGTH=08,ATTRB=(NORM,PROT),               X
+               INITIAL='AGENCIA:'
+AGENCIA  DFHMDF POS=(04,14),LENGTH=04,ATTRB=(NORM,UNPROT,IC,NUM)
+         DFHMDF POS=(04,19),LENGTH=01,ATTRB=(PROT)     * Byte de stop
+
+         DFHMDF POS=(05,05),LENGTH=06,ATTRB=(NORM,PROT),               X
+               INITIAL='CONTA:'
+CONTA    DFHMDF POS=(05,14),LENGTH=08,ATTRB=(NORM,UNPROT,NUM)
+         DFHMDF POS=(05,23),LENGTH=01,ATTRB=(PROT)     * Byte de stop
+
+* =================================================================== *
+* AREA DE SAIDA (RESULTADOS DA BUSCA)
+* =================================================================== *
+         DFHMDF POS=(08,05),LENGTH=14,ATTRB=(NORM,PROT),               X
+               INITIAL='TIPO DE CONTA:'
+TIPO     DFHMDF POS=(08,20),LENGTH=01,ATTRB=(BRT,PROT)
+
+         DFHMDF POS=(09,05),LENGTH=15,ATTRB=(NORM,PROT),               X
+               INITIAL='STATUS ATUAL :'
+STATUS   DFHMDF POS=(09,21),LENGTH=01,ATTRB=(BRT,PROT)
+
+         DFHMDF POS=(11,05),LENGTH=15,ATTRB=(NORM,PROT),               X
+               INITIAL='SALDO ATUAL  :'
+SALDO    DFHMDF POS=(11,21),LENGTH=16,ATTRB=(BRT,PROT)
+
+         DFHMDF POS=(12,05),LENGTH=15,ATTRB=(NORM,PROT),               X
+               INITIAL='LIMITE       :'
+LIMITE   DFHMDF POS=(12,21),LENGTH=16,ATTRB=(BRT,PROT)
+
+         DFHMDF POS=(14,05),LENGTH=15,ATTRB=(NORM,PROT),               X
+               INITIAL='DISPONIVEL   :'
+DISPON   DFHMDF POS=(14,21),LENGTH=16,ATTRB=(BRT,PROT)
+
+* =================================================================== *
+* MENSAGEM DE RODAPE E TECLAS
+* =================================================================== *
+MSG      DFHMDF POS=(22,05),LENGTH=50,ATTRB=(BRT,PROT)
+         
+         DFHMDF POS=(24,05),LENGTH=40,ATTRB=(NORM,PROT),               X
+               INITIAL='ENTER=Confirmar  PF3=Sair  CLEAR=Limpar'
+
+         DFHMSD TYPE=FINAL
+         END

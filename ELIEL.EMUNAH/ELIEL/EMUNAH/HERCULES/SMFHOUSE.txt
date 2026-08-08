@@ -1,0 +1,22 @@
+//SMFHOUSE JOB (EMUNAH),'SMF DAILY HOUSEKEEPING',CLASS=A,MSGCLASS=X,
+//             MSGLEVEL=(1,1),NOTIFY=&SYSUID,REGION=0M
+//*-------------------------------------------------------------------*
+//* ROTINA DIARIA DE HOUSEKEEPING DO SMF (LOGSTREAM)
+//* 1. EXTRAI OS DADOS DO DIA ANTERIOR (ONTEM)
+//* 2. SALVA EM UM ARQUIVO DE BACKUP (SEGURANCA)
+//* 3. SINALIZA AO SYSTEM LOGGER QUE PODE LIBERAR O ESPACO (OPTIONS(DUMP))
+//*-------------------------------------------------------------------*
+//STEP01   EXEC PGM=IFASMFDL
+//SYSPRINT DD  SYSOUT=*
+//*
+//* -> ARQUIVO DE BACKUP (Idealmente uma GDG, mas pode ser sequencial)
+//BACKUPDD DD  DSN=ELIEL.EMUNAH.SMF.BKUP.D2026201,
+//             DISP=(NEW,CATLG,DELETE),
+//             SPACE=(CYL,(50,20),RLSE),
+//             UNIT=SYSDA
+//*
+//SYSIN    DD  *
+  LSNAME(IFASMF.VS01.DATA,OPTIONS(DUMP))
+  OUTDD(BACKUPDD,TYPE(0:255))
+  RELATIVEDATE(BYDAY,1,1)
+/*

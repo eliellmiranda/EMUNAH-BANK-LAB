@@ -1,2 +1,7 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# SQL files — treat as text, no line-ending conversion
+*.sql text eol=lf
+# Prevent accidental overwrite of root emunah.sql
+# (authoritative DDL lives in db2/EMUNAH-DDL.sql)

@@ -1,0 +1,92 @@
+*===============================================================*
+      * COPYBOOK: DCLLANCTO                                           *
+      * FUNCAO  : DCLGEN DA TABELA DB2 TB_LANCAMENTO                 *
+      *                                                               *
+      * TABELA   : EMUNAH.TB_LANCAMENTO                              *
+      * OWNER    : EMUNAH                                             *
+      * SCHEMA   : ELIEL.EMUNAH.DB2                                  *
+      *                                                               *
+      * ESTE COPYBOOK SIMULA A SAIDA DO UTILITARIO DCLGEN DO DB2.    *
+      *                                                               *
+      * NOTA SOBRE IDENTITY COLUMN:                                   *
+      * LCT-ID-LANCAMENTO e GENERATED ALWAYS: o DB2 gera o valor     *
+      * automaticamente. Nao inclua esta coluna no INSERT (omitir ou  *
+      * usar DEFAULT). Para recuperar o ID recem inserido usar        *
+      * IDENTITY_VAL_LOCAL() ou OUTPUT INTO apos o INSERT.           *
+      *                                                               *
+      * INDICATOR VARIABLES:                                          *
+      *   Valor -1 : coluna NULL | Valor 0 : valor presente           *
+      *===============================================================*
+
+      *---------------------------------------------------------------*
+      * HOST VARIABLES - TABELA TB_LANCAMENTO                         *
+      *---------------------------------------------------------------*
+       01  DCLTB-LANCAMENTO.
+
+      *-- ID_LANCAMENTO: INTEGER NOT NULL GENERATED ALWAYS          *
+      *   Identity column - nao informar no INSERT                   *
+      *   DB2: INTEGER -> COBOL: PIC S9(9) COMP                      *
+           05 LCT-ID-LANCAMENTO      PIC S9(9) COMP.
+
+      *-- AGENCIA: SMALLINT NOT NULL (FK -> TB_CONTA)               *
+      *   DB2: SMALLINT -> COBOL: PIC S9(4) COMP                     *
+           05 LCT-AGENCIA            PIC S9(4) COMP.
+
+      *-- NUM_CONTA: INTEGER NOT NULL (FK -> TB_CONTA)              *
+           05 LCT-NUM-CONTA          PIC S9(9) COMP.
+
+      *-- DATA_LANCAMENTO: DATE NOT NULL                            *
+      *   Data do movimento. Formato: 'AAAA-MM-DD' (10 bytes)        *
+           05 LCT-DATA               PIC X(10).
+
+      *-- TIPO_MOVTO: CHAR(1) NOT NULL                              *
+      *   C=Credito / D=Debito                                       *
+           05 LCT-TIPO               PIC X(1).
+
+      *-- VALOR: DECIMAL(13,2) NOT NULL                             *
+      *   Valor absoluto do movimento (sempre positivo)              *
+      *   DB2: DECIMAL(13,2) -> COBOL: PIC S9(11)V99 COMP-3          *
+           05 LCT-VALOR              PIC S9(11)V99 COMP-3.
+
+      *-- HISTORICO: VARCHAR(30) (nullable)                         *
+      *   Descricao do lancamento; pode ser NULL                     *
+      *   VARCHAR requer dois campos de nivel 49:                    *
+      *   - LCT-HISTORICO-LEN  : comprimento real (0 a 30)           *
+      *   - LCT-HISTORICO-TEXT : conteudo (ate 30 bytes)             *
+      *   Verificar IND-HISTORICO = -1 antes de usar                 *
+           05 LCT-HISTORICO.
+              49 LCT-HISTORICO-LEN   PIC S9(4) COMP.
+              49 LCT-HISTORICO-TEXT  PIC X(30).
+
+      *-- CANAL: CHAR(10) (nullable)                                *
+      *   Canal de origem: AGENCIA/INTERNET/APP/BATCH/ATM/etc        *
+           05 LCT-CANAL              PIC X(10).
+
+      *-- NUM_LOTE: INTEGER (nullable)                              *
+      *   Numero do lote batch que gerou o lancamento                *
+      *   NULL para lancamentos online                                *
+           05 LCT-LOTE               PIC S9(9) COMP.
+
+      *-- NSEQ_LOTE: INTEGER (nullable)                             *
+      *   Sequencia do registro dentro do lote                       *
+           05 LCT-NSEQ               PIC S9(9) COMP.
+
+      *-- STATUS: CHAR(1) NOT NULL DEFAULT 'P'                      *
+      *   P=Pendente / V=Validado / R=Rejeitado / C=Conciliado       *
+           05 LCT-STATUS             PIC X(1).
+
+      *-- TIMESTAMP_PROC: TIMESTAMP (nullable)                      *
+      *   Data e hora do processamento. NULL ate o batch processar.  *
+      *   Formato: 'AAAA-MM-DD-HH.MM.SS.ffffff' (26 bytes)           *
+           05 LCT-TIMESTAMP          PIC X(26).
+
+      *---------------------------------------------------------------*
+      * INDICATOR VARIABLES                                           *
+      * Necessarias para todas as colunas nullable desta tabela       *
+      *---------------------------------------------------------------*
+       01  DCLIND-LANCAMENTO.
+           05 IND-HISTORICO           PIC S9(4) COMP.  *> -1=NULL
+           05 IND-CANAL               PIC S9(4) COMP.  *> -1=NULL
+           05 IND-LOTE                PIC S9(4) COMP.  *> -1=NULL
+           05 IND-NSEQ                PIC S9(4) COMP.  *> -1=NULL
+           05 IND-TIMESTAMP           PIC S9(4) COMP.  *> -1=NULL
