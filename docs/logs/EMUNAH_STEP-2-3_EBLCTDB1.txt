@@ -1,0 +1,48 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 2 — DB2 Schema Evolution
+ Step    : 2.3 — COMPLETE
+ Date    : [YYYY-MM-DD]
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Load ELIEL.EMUNAH.ARQ.LANCTO.ESDS into EMUNAH.CDLCT.
+ Program: EBLCTDB1 (ESDS sequential loader, modelled after EBCNTDB1)
+
+ ISSUES ENCOUNTERED AND RESOLVED
+ -------
+ Issue: ABEND S013 on first submission
+   Cause : Member EBLCTDB1 uploaded with incorrect encoding or
+           record format — precompiler could not open the source.
+   Fix   : Re-uploaded via Zowe CLI with --record-length 80 flag.
+           LISTDS confirmed FB/80/32720/PO — dataset DCB was correct.
+
+ ACTUAL RESULT
+ -------------
+ PRECOMP RC  : 0
+ COMPILE RC  : 0
+ LKED    RC  : 0
+ BINDPKG RC  : 0
+ RUN     RC  : 0
+
+ EBLCTDB1 - RESUMO DA CARGA
+ REGISTROS LIDOS ......: 000000100 (+ 1 invalid padding record)
+ REGISTROS INSERIDOS ..: 000000000 (data already loaded on prior run)
+ DUPLICADOS (IGNORADOS): 000000100 (SQLCODE=-803, all handled)
+ ERROS ................: 000000000
+
+ INTERPRETATION:
+   100 movements in LANCTO.ESDS (LOTE=1, NSEQ=1 to 100).
+   All already inserted on a prior successful run.
+   -803 handled gracefully — RC=0, no data loss.
+   Padding record (LOTE=ZEROS) correctly skipped.
+   CDLCT contains 100 movement records.
+
+ STATUS  : SUCCESS
+ RC      : 0
+ SQLCODE : -803 (expected — duplicate PK, handled)
+ NOTES   : ESDS opened with ORGANIZATION IS SEQUENTIAL (no key).
+           LOTE+NSEQ composite PK verified working.
+           FK to CDCNT satisfied — no -530 violations.
+══════════════════════════════════════════════════

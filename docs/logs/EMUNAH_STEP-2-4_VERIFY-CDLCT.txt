@@ -1,0 +1,45 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 2 — DB2 Schema Evolution
+ Step    : 2.4 — COMPLETE
+ Date    : [YYYY-MM-DD]
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Verify CDLCT data integrity after EBLCTDB1 load.
+ Confirm 100 rows, movement totals by account, and
+ three-table JOIN: CDLCT → CDCNT → CDCLI.
+
+ COMMANDS
+ -------
+ Query 1: COUNT + SUM by account (CDLCT)
+ Query 2: 3-table JOIN CDLCT + CDCNT + CDCLI
+
+ ACTUAL RESULT
+ -------------
+ Both queries returned correct data. Tables verified.
+ Full FK chain CDLCT → CDCNT → CDCLI confirmed intact.
+
+ POST-RUN CORRECTIONS APPLIED
+ -------
+ 1. ASSIGN TO AS-LCTESDS — added AS- prefix to explicitly
+    signal ESDS access type to COBOL VSAM runtime.
+    (LCTESDS DD name in JCL unchanged — AS- is stripped
+    by COBOL when resolving the DD name)
+ 2. SYSOUT OUTLIM=500000 — prevents S722 abend on large
+    duplicate runs that flood the spool.
+
+ DB2 SCHEMA STATUS AT STEP 2.4
+ -------
+ CDCLI  : 20  rows — clients
+ CDCNT  : 40  rows — accounts
+ CDLCT  : 100 rows — movements
+ CDEXT  :   0 rows — pending
+ CDREJ  :   0 rows — pending
+ CDAUD  :   0 rows — pending
+
+ STATUS  : SUCCESS
+ RC      : 0
+ SQLCODE : 0
+══════════════════════════════════════════════════

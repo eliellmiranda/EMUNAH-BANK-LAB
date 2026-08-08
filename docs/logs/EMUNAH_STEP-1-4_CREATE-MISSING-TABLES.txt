@@ -1,0 +1,69 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 1 — Consolidation & Inventory
+ Step    : 1.4 — COMPLETE
+ Date    : [YYYY-MM-DD]
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Create the 4 missing tables on z/OS DBD1 (EMUNAH schema):
+ CDLCT, CDEXT, CDREJ, CDAUD. Executed via IBM Db2 for z/OS
+ Developer Extension in VS Code (db2/scratch.sql).
+
+ ISSUES ENCOUNTERED AND RESOLVED
+ -------
+ Issue 1: WITH DEFAULT '' — invalid in DB2 for z/OS
+   Symptom: "SQLID expected" parse error from Developer Extension
+   Root cause: Empty string literal '' is syntactically illegal in
+               DB2 for z/OS DDL. Parser loses state and attempts to
+               recover by reading next token as SET CURRENT SQLID.
+   Fix: Replace WITH DEFAULT '' with bare WITH DEFAULT on all
+        CHAR columns. Bare WITH DEFAULT on CHAR(n) = spaces.
+   Affected: CDLCT (LCT_HISTORICO, LCT_CANAL)
+             CDEXT (EXT_DESCRICAO, EXT_CANAL)
+             CDAUD (AU_CHAVE_REF, AU_COMPLEMENTO)
+
+ Issue 2: WITH DEFAULT CURRENT TIMESTAMP / CURRENT DATE
+   Symptom 1: Developer Extension linter underlines second word,
+              blocks execution with "SQLID expected"
+   Symptom 2: CURRENT_TIMESTAMP (underscore) rejected by DB2 engine
+              SQLCODE=-104, SQLSTATE=42601
+   Root cause: Hercules DBD1 build does not accept CURRENT_TIMESTAMP
+               (ANSI form). Developer Extension linter rejects the
+               two-word DB2 form CURRENT TIMESTAMP at parse time.
+               Neither form can pass both client and server.
+   Fix: Remove WITH DEFAULT clause entirely. Make column nullable.
+        COBOL programs will supply the value explicitly on INSERT.
+   Affected: CDEXT (EXT_DT_CARGA) → TIMESTAMP nullable
+             CDAUD (AUD_TIMESTAMP) → TIMESTAMP nullable
+             CDAUD (AU_DATA_EVENTO) → DATE NOT NULL, no default
+
+ FINAL STATEMENTS EXECUTED (as accepted by DB2)
+ -------
+ CDLCT: RC=0 (1.4.1 — WITH DEFAULT blanks on HISTORICO, CANAL)
+ CDEXT: RC=0 (1.4.2 — WITH DEFAULT blanks; EXT_DT_CARGA nullable)
+ CDREJ: RC=0 (1.4.3 — no changes needed)
+ CDAUD: RC=0 (1.4.4 — WITH DEFAULT blanks; AUD_TIMESTAMP nullable)
+
+ VERIFY RESULT (1.4.5)
+ -------
+ SELECT STRIP(TBNAME), CARD FROM SYSIBM.SYSTABLES
+ WHERE CREATOR = 'EMUNAH' ORDER BY TBNAME
+ → 6 rows returned, CARD=-1 on all (normal, RUNSTATS not yet run)
+ Tables confirmed: CDAUD, CDCLI, CDCNT, CDEXT, CDLCT, CDREJ
+
+ FILES UPDATED
+ -------
+ db2/EMUNAH-DDL.sql — synced to match actual created tables:
+   All WITH DEFAULT '' → WITH DEFAULT
+   EXT_DT_CARGA  → TIMESTAMP (nullable, no default)
+   AUD_TIMESTAMP → TIMESTAMP (nullable, no default)
+   AU_DATA_EVENTO → DATE NOT NULL (no default)
+
+ STATUS  : SUCCESS
+ RC      : 0 (all 4 CREATE TABLE statements)
+ SQLCODE : 0
+ NOTES   : db2/scratch.sql used as execution scratch pad (not committed)
+           emunah.sql restored after each accidental overwrite.
+══════════════════════════════════════════════════

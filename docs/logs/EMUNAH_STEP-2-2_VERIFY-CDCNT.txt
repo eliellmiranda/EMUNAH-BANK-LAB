@@ -1,0 +1,36 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 2 — DB2 Schema Evolution
+ Step    : 2.2 — COMPLETE
+ Date    : [YYYY-MM-DD]
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Verify CDCNT data integrity after EBCNTDB1 load.
+ Confirm 40 rows, correct FK joins to CDCLI, and
+ valid balances/limits.
+
+ COMMAND
+ -------
+ SELECT C.CLI_NOME,
+        T.CNT_AGENCIA, T.CNT_NUM_CONTA,
+        T.CNT_TIPO, T.CNT_STATUS,
+        T.CNT_SALDO, T.CNT_LIMITE
+ FROM   EMUNAH.CDCNT T
+ JOIN   EMUNAH.CDCLI C
+   ON   C.CLI_ID_CLIENTE = T.CNT_ID_CLIENTE
+ ORDER  BY T.CNT_AGENCIA, T.CNT_NUM_CONTA
+
+ ACTUAL RESULT
+ -------------
+ 40 rows returned. All accounts joined correctly to
+ client names. FK integrity confirmed. Data verified.
+
+ STATUS  : SUCCESS
+ RC      : 0
+ SQLCODE : 0
+ NOTES   : CDCNT fully loaded and verified.
+           Both CDCLI (20 rows) and CDCNT (40 rows)
+           are now live and consistent in EMUNAH schema.
+══════════════════════════════════════════════════

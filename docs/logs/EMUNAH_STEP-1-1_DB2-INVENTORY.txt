@@ -1,0 +1,157 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 1 — Consolidation & Inventory
+ Step    : 1.1 — COMPLETE
+ Date    : [YYYY-MM-DD]
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Before writing a single line of new COBOL or altering any schema,
+ we need a ground-truth picture of what DB2 actually has at runtime
+ on z/OS subsystem DBD1. The local file db2/EMUNAH-DDL.sql defines
+ 6 tables (CLIENTES, CONTAS, LANCAMENTOS, EXTRATO, REJEITOS,
+ AUDITORIA). The screenshots you provided show 2 live tables with
+ column structures that differ from the DDL in key ways (INTEGER vs
+ DECIMAL types, column names with CNT_ vs CLI_ prefix variants, and
+ missing columns). This step queries the DB2 catalog directly to
+ produce the authoritative list of what exists on z/OS right now.
+ This becomes the baseline for all Phase 1 reconciliation work.
+
+ COMMAND
+ -------
+ Execute the following SQL via DBeaver (connection: DBD1LOC,
+ 192.168.100.150:8102) or via TSO SPUFI / DSNTEP2 on z/OS.
+
+ -- -------------------------------------------------------
+ -- STEP 1.1A — List all tables in schema EMUNAH
+ -- -------------------------------------------------------
+ SELECT TBNAME       AS TABLE_NAME,
+        CREATOR      AS SCHEMA,
+        CARD         AS ROW_COUNT_ESTIMATE,
+        TSNAME       AS TABLESPACE
+ FROM   SYSIBM.SYSTABLES
+ WHERE  CREATOR = 'EMUNAH'
+ ORDER  BY TBNAME;
+
+ -- -------------------------------------------------------
+ -- STEP 1.1B — List all columns for every EMUNAH table
+ -- -------------------------------------------------------
+ SELECT TBNAME        AS TABLE_NAME,
+        COLNO         AS COL_NUM,
+        NAME          AS COLUMN_NAME,
+        COLTYPE       AS DATA_TYPE,
+        LENGTH,
+        SCALE,
+        NULLS         AS NULLABLE,
+        DEFAULT       AS DEFAULT_VALUE
+ FROM   SYSIBM.SYSCOLUMNS
+ WHERE  TBCREATOR = 'EMUNAH'
+ ORDER  BY TBNAME, COLNO;
+
+ -- -------------------------------------------------------
+ -- STEP 1.1C — List all constraints (PK, FK, CHECK)
+ -- -------------------------------------------------------
+ SELECT TBNAME     AS TABLE_NAME,
+        CONSTNAME  AS CONSTRAINT_NAME,
+        TYPE       AS CONSTRAINT_TYPE
+ FROM   SYSIBM.SYSTABCONST
+ WHERE  TBCREATOR = 'EMUNAH'
+ ORDER  BY TBNAME, TYPE;
+
+ -- -------------------------------------------------------
+ -- STEP 1.1D — Quick row count across all EMUNAH tables
+ -- (run only after 1.1A confirms which tables exist)
+ -- -------------------------------------------------------
+ SELECT 'CLIENTES'    AS TABELA, COUNT(*) AS QT FROM EMUNAH.CLIENTES
+ UNION ALL
+ SELECT 'CONTAS',                COUNT(*)       FROM EMUNAH.CONTAS;
+ -- Add other tables only if 1.1A confirms they exist.
+
+ EXPECTED OUTPUT
+ ---------------
+ 1.1A: At minimum 2 rows (CLIENTES, CONTAS). Possibly up to 6 rows
+       if LANCAMENTOS, EXTRATO, REJEITOS, AUDITORIA were already
+       created from EMUNAH-DDL.sql. CARD values will show 0 or -1
+       until RUNSTATS is run — that is normal.
+
+ 1.1B: Column list matching what you see in DBeaver. Key items to
+       watch for:
+         - CLIENTES.CLI_ID_CLIENTE: is it INTEGER or DECIMAL(5,0)?
+         - CONTAS.CNT_AGENCIA: is it INTEGER or CHAR(4)?
+         - CONTAS.CNT_NUM_CONTA: is it INTEGER or CHAR(8)?
+         - CONTAS.CNT_LIMIT vs CNT_LIMITE: which spelling is live?
+         - Whether LANCAMENTOS, EXTRATO, REJEITOS, AUDITORIA exist.
+
+ 1.1C: At minimum: PK_CLIENTES, PK_CONTAS, FK_CONTAS_CLI.
+       Additional constraints only if the full DDL was applied.
+
+ 1.1D: Row counts showing how many seed records are currently loaded.
+       CLIENTES should have 20 rows and CONTAS 40 rows if EBCLDB01
+       has been run successfully before.
+
+ DONE CRITERION
+ --------------
+ SUCCESS when:
+   - You have the complete column list for every EMUNAH table
+     that currently exists on DBD1.
+   - You can confirm which tables from EMUNAH-DDL.sql are live
+     and which are missing.
+   - You can confirm the exact data type of CLI_ID_CLIENTE,
+     CNT_AGENCIA, CNT_NUM_CONTA, and CNT_LIMIT/CNT_LIMITE.
+   - SQLCODE = 0 on all four queries.
+ Record all results in ACTUAL RESULT below before moving to Step 1.2.
+
+ ACTUAL RESULT
+ -------------
+ Step 1.1D attempted first (row counts). Returned:
+   SQLCODE : -204
+   SQLSTATE: 42704
+   MESSAGE : EMUNAH.CLIENTES IS AN UNDEFINED NAME.
+
+ DIAGNOSIS: The schema qualifier 'EMUNAH' exists as a connection
+ qualifier in DBeaver but NO TABLES have been created under it yet
+ on z/OS DBD1. The DDL in db2/EMUNAH-DDL.sql has NOT been applied
+ to z/OS. Steps 1.1A–1.1C (catalog queries) must still be run to
+ confirm whether ANY tables exist under EMUNAH or an alternate
+ qualifier (e.g. ELIEL, USER, or the TSO user ID).
+
+ Tables found (from 1.1A — PENDING):
+   [ ] CLIENTES      — MISSING (confirmed by -204)
+   [ ] CONTAS        — UNKNOWN (not yet queried via catalog)
+   [ ] LANCAMENTOS   — UNKNOWN
+   [ ] EXTRATO       — UNKNOWN
+   [ ] REJEITOS      — UNKNOWN
+   [ ] AUDITORIA     — UNKNOWN
+
+ NOTE: The DBeaver screenshots from earlier showed 2 live tables
+ (CLIENTES + CONTAS) with INTEGER columns. Those may exist under
+ a DIFFERENT schema (e.g. ELIEL or the TSO user ID, not EMUNAH).
+ 1.1A will reveal the truth.
+
+ CLI_ID_CLIENTE data type: UNKNOWN — pending 1.1A/1.1B
+ CNT_AGENCIA    data type: UNKNOWN — pending 1.1A/1.1B
+ CNT_NUM_CONTA  data type: UNKNOWN — pending 1.1A/1.1B
+ CNT_LIMIT or CNT_LIMITE  : UNKNOWN — pending 1.1A/1.1B
+ CLIENTES row count       : N/A (table not found under EMUNAH)
+ CONTAS   row count       : N/A (table not found under EMUNAH)
+
+ FINAL FINDINGS:
+   Live tables confirmed: EMUNAH.CDCLI (clients), EMUNAH.CDCNT (accounts)
+   EMUNAH.CLIENTES / EMUNAH.CONTAS do NOT exist — DDL was never applied.
+   EBCLDB01 targets EMUNAH.CDCLI — consistent with live table name.
+   db2/EMUNAH-DDL.sql is out of sync with live reality on multiple points:
+     - Wrong table names (CLIENTES/CONTAS vs CDCLI/CDCNT)
+     - Wrong types (DECIMAL/CHAR vs INTEGER/DATE for key columns)
+     - Wrong column name (CNT_LIMIT vs CNT_LIMITE)
+   4 missing tables: LANCAMENTOS, EXTRATO, REJEITOS, AUDITORIA
+   Next action: Step 1.2 — run SYSCOLUMNS query on CDCLI+CDCNT,
+                then rewrite EMUNAH-DDL.sql to match live truth.
+
+ STATUS  : [x] SUCCESS (catalog confirmed)
+ RC      : 0
+ SQLCODE : 0 (catalog queries); -204 (direct table ref — expected,
+           EMUNAH.CLIENTES does not exist)
+ NOTES   : emunah.sql was accidentally overwritten with query text
+           during session; restored to FK constraint content.
+══════════════════════════════════════════════════

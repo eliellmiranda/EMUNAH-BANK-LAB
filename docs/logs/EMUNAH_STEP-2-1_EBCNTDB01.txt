@@ -1,0 +1,75 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 2 — DB2 Schema Evolution
+ Step    : 2.1
+ Date    : [YYYY-MM-DD]
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Write EBCNTDB01: loads CONTA.KSDS (VSAM) into EMUNAH.CDCNT (DB2).
+ Modelled after EBCLDB01. Three new technical elements introduced:
+   1. NUMVAL conversion for composite DISPLAY numeric keys
+   2. COMP-3 packed decimal for SALDO and LIMITE
+   3. SQLCODE=-530 FK violation handling (CNT_ID_CLIENTE not in CDCLI)
+
+ FILES TO CREATE
+ -------
+ ELIEL.EMUNAH/ELIEL/EMUNAH/DEV/COBOL/EBCNTDB01.cbl  (local)
+ Upload to: ELIEL.EMUNAH.DEV.COBOL(EBCNTDB01)        (z/OS)
+ JCL:       jcl/batch/EBCNTDB1.jcl                   (local + z/OS)
+
+ PROGRAM SPECIFICATION — EBCNTDB01
+ -------
+ See step 2.1 in the chat for full specification.
+
+ ISSUES ENCOUNTERED AND RESOLVED
+ -------
+ Issue 1: COND=(4,LT,stepname) cascade trap
+   Cause : Named-step COND skips condition when referenced step
+           was itself bypassed. COMPILE failed RC=12 but BINDPKG
+           and RUN executed because LKED had no RC to check.
+   Fix   : Changed all COND=(4,LT,stepname) to COND=(4,LT).
+           Global check — any prior step RC>4 stops the chain.
+
+ Issue 2: FUNCTION NUMVAL on PIC 9(n) fields
+   Cause : NUMVAL requires PIC X (character string) arguments.
+           CNT-AGENCIA/CNT-NUM-CONTA/CNT-ID-CLIENTE are PIC 9(n)
+           DISPLAY numeric — already numeric, no function needed.
+           Compiler: IGYPS2292-S / IGYPA3245-S (Severe) RC=12.
+   Fix   : Replaced MOVE FUNCTION NUMVAL(field) TO host-var
+           with direct MOVE field TO host-var.
+           COBOL handles DISPLAY->COMP binary conversion natively.
+   Note  : DCLCNT.cpy comment also corrected — it incorrectly
+           stated NUMVAL was required.
+
+ ACTUAL RESULT
+ -------------
+ PRECOMP RC  : 0
+ COMPILE RC  : 4 (warnings only — IGYCB7310-W, IGYCB7309-W)
+ LKED    RC  : 0
+ BINDPKG RC  : 0
+ RUN     RC  : 0
+
+ EBCNTDB01 - RESUMO DA CARGA
+ REGISTROS LIDOS ......: 000000040
+ REGISTROS INSERIDOS ..: 000000040
+ DUPLICADOS (IGNORADOS): 000000000
+ ERROS ................: 000000000
+
+ COMPILER WARNINGS (non-fatal):
+   IGYCB7310-W  PERFORM cannot reach its exit (lines 330, 408)
+   IGYCB7309-W  Possible loop in PERFORM (line 338)
+   These are flow-analysis warnings from the recursive read
+   pattern in 2100-LER-CONTA. No runtime impact.
+
+ STATUS  : SUCCESS
+ RC      : 0
+ SQLCODE : 0
+ NOTES   : 40 accounts loaded from ELIEL.EMUNAH.ARQ.CONTA.KSDS
+           into EMUNAH.CDCNT. FK constraint satisfied — all 40
+           CNT_ID_CLIENTE values found in CDCLI (20 clients x 2
+           accounts each). No -530 violations.
+           REGISTRO INVALIDO (AG=0000) = seed padding record,
+           correctly skipped by the zero-key guard.
+══════════════════════════════════════════════════

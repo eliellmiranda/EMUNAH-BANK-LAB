@@ -1,0 +1,62 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 1 — Consolidation & Inventory
+ Step    : 1.6 — COMPLETE
+ Date    : [YYYY-MM-DD]
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Regression check: verify EBCLDB01 (VSAM->DB2 client loader) still
+ runs cleanly against EMUNAH.CDCLI after all Phase 1 schema work.
+
+ ISSUES ENCOUNTERED AND RESOLVED
+ -------
+ Issue: DSNE102I YOU ARE NOT AUTHORIZED TO USE DB2 SUBSYSTEM DBD1
+   Root cause: RACF DSNR class profiles DBD1.BATCH and DBD1.TSO
+               existed but ELIEL and IBMUSER had no PERMIT entries.
+               DBD1.TSO profile was missing entirely (lost in backup
+               recovery). SETROPTS CLASSACT(DSNR) was active so all
+               access was blocked.
+   Fix applied (as IBMUSER):
+     RDEFINE DSNR DBD1.TSO UACC(NONE)
+     PERMIT DBD1.BATCH CLASS(DSNR) ID(ELIEL)   ACCESS(READ)
+     PERMIT DBD1.BATCH CLASS(DSNR) ID(IBMUSER) ACCESS(READ)
+     PERMIT DBD1.TSO   CLASS(DSNR) ID(ELIEL)   ACCESS(READ)
+     PERMIT DBD1.TSO   CLASS(DSNR) ID(IBMUSER) ACCESS(READ)
+     SETROPTS RACLIST(DSNR) REFRESH
+
+ Additional lesson:
+   GRANT SQL statement cannot be issued at the DSN prompt directly.
+   Must be run via RUN PROGRAM(DSNTIAD) or SPUFI.
+   ALLOC FI(STEPLIB) is restricted in TSO interactive sessions —
+   use batch JCL with STEPLIB DD for DB2 load library access.
+
+ JCL SUBMITTED
+ -------
+ EBCLDB1J — PRECOMP + COMPILE + LINK + BIND + RUN of EBCLDB01
+ (Full rebuild from source to validate current schema alignment)
+
+ ACTUAL RESULT
+ -------------
+ EBCLDB01 - RESUMO DA CARGA
+ REGISTROS LIDOS ......: 000000020
+ REGISTROS INSERIDOS ..: 000000000
+ DUPLICADOS (IGNORADOS): 000000020
+ ERROS ................: 000000000
+
+ INTERPRETATION:
+   20 records read from ELIEL.EMUNAH.ARQ.CLIENTE.KSDS
+   20 duplicates — data already loaded from previous successful run
+   SQLCODE=-803 handled gracefully by WHEN -803 branch
+   ERROS=0 — no unexpected SQLCODEs
+   RC=0 — clean execution
+
+ STATUS  : SUCCESS
+ RC      : 0
+ SQLCODE : -803 (expected — duplicate key, handled)
+ NOTES   : CDCLI contains 20 client records loaded prior to Phase 1.
+           Schema alignment between EBCLDB01 host vars and CDCLI
+           confirmed correct. RACF DSNR permits must be preserved
+           in future backups.
+══════════════════════════════════════════════════

@@ -1,0 +1,55 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 1 — Consolidation & Inventory
+ Step    : 1.3 — COMPLETE
+ Date    : [YYYY-MM-DD]
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Verify that the live CDCLI and CDCNT tables on DBD1 match the
+ newly rewritten db2/EMUNAH-DDL.sql. Identify any remaining deltas
+ before creating the 4 missing tables.
+
+ COMMAND
+ -------
+ SELECT TBNAME, COLNO, NAME, COLTYPE, LENGTH, SCALE, NULLS
+ FROM   SYSIBM.SYSCOLUMNS
+ WHERE  TBCREATOR = 'EMUNAH'
+   AND  TBNAME    IN ('CDCLI', 'CDCNT')
+ ORDER  BY TBNAME, COLNO;
+
+ ACTUAL RESULT
+ -------------
+ "CDCLI","1","CLI_ID_CLIENTE","INTEGER ","4","0","N"
+ "CDCLI","2","CLI_NOME","VARCHAR ","30","0","N"
+ "CDCLI","3","CLI_CPF","CHAR    ","11","0","N"
+ "CDCLI","4","CLI_DATA_NASC","DATE    ","4","0","N"
+ "CDCLI","5","CLI_STATUS","CHAR    ","1","0","N"
+ "CDCLI","6","CLI_DATA_CAD","DATE    ","4","0","N"
+ "CDCNT","1","CNT_AGENCIA","INTEGER ","4","0","N"
+ "CDCNT","2","CNT_NUM_CONTA","INTEGER ","4","0","N"
+ "CDCNT","3","CNT_ID_CLIENTE","INTEGER ","4","0","N"
+ "CDCNT","4","CNT_TIPO","CHAR    ","1","0","N"
+ "CDCNT","5","CNT_STATUS","CHAR    ","1","0","N"
+ "CDCNT","6","CNT_DATA_ABERTURA","DATE    ","4","0","N"
+ "CDCNT","7","CNT_SALDO","DECIMAL ","13","2","N"
+ "CDCNT","8","CNT_LIMITE","DECIMAL ","11","2","N"
+
+ DELTA ANALYSIS (live vs new DDL)
+ ---------------------------------
+ CDCLI.CLI_NOME: live=VARCHAR(30), DDL had CHAR(30) → FIXED in DDL
+ All other 13 columns: EXACT MATCH
+ DCLCLI.cpy: updated — VARCHAR(30) note added, PIC X(30) unchanged
+ DCLCNT.cpy: no changes needed — all 8 columns match exactly
+
+ VERDICT: Live tables are 100% aligned with new DDL after fix.
+ No ALTER TABLE required on z/OS — live tables are correct.
+
+ STATUS  : SUCCESS
+ RC      : 0
+ SQLCODE : 0 (14 rows returned)
+ NOTES   : emunah.sql overwritten again with query text — restored.
+           CDLCT, CDEXT, CDREJ, CDAUD not yet created on z/OS.
+           Next step: CREATE TABLE for the 4 missing tables.
+══════════════════════════════════════════════════

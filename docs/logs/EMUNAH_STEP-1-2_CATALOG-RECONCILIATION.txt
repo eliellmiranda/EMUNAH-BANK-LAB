@@ -1,0 +1,57 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 1 — Consolidation & Inventory
+ Step    : 1.2 — COMPLETE
+ Date    : [YYYY-MM-DD]
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Derive authoritative DDL and DCLGEN copybooks from COBOL sources only.
+ Source of truth: ELIEL.EMUNAH.DEV.COPY copybooks + EBCLDB01 host vars.
+ The old db2/EMUNAH-DDL.sql was discarded (wrong types, wrong names).
+
+ WHAT WAS DONE (no z/OS commands — local file work only)
+ -------
+ 1. Read all 9 copybooks from ELIEL.EMUNAH/ELIEL/EMUNAH/DEV/COPY/
+ 2. Read EBCLDB01 host variable declarations (proven working)
+ 3. Derived DB2 type mapping from COBOL types:
+      PIC 9(n) numeric key  → INTEGER NOT NULL
+      PIC X(n)              → CHAR(n) NOT NULL
+      PIC 9(8) AAAAMMDD     → DATE NOT NULL (EBCLDB01 converts via STRING)
+      PIC S9(11)V99         → DECIMAL(13,2)
+      PIC  9(9)V99          → DECIMAL(11,2)
+      PIC 9(6)              → DECIMAL(6,0)
+      surrogate key         → INTEGER GENERATED ALWAYS AS IDENTITY
+
+ FILES CREATED/UPDATED
+ -------
+ db2/EMUNAH-DDL.sql          — REWRITTEN (6 tables: CDCLI, CDCNT,
+                                CDLCT, CDEXT, CDREJ, CDAUD)
+ DEV/COPY/DCLCLI.cpy         — NEW (replaces old DCLCLI.cpy in copybooks/)
+ DEV/COPY/DCLCNT.cpy         — NEW (replaces old DCLCONTA.cpy)
+ DEV/COPY/DCLLCT.cpy         — NEW
+
+ KEY DECISIONS RECORDED
+ -------
+ - Table naming: CD prefix kept (matches live CDCLI, CDCNT on DBD1)
+ - CDCLI.CLI_ID_CLIENTE: INTEGER (matches live, matches EBCLDB01 host var)
+ - CDCNT.CNT_AGENCIA/CNT_NUM_CONTA: INTEGER (matches live DBeaver screenshot)
+ - All dates: DATE type (EBCLDB01 already converts AAAAMMDD → AAAA-MM-DD)
+ - CDEXT: kept CHAR keys (CPEXT001 uses PIC X, not PIC 9)
+ - CDREJ/CDAUD: IDENTITY surrogate keys (no VSAM equivalent)
+ - Old EMUNAH-DDL.sql had: wrong table names (CLIENTES/CONTAS),
+   wrong types (DECIMAL/CHAR for keys), wrong column (CNT_LIMIT).
+   All corrected.
+
+ NEXT ACTIONS (z/OS — Step 1.3)
+ -------
+ Run catalog query to verify live CDCLI and CDCNT columns match the
+ new DDL exactly. Then decide: ALTER live tables to add missing
+ constraints, or DROP+RECREATE with full DDL.
+
+ STATUS  : SUCCESS (local files)
+ RC      : N/A (no z/OS execution in this step)
+ NOTES   : DCLCLI.cpy, DCLCNT.cpy, DCLLCT.cpy created in DEV/COPY/
+           alongside the VSAM layout copybooks.
+══════════════════════════════════════════════════

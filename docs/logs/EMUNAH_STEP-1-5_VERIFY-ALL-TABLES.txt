@@ -1,0 +1,42 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 1 — Consolidation & Inventory
+ Step    : 1.5 — COMPLETE
+ Date    : [YYYY-MM-DD]
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Confirm all 6 EMUNAH tables exist on DBD1 after step 1.4.
+ TBNAME rendering was blank in VS Code result grid (known display
+ issue with varying-length columns in IBM Db2 Developer Extension).
+ Workaround: COUNT(*) to confirm total.
+
+ COMMAND
+ -------
+ SELECT COUNT(*) AS TOTAL_TABLES
+ FROM   SYSIBM.SYSTABLES
+ WHERE  CREATOR = 'EMUNAH'
+
+ EXPECTED OUTPUT
+ ---------------
+ TOTAL_TABLES = 6
+
+ ACTUAL RESULT
+ -------------
+ TOTAL_TABLES = 6
+
+ Tables in schema EMUNAH (confirmed individually via RC=0 on CREATE):
+   CDCLI  — clients       (live since before Phase 1)
+   CDCNT  — accounts      (live since before Phase 1)
+   CDLCT  — movements     (created step 1.4.1)
+   CDEXT  — extract       (created step 1.4.2)
+   CDREJ  — rejects       (created step 1.4.3)
+   CDAUD  — audit         (created step 1.4.4)
+
+ STATUS  : SUCCESS
+ RC      : 0
+ SQLCODE : 0
+ NOTES   : TBNAME blank in VS Code grid is a display-only issue.
+           COUNT(*) = 6 is authoritative confirmation.
+══════════════════════════════════════════════════

@@ -1,0 +1,71 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 1 — Consolidation & Inventory
+ Step    : 1.7 — COMPLETE (Phase 1 Close-out)
+ Date    : [YYYY-MM-DD]
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Document the full program/table linkage map for Phase 1 close-out.
+ Establishes the baseline for Phase 2 (DB2 Schema Evolution).
+
+ PROGRAM / TABLE LINKAGE MAP
+ -------
+ Program    Type              DB2 Tables              VSAM Files
+ ---------  ----------------  ----------------------  --------------------------
+ EBCLDB01   Batch DB2 loader  CDCLI (INSERT)          CLIENTE.KSDS (read)
+ EBCLLOAD   Batch VSAM loader —                       CLIENTE.KSDS, CONTA.KSDS
+ EBVALI01   Batch validation  —                       LANCTO.ESDS, CONTA.KSDS,
+                                                      REJEITOS.SEQ
+ EBPOST01   Batch posting     —                       LANCTO.ESDS, CONTA.KSDS,
+                                                      REJEITOS.SEQ, AUDIT.SEQ
+ EBACCR01   Batch accrual     —                       CONTA.KSDS, LANCTO.ESDS,
+                                                      AUDIT.SEQ
+ EBSNAP01   Batch snapshot    —                       CONTA.KSDS, SALDO.GDG,
+                                                      AUDIT.SEQ
+ EBCONC01   Batch reconcil.   —                       LANCTO.ESDS, REJEITOS.SEQ,
+                                                      CONTA.KSDS
+ EBEXTR01   Batch extract     —                       LANCTO.ESDS, CONTA.KSDS,
+                                                      EXTRATO.GDG
+ EBJEOD01   Batch EOD close   —                       CONTA.KSDS, AUDIT.SEQ
+ EBREPR01   Batch reprocess   —                       REJEITOS.SEQ, LANCTO.ESDS
+ EBCSSLD    CICS inquiry      —                       CONTA.KSDS (CICS read)
+ EBCSTRF    CICS transfer     —                       CONTA.KSDS (CICS rw)
+ EBCSEXT    CICS statement    —                       LANCTO.ESDS (CICS browse)
+
+ DB2 TABLE STATUS AT PHASE 1 CLOSE
+ -------
+ Table   Rows  Loader Program  Status
+ ------  ----  --------------  --------------------------------
+ CDCLI   20    EBCLDB01        LOADED — 20 clients from VSAM
+ CDCNT   0     (none yet)      EMPTY  — Phase 2 target
+ CDLCT   0     (none yet)      EMPTY  — Phase 2 target
+ CDEXT   0     (none yet)      EMPTY  — Phase 2 target
+ CDREJ   0     (none yet)      EMPTY  — Phase 2 target
+ CDAUD   0     (none yet)      EMPTY  — Phase 2 target
+
+ DCLGEN COPYBOOKS IN DEV/COPY
+ -------
+ DCLCLI.cpy  — EMUNAH.CDCLI  — complete, tested via EBCLDB01
+ DCLCNT.cpy  — EMUNAH.CDCNT  — complete, ready for EBCNTDB01
+ DCLLCT.cpy  — EMUNAH.CDLCT  — complete, ready for EBLCTDB01
+
+ PHASE 1 ISSUES LOG (lessons learned)
+ -------
+ 1. emunah.sql overwritten 4x with query text — use db2/scratch.sql
+ 2. WITH DEFAULT '' invalid in DB2 for z/OS DDL — use WITH DEFAULT
+ 3. CURRENT TIMESTAMP / CURRENT DATE blocked by VS Code linter AND
+    rejected by Hercules DB2 engine — removed defaults, use nullable
+ 4. RACF DSNR profiles lost in backup recovery — must include in
+    backup/restore checklist: DBD1.BATCH, DBD1.TSO permits for all
+    DB2 users
+ 5. ALLOC FI(STEPLIB) restricted in TSO — use batch JCL for DB2
+    load library allocation
+ 6. GRANT SQL cannot be issued at DSN prompt — use DSNTIAD via
+    RUN PROGRAM(DSNTIAD) PLAN(DSNTIA13)
+
+ STATUS  : SUCCESS — Phase 1 COMPLETE
+ NOTES   : All 6 tables live on DBD1. EBCLDB01 clean RC=0.
+           Ready to begin Phase 2 — DB2 Schema Evolution.
+══════════════════════════════════════════════════
