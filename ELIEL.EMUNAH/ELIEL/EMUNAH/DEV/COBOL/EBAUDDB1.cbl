@@ -98,8 +98,16 @@
 
        2000-PROCESSAR-AUDITS.
            ADD 1 TO WS-QT-LIDOS
-           PERFORM 2200-CONVERTER-CAMPOS
-           PERFORM 2300-INSERIR-AUDIT-DB2
+
+      *    Valida o registro antes de processar
+           IF AU-PROGRAMA = SPACES
+               DISPLAY 'REGISTRO INVALIDO IGNORADO.'
+           ELSE
+               PERFORM 2200-CONVERTER-CAMPOS
+               PERFORM 2300-INSERIR-AUDIT-DB2
+           END-IF
+
+      *    Le o proximo registro
            PERFORM 2100-LER-AUDIT.
 
        2100-LER-AUDIT.
@@ -113,13 +121,6 @@
                    DISPLAY 'ERRO DE LEITURA VSAM. STATUS='
                            WS-AUD-FILE-STATUS
                    PERFORM 9100-ROLLBACK-E-SAIR
-               END-IF
-           END-IF
-
-           IF NOT FIM-VSAM
-               IF AU-PROGRAMA = SPACES
-                   DISPLAY 'REGISTRO INVALIDO IGNORADO.'
-                   PERFORM 2100-LER-AUDIT
                END-IF
            END-IF.
 
