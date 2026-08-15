@@ -1,0 +1,111 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 3 — CICS Online Layer
+ Step    : 3.5 — ESLD end-to-end test: APCT abend
+ Date    : 2026-08-13
+══════════════════════════════════════════════════
+
+ CONTEXT
+ -------
+ After Step 3.3/3.4 all CSD artefacts were confirmed
+ installed (PROGRAM EBCSSLD Language=CObol, MAPSET
+ MSBSLD, TRANSACTION ESLD, LIBRARY EMUNAH). DB2 PLAN
+ EBCSSLD was bound and GRANT EXECUTE TO PUBLIC done.
+ Typing ESLD on a cleared 3270 screen still fires APCT.
+
+ SYMPTOM
+ -------
+ Transaction ESLD abends with APCT immediately after
+ task initiation. CEDF confirms EIB fields are visible
+ (task number, terminal id, date/time populated) but
+ the abend fires before the first EXEC CICS RECEIVE
+ executes. The load module is resident in ONLINE.LOADLIB
+ and LIBRARY(EMUNAH) is installed — so the program loads.
+
+ ROOT-CAUSE HYPOTHESIS
+ ---------------------
+ APCT on a CICS/DB2 program before the first EXEC CICS
+ command points to one of two situations:
+
+   A. DB2CONN resource not defined in CSD for subsystem
+      DBD1 — CICS cannot attach to DB2 at task start.
+      When CICS attempts implicit thread allocation
+      (DSNCSQL stub initialisation) it finds no active
+      attachment and raises APCT.
+
+   B. DB2CONN defined but not installed / not active.
+      $D DB2 SYSTEM(DBD1) would show ACTIVE=NO or
+      the CICS subsystem interface (DSN3@XZP) not
+      started.
+
+ DIAGNOSTIC PLAN
+ ---------------
+ 1. CEBR CSSL — read the transient data queue CSSL
+    immediately after the APCT.  Look for:
+      DSNC1020  DB2 CONNECTION INACTIVE
+      DSNC1022  DB2 SUBSYSTEM NOT FOUND
+      DSNC2005  THREAD CREATE FAILED
+    If any DSNC* message appears, DB2CONN is the cause.
+
+ 2. CEDA DISPLAY GROUP(EMUNAH) — confirm whether
+    DB2CONN(DBD1) exists in the group.
+    Expected output if missing:
+      OBJECT NOT FOUND
+
+ 3. If DB2CONN is missing, define and install:
+      CEDA DEFINE DB2CONN(DBD1)
+           GROUP(EMUNAH)
+           DB2ID(DBD1)
+           ACCOUNTREC(TASK)
+           AUTHTYPE(USERID)
+           MESSAGELEN(80)
+           NONTERMREL(NORMAL)
+      CEDA INSTALL DB2CONN(DBD1) GROUP(EMUNAH)
+
+ 4. After install, verify attachment is active:
+      CEMT INQUIRE DB2CONN
+    Expected: DB2ID(DBD1) CONNECTED AVAILABLE
+
+ 5. Retest: clear screen, type ESLD, press ENTER.
+    Enter a valid agencia (0001) and conta (00000001).
+    Expected: EBMSLD map returned with saldo populated.
+
+ CSSL LOG CHECK — PROCEDURE
+ --------------------------
+ From a CICS terminal:
+   CEBR CSSL          <- opens the CSSL queue browser
+   PF8 to scroll down <- page through recent messages
+   Look for DSNC*, DFHDB2*, or any SQLCODEs written
+   by the WRITEQ TD in paragraph 2500-CONSULTAR-SALDO-DB2
+
+ If CSSL shows a binary SQLCODE (4-byte binary field)
+ rather than a readable message, that is expected because
+ the current EBCSSLD writes WS-SQLCODE-ED (PIC S9(9) COMP)
+ LENGTH(4) — CEBR will show hex. The planned Step 3.5
+ improvement will replace this with a formatted 55-byte
+ message including EIBTRNID, EIBTASKN and decimal SQLCODE.
+
+ EBCSSLDJ MERGE-CONFLICT NOTE
+ ----------------------------
+ The working copy of jcl/compile/EBCSSLDJ.jcl is already
+ resolved correctly (PRECOMP step first, CICSTRAN second).
+ Git shows UU (unmerged) but the disk content is correct.
+ Action required before next push: stage the resolved file
+ with  git add jcl/compile/EBCSSLDJ.jcl  to clear the UU
+ marker.  No content change needed — resolution is already
+ in the correct IBM-documented order:
+   PRECOMP (DB2) → CICSTRAN (CICS) → COMPILE → LKED → BIND
+
+ PENDING BEFORE STEP 3.5 CAN CLOSE
+ -----------------------------------
+ [ ] Run CEBR CSSL — capture DSNC* messages or confirm
+     queue is empty (meaning the program never initialised)
+ [ ] CEDA DISPLAY DB2CONN(DBD1) — confirm existence
+ [ ] If missing: CEDA DEFINE + INSTALL DB2CONN(DBD1)
+ [ ] CEMT INQUIRE DB2CONN — confirm CONNECTED AVAILABLE
+ [ ] Retest ESLD with agencia 0001 conta 00000001
+ [ ] Capture spool / screen print as evidence
+
+ STATUS  : IN PROGRESS — awaiting DB2CONN verification
+══════════════════════════════════════════════════
