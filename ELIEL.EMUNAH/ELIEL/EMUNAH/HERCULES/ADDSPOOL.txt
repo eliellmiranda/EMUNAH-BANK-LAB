@@ -1,11 +1,26 @@
-//ADDSPOOL JOB (JES2),'ALLOC SPOOL',CLASS=A,MSGCLASS=X
+//ADDSPOOL JOB (EMUNAH),'ALLOC SYS1.HASPACE',CLASS=A,MSGCLASS=X,
+//             MSGLEVEL=(1,1),NOTIFY=&SYSUID,REGION=0M
+//*-------------------------------------------------------------------
+//* ALOCAR O DATASET DE SPOOL DO JES2: SYS1.HASPACE
+//*-------------------------------------------------------------------
+//* CORRECOES EM RELACAO A VERSAO ANTERIOR:
+//*   1. DSN DEVE SER SYS1.HASPACE (default do SPOOLDEF DSNAME=)
+//*   2. VOLSER PRECISA CASAR COM O PREFIXO DO VOLUME= DO SPOOLDEF
+//*      (ex.: VOLUME=SPOOL -> SPOOL3). CONFIRA: $D SPOOLDEF
+//*   3. TAMANHO: OCUPAR QUASE TODO O PACK, DEIXANDO FOLGA PARA
+//*      VTOC/LABEL (3390-3=3339 CYL -> ~3200; 3390-9=10017 -> ~9700)
+//*-------------------------------------------------------------------
+//* OBS.: O METODO RECOMENDADO E DEIXAR O JES2 ALOCAR:
+//*   $S SPL(SPOOL3),SPACE=(CYL,3200)
+//* USE ESTE JOB SOMENTE SE QUISER PRE-ALOCAR MANUALMENTE E DEPOIS:
+//*   $S SPL(SPOOL3)
+//*-------------------------------------------------------------------
 //ALLOC    EXEC PGM=IEFBR14
-//SPOOL    DD DSN=VSPROV.VS01.HASPACE,
-//            DISP=(NEW,KEEP),
-//            UNIT=3390,
-//            VOL=SER=JSPVS2,
-//            SPACE=(CYL,(3000)),
-//            DSORG=PS,
-//            STORCLAS=NONE,
-//            MGMTCLAS=NONE
-//
+//SPOOL    DD  DSN=SYS1.HASPACE,
+//             DISP=(NEW,KEEP),
+//             UNIT=3390,
+//             VOL=SER=SPOOL3,
+//             SPACE=(CYL,(3200),0),
+//             DSORG=PS,
+//             DCB=(RECFM=U,BLKSIZE=27998)
+//*
