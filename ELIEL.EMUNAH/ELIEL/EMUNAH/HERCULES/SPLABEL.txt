@@ -1,0 +1,22 @@
+//SPLABEL  JOB (EMUNAH),'ICKDSF INIT SPOOL3',CLASS=A,MSGCLASS=X,
+//             MSGLEVEL=(1,1),NOTIFY=&SYSUID,REGION=0M
+//*-------------------------------------------------------------------
+//* INICIALIZAR (LABEL + VTOC) O NOVO VOLUME DE SPOOL DO JES2
+//*-------------------------------------------------------------------
+//* ANTES:
+//*   1. HERCULES.CONF: 0590 3390 SPOOL3 spool3.3390.ckd
+//*      (ou, com o hercules no ar: devinit 0590 3390 SPOOL3 spool3.3390.ckd)
+//*   2. V 0590,ONLINE  (se IEA247I NOT CONFIGURED -> usar endereco do IODF
+//*      ou adicionar via TSO HCD)
+//*   3. O PREFIXO DO VOLSER DEVE CASAR COM O VOLUME= DO SPOOLDEF
+//*      (confira com $D SPOOLDEF)
+//*-------------------------------------------------------------------
+//* DEPOIS:
+//*   $S SPL(SPOOL3),SPACE=(CYL,3200)   (JES2 aloca e formata o HASPACE)
+//*-------------------------------------------------------------------
+//STEP01   EXEC PGM=ICKDSF,PARM='NOREPLYU'
+//SYSPRINT DD  SYSOUT=*
+//SYSIN    DD  *
+  INIT UNIT(0590) VTOC(0,1,15) VOLID(SPOOL3) OWNER('EMUNAH SPOOL') NOVERIFY
+/*
+//*

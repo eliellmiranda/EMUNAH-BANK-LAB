@@ -5,43 +5,34 @@
 //* PROGRAMA : EBCSSLD                                           *
 //* TRANSACAO: ESLD  (consulta de saldo)                         *
 //*                                                              *
-//* FLUXO DE 4 PASSOS:                                           *
-//*   CICSTRAN  - Tradutor CICS  (EXEC CICS -> macros)           *
-//*   COMPILE   - Compilador COBOL (fonte traduzido + SQLCA)     *
-//*   LKED      - Link-editor   (DSNELI + DFHECI obrigatorios)   *
-//*   BINDPKG   - DB2 BIND PACKAGE + PLAN                        *
+//* ORDEM CORRETA IBM PARA CICS + DB2:                           *
+//*   PRECOMP  - DB2 precompilador  (fonte original -> DBRM)     *
+//*   CICSTRAN - Tradutor CICS      (saida DB2 -> macros CICS)   *
+//*   COMPILE  - Compilador COBOL   (saida CICS -> objeto)       *
+//*   LKED     - Link-editor        (DSNELI + DFHECI)            *
+//*   BINDPKG  - DB2 BIND PACKAGE + PLAN                         *
+//*                                                              *
+//* MOTIVO DA ORDEM:                                             *
+//*   O precompilador DB2 precisa ver BEGIN DECLARE SECTION      *
+//*   antes de qualquer SQL. Se o tradutor CICS rodar primeiro,  *
+//*   ele insere declaracoes (DFHEIBLK, DFHCOMMAREA) antes do    *
+//*   BEGIN DECLARE SECTION, confundindo o precompilador DB2.    *
+//*   DB2 primeiro -> CICS segundo e o padrao IBM documentado.   *
 //*                                                              *
 //* NAO HA PASSO RUN: programa e invocado pelo CICS via ESLD     *
 //*--------------------------------------------------------------*
 //*
-//*--- PASSO 1: TRADUTOR CICS -----------------------------------*
-//*  Converte EXEC CICS em chamadas DFHEI1 que o compilador      *
-//*  COBOL entende. A saida (&&CICSIN) vai direto ao DB2         *
-//*  precompilador no passo seguinte.                            *
-//*  DFHECP1$ = translator CICS TS 6.1                          *
-//*--------------------------------------------------------------*
-//CICSTRAN EXEC PGM=DFHECP1$,
-//         PARM='COBOL3,NOEDF,SP'
-//STEPLIB  DD DSN=DFH610.SDFHLOAD,DISP=SHR
-//SYSPRINT DD SYSOUT=*
-//SYSPUNCH DD DSN=&&CICSIN,
-//            DISP=(NEW,PASS),
-//            UNIT=SYSDA,
-//            SPACE=(TRK,(5,5)),
-//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=8000)
-//SYSIN    DD DSN=ELIEL.EMUNAH.DEV.COBOL(EBCSSLD),DISP=SHR
-//*
-//*--- PASSO 2: DB2 PRECOMPILADOR ------------------------------*
-//*  Le o fonte ja traduzido pelo CICS (&&CICSIN).               *
-//*  Extrai os blocos EXEC SQL e gera o DBRM (DBRMLIB).          *
-//*  Saida &&SYSCIN e o fonte modificado para o compilador COBOL.*
+//*--- PASSO 1: DB2 PRECOMPILADOR ------------------------------*
+//*  Le o fonte COBOL original diretamente.                      *
+//*  Substitui EXEC SQL por comentarios + chamadas host.         *
+//*  Gera o DBRM em DBRMLIB.                                     *
+//*  Saida &&PREOUT e entregue ao tradutor CICS no passo 2.      *
 //*--------------------------------------------------------------*
 //PRECOMP  EXEC PGM=DSNHPC,
-//         PARM='HOST(IBMCOB),APOST,SOURCE',
-//         COND=(4,LT)
+//         PARM='HOST(IBMCOB),APOST,SOURCE'
 //STEPLIB  DD DSN=DB2V13.SDSNLOAD,DISP=SHR
 //DBRMLIB  DD DSN=ELIEL.EMUNAH.DBRMLIB(EBCSSLD),DISP=OLD
-//SYSCIN   DD DSN=&&SYSCIN,
+//SYSCIN   DD DSN=&&PREOUT,
 //            DISP=(NEW,PASS),
 //            UNIT=SYSDA,
 //            SPACE=(TRK,(5,5)),
@@ -51,18 +42,35 @@
 //SYSTERM  DD SYSOUT=*
 //SYSUT1   DD UNIT=SYSDA,SPACE=(TRK,(5,5))
 //SYSUT2   DD UNIT=SYSDA,SPACE=(TRK,(5,5))
-//SYSIN    DD DSN=&&CICSIN,DISP=(OLD,DELETE)
+//SYSIN    DD DSN=ELIEL.EMUNAH.DEV.COBOL(EBCSSLD),DISP=SHR
+//*
+//*--- PASSO 2: TRADUTOR CICS -----------------------------------*
+//*  Le a saida do precompilador DB2 (&&PREOUT).                 *
+//*  Converte EXEC CICS em chamadas DFHEI1.                      *
+//*  Saida &&CICSIN e o fonte pronto para o compilador COBOL.    *
+//*--------------------------------------------------------------*
+//CICSTRAN EXEC PGM=DFHECP1$,
+//         PARM='COBOL3,NOEDF,SP',
+//         COND=(4,LT)
+//STEPLIB  DD DSN=CICSTS61.CICS.SDFHLOAD,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//SYSPUNCH DD DSN=&&CICSIN,
+//            DISP=(NEW,PASS),
+//            UNIT=SYSDA,
+//            SPACE=(TRK,(5,5)),
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=8000)
+//SYSIN    DD DSN=&&PREOUT,DISP=(OLD,DELETE)
 //*
 //*--- PASSO 3: COMPILADOR COBOL --------------------------------*
-//*  Le o fonte com macros CICS e SQL ja substituidos (&&SYSCIN).*
-//*  Parm NODYNAM necessario para CICS (modulos estaticos).      *
+//*  Le o fonte com SQL substituido e macros CICS expandidas.    *
+//*  NODYNAM: obrigatorio para CICS (modulos estaticos).         *
 //*--------------------------------------------------------------*
 //COMPILE  EXEC PGM=IGYCRCTL,
 //         PARM='APOST,MAP,NODYNAM',
 //         COND=(4,LT)
 //STEPLIB  DD DSN=IGY.V6R4M0.SIGYCOMP,DISP=SHR
 //SYSLIB   DD DSN=ELIEL.EMUNAH.DEV.COPY,DISP=SHR
-//SYSIN    DD DSN=&&SYSCIN,DISP=(OLD,DELETE)
+//SYSIN    DD DSN=&&CICSIN,DISP=(OLD,DELETE)
 //SYSLIN   DD DSN=&&OBJSET,
 //            DISP=(NEW,PASS),
 //            UNIT=SYSDA,
@@ -87,17 +95,15 @@
 //SYSUT15  DD UNIT=SYSDA,SPACE=(TRK,(5,5))
 //*
 //*--- PASSO 4: LINK-EDITOR ------------------------------------*
-//*  Tres INCLUDE obrigatorios para programas CICS com DB2:      *
-//*    DSNELI  : interface DB2 Language Environment              *
-//*    DFHECI  : stub de entrada CICS para programas COBOL       *
-//*    DFHEICD : definicoes de constantes CICS (DFHRESP etc.)    *
-//*  LOADLIB online e separada da batch (ONLINE.LOADLIB).        *
+//*  DSNELI  : interface DB2 Language Environment               *
+//*  DFHECI  : stub de entrada CICS para programas COBOL        *
+//*  RENT    : reentrante (obrigatorio para CICS)               *
 //*--------------------------------------------------------------*
 //LKED     EXEC PGM=IEWL,
 //         PARM='LIST,MAP,XREF,RENT',
 //         COND=(4,LT)
 //SYSLIB   DD DSN=DB2V13.SDSNLOAD,DISP=SHR
-//         DD DSN=DFH610.SDFHLOAD,DISP=SHR
+//         DD DSN=CICSTS61.CICS.SDFHLOAD,DISP=SHR
 //         DD DSN=CEE.SCEELKED,DISP=SHR
 //SYSLIN   DD DSN=&&OBJSET,DISP=(OLD,DELETE)
 //         DD DDNAME=SYSIN
@@ -111,10 +117,6 @@
 /*
 //*
 //*--- PASSO 5: DB2 BIND ----------------------------------------*
-//*  BIND PACKAGE: registra o DBRM gerado no passo PRECOMP.      *
-//*  BIND PLAN   : cria o plano EBCSSLD que o CICS usa para       *
-//*                localizar todos os packages EMUNAH.*.           *
-//*  ISOLATION(CS): Cursor Stability — padrao correto para CICS.  *
 //*--------------------------------------------------------------*
 //BINDPKG  EXEC PGM=IKJEFT01,
 //         COND=(4,LT)
