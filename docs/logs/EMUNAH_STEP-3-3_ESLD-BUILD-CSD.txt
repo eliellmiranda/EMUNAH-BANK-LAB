@@ -1,0 +1,77 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 3 — CICS Online Layer
+ Step    : 3.3 / 3.4 — IN PROGRESS
+ Date    : 2026-08-13
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Build, install and test CICS transaction ESLD
+ (balance inquiry with DB2 SELECT against CDCNT).
+
+ DISCOVERIES
+ -----------
+ 1. CICS library HLQ: CICSTS61.CICS.* (not DFH610.*)
+    Fixed in EBCSSLDJ.jcl and EBMBMSJ.jcl.
+
+ 2. DFHMAPS not present in CICSTS61.CICS.SDFHLOAD.
+    Solution: BMS assembly via ASMA90 + SDFHMAC macros
+    + IEWL link-edit. JCL: EBMBMSJ.jcl (3 steps:
+    BMSMAP/ASMA90, BMSLKED/IEWL, BMSCPY/ASMA90).
+
+ 3. CSD group EMUNAH existed but was incomplete:
+    - PROGRAM(EBCSSLD) — existed, Language field blank
+    - MAPSET(MSBSLD)   — missing, defined and installed
+    - TRANSACTION(ESLD)— missing, defined and installed
+    - LIBRARY(EMUNAH)  — missing, defined with
+      DSNAME01=ELIEL.EMUNAH.ONLINE.LOADLIB, installed
+
+ 4. Language blank on PROGRAM(EBCSSLD) caused APCT.
+    Fixed: CEDA ALTER PROGRAM(EBCSSLD) Language(CObol).
+
+ 5. DB2 PLAN(EBCSSLD) exists and is operative (Y).
+    GRANT EXECUTE ON PLAN EBCSSLD TO PUBLIC — RC=0.
+
+ 6. APCT persists after all fixes above. Suspected
+    cause: CICS-DB2 attachment (DB2CONN) not defined
+    or not active for subsystem DBD1.
+    Evidence: CEDF shows program initiation starts
+    (EIB fields visible) but abend fires before any
+    EXEC CICS command executes.
+    NEXT ACTION: Check CEBR CSSL for DSNC* messages
+    and verify DB2CONN(DBD1) exists in CSD.
+
+ COMPLETED ARTEFACTS
+ -------------------
+ jcl/compile/EBMBMSJ.jcl  — BMS assembly (3 steps)
+ jcl/compile/EBCSSLDJ.jcl — CICS+DB2 build (5 steps)
+   Both corrected to use CICSTS61.CICS.SDFHLOAD.
+
+ BUILD RESULTS
+ -------------
+ EBCSSLDJ: CICSTRAN=0, PRECOMP=4(warn), COMPILE=0,
+           LKED=0, BINDPKG=0
+ EBMBMSJ : BMSMAP=0, BMSLKED=0, BMSCPY=0
+
+ CSD STATUS (CICSTS61.DFHCSD — GROUP EMUNAH)
+ -------------------------------------------
+ PROGRAM(EBCSSLD)    Language=CObol  Installed
+ MAPSET(MSBSLD)      Installed
+ TRANSACTION(ESLD)   Program=EBCSSLD Installed
+ LIBRARY(EMUNAH)     DSNAME01=ELIEL.EMUNAH.ONLINE.LOADLIB
+                     Installed
+
+ DB2 STATUS
+ ----------
+ PLAN EBCSSLD: OPERATIVE=Y
+ GRANT EXECUTE ON PLAN EBCSSLD TO PUBLIC: RC=0
+
+ PENDING
+ -------
+ - Check CEBR CSSL for DSNC messages
+ - Verify/define DB2CONN(DBD1) in CSD GROUP(EMUNAH)
+ - Retest ESLD after DB2CONN confirmed active
+
+ STATUS  : IN PROGRESS — APCT pending DB2CONN check
+══════════════════════════════════════════════════

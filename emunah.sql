@@ -1,1 +1,1 @@
-select * from emunah.cdcnt
+GRANT EXECUTE ON PLAN EBCSSLD TO PUBLIC

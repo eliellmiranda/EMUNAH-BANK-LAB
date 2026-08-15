@@ -1,0 +1,104 @@
+══════════════════════════════════════════════════
+ EMUNAH BANK LAB — COMMAND LOG
+══════════════════════════════════════════════════
+ Phase   : 2 — DB2 Schema Evolution
+ Step    : 2.5 — COMPLETE
+ Date    : [YYYY-MM-DD]
+══════════════════════════════════════════════════
+ PURPOSE
+ -------
+ Load VSAM REJEITOS.SEQ -> EMUNAH.CDREJ  (EBREJDB1)
+ Load VSAM AUDIT.SEQ   -> EMUNAH.CDAUD  (EBAUDDB1)
+
+ EBREJDB1 — COMPILE FIXES APPLIED
+ ---------------------------------
+ 1. IGYDS1064-E: REDEFINES on 01-level in FILE SECTION
+    FIX: Removed "REDEFINES REJEITO-REG" from 01 LANCTO-ORIG.
+    Multiple 01s under same FD share the I/O buffer implicitly.
+    REDEFINES is syntactically illegal at level-01 in FILE SECTION.
+
+ 2. IGYCB7309-W / IGYCB7310-W: Recursive PERFORM
+    FIX: Moved blank-record guard (REJ-COD-MOTIVO = SPACES) out of
+    2100-LER-REJEITO and into 2000-PROCESSAR-REJEITOS as IF/ELSE.
+    Eliminated self-recursive PERFORM 2100-LER-REJEITO inside the
+    same paragraph.
+
+ EBREJDB1 — ACTUAL RESULT
+ ------------------------
+ EBREJDB1 - INICIO DA CARGA REJEITOS VSAM->DB2
+ -------------------------------------------
+ EBREJDB1 - RESUMO DA CARGA
+ REGISTROS LIDOS ......: 000000004
+ REGISTROS INSERIDOS ..: 000000004
+ DUPLICADOS (IGNORADOS): 000000000
+ ERROS ................: 000000000
+ -------------------------------------------
+ RC: 0 / SQLCODE: 0
+
+ EBAUDDB1 — COMPILE FIXES APPLIED
+ ---------------------------------
+ 1. IGYCB7309-W: Same recursive PERFORM pattern as EBREJDB1.
+    FIX: Same guard-in-loop fix applied.
+    DISPLAY for invalid records commented out to prevent spool flooding.
+
+ 2. FILE STATUS 37: ASSIGN AS-AUDSEQ -> AUDSEQ
+    FIX: Removed AS- prefix. AUDIT.SEQ is PS/QSAM, not ESDS.
+
+ 3. FILE STATUS 39: FD record length mismatch
+    ROOT CAUSE: ELIEL.EMUNAH.ARQ.AUDIT.SEQ was allocated with
+    LRECL=18 (corrupted) then reallocated at LRECL=120 (wrong).
+    Physical LRECL must be 128:
+      - CPAUD001 fields = 120 bytes
+      - FILLER PIC X(8) appended by writers (EBVALI01, EBPOST01) = 8 bytes
+      - Physical record = 128 bytes
+    FIX: CPAUD001 refactored to include the 8-byte FILLER internally.
+    ELIEL.EMUNAH.ARQ.AUDIT.SEQ reallocated at LRECL=128.
+    All writer programs (EBVALI01, EBPOST01, EBSNAP01, EBREPR01,
+    EBEXTR01) must have their redundant FILLER removed and be
+    recompiled before the chain runs.
+
+ 4. SQLCODE -180: Invalid date on AU-DATA-EVENTO
+    FIX: Added date validation — if AU-DATA-EVENTO = ZEROS or SPACES
+    or NOT NUMERIC, move '1900-01-01' to HV-AU-DATA-EVENTO as fallback.
+
+ 5. SQLCODE -545: CHECK constraint violation on AU_TIPO_EVENTO
+    FIX: WHEN -545 added to EVALUATE — logs and continues without
+    ROLLBACK so the rest of the file loads cleanly.
+
+ EBAUDDB1 — ACTUAL RESULT (empty file — expected)
+ -------------------------------------------------
+ EBAUDDB1 - INICIO DA CARGA AUDITORIA VSAM->DB2
+ -------------------------------------------
+ EBAUDDB1 - RESUMO DA CARGA
+ REGISTROS LIDOS ......: 000000000
+ REGISTROS INSERIDOS ..: 000000000
+ DUPLICADOS (IGNORADOS): 000000000
+ ERROS ................: 000000000
+ -------------------------------------------
+ RC: 0 / SQLCODE: 0
+ NOTE: RC=0 with 0 rows is correct — AUDIT.SEQ was empty at time of
+       run. CDAUD will be loaded after chain populates AUDIT.SEQ.
+
+ CPAUD001 REFACTORING
+ --------------------
+ BEFORE: 120 bytes — FILLER PIC X(8) declared separately in each
+         writer FD after the COPY statement.
+ AFTER : 128 bytes — FILLER PIC X(8) is now the last field inside
+         CPAUD001 itself. Single source of truth.
+ IMPACT: All 5 writer programs must remove their redundant FILLER
+         and be recompiled: EBVALI01, EBPOST01, EBSNAP01, EBREPR01,
+         EBEXTR01.
+
+ DB2 SCHEMA STATUS AT STEP 2.5
+ ------------------------------
+ CDCLI  : 20  rows — clients       ✓ loaded
+ CDCNT  : 40  rows — accounts      ✓ loaded
+ CDLCT  : 100 rows — movements     ✓ loaded
+ CDEXT  :   0 rows — deferred
+ CDREJ  :   4 rows — rejects       ✓ loaded
+ CDAUD  :   0 rows — pending chain run to populate AUDIT.SEQ
+
+ STATUS  : COMPLETE (CDAUD deferred pending AUDIT.SEQ repopulation)
+ RC      : 0
+ SQLCODE : 0
+══════════════════════════════════════════════════

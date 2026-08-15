@@ -122,7 +122,6 @@
            RECORDING MODE IS F.
        01  AUDIT-REG.
            COPY CPAUD001.
-           05 FILLER                  PIC X(8).
 
        WORKING-STORAGE SECTION.
 

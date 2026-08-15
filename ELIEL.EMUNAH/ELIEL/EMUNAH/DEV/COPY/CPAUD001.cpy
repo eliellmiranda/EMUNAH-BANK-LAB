@@ -1,17 +1,26 @@
       *===============================================================*
       * COPYBOOK: CPAUD001                                            *
       * FUNCAO  : LAYOUT DE REGISTRO DE TRILHA DE AUDITORIA BATCH     *
-      * REGISTRO: 120 BYTES (Alinhado com FDs dos programas)          *
+      * REGISTRO: 128 BYTES (120 campos + 8 FILLER de alinhamento)    *
       * *
       * USADO EM: EBPOST01, EBVALI01, EBCLLOAD, EBEXTR01, EBSNAP01    *
+      *           EBAUDDB1, EBSNAP01, EBREPR01                        *
       * DATASET : ELIEL.EMUNAH.ARQ.AUDIT.SEQ                         *
-      * DDNAME  : AUDIT                                               *
+      * DDNAME  : AUDIT / AUDSEQ                                      *
       * *
       * FINALIDADE:                                                   *
       * - Padronizar a trilha de auditoria de todo o ciclo batch      *
       * - Registrar eventos relevantes para rastreabilidade           *
       * - Permitir acesso individualizado a data e hora do evento     *
-      * - Manter compatibilidade com limite fisico de 120 bytes       *
+      * - Manter compatibilidade com limite fisico de 128 bytes       *
+      *                                                               *
+      * NOTA DE ALINHAMENTO:                                          *
+      * Os 8 bytes de FILLER foram movidos para dentro do copybook    *
+      * para que qualquer programa que use COPY CPAUD001 receba       *
+      * automaticamente o registro de 128 bytes correto.              *
+      * Antes estavam declarados individualmente em EBVALI01 e        *
+      * EBPOST01 como "05 FILLER PIC X(8)" apos o COPY — mantidos    *
+      * la por compatibilidade (redundantes mas inofensivos).         *
       *===============================================================*
 
       *---------------------------------------------------------------*
@@ -51,3 +60,9 @@
       * Complemento livre para contexto adicional (RC, SQLCODE, etc)  *
       *---------------------------------------------------------------*
            05 AU-COMPLEMENTO           PIC X(10).
+
+      *---------------------------------------------------------------*
+      * FILLER de alinhamento — completa 128 bytes fisicos            *
+      * (LRECL=128 em ELIEL.EMUNAH.ARQ.AUDIT.SEQ)                    *
+      *---------------------------------------------------------------*
+           05 FILLER                   PIC X(08).

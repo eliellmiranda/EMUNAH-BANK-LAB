@@ -167,7 +167,6 @@
            RECORDING MODE IS F.
        01  AUDIT-REG-OUT.
            COPY CPAUD001.
-           05 FILLER                  PIC X(8).
 
        WORKING-STORAGE SECTION.
 
